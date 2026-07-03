@@ -1,0 +1,131 @@
+.featuresSection {
+  background-color: #ffffff; /* Чистый белый фон */
+  padding: 80px 0;
+  color: var(--text-main);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Блок быстрых фактов */
+.quickFacts {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 30px;
+  background-color: #f8fafc; /* Легкий контрастный фон (slate-50) */
+  padding: 40px;
+  border-radius: 20px;
+  margin-bottom: 80px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  border: 1px solid #f1f5f9;
+}
+
+.factItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.factMain {
+  font-family: var(--font-heading);
+  font-size: 36px;
+  font-weight: 700;
+  color: #d4af37; /* Золотой цвет */
+  margin-bottom: 8px;
+}
+
+.factSub {
+  font-size: 15px;
+  color: #64748b; /* slate-500 для чистоты */
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 500;
+}
+
+/* Сетка преимуществ */
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
+}
+
+/* Дизайн карточки */
+.card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 40px 30px;
+  border: 1px solid #e2e8f0; /* Тонкий светлый бордер (slate-200) */
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+.card:hover {
+  transform: translateY(-5px); /* плавно приподнимается */
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  /* Эффект свечения кольца blue */
+  border-color: rgba(59, 130, 246, 0.5); /* blue-500 */
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.5), 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.iconWrapper {
+  margin-bottom: 25px;
+}
+
+.icon {
+  color: #d4af37; /* Золотые иконки */
+  width: 40px;
+  height: 40px;
+  transition: transform 0.3s ease;
+}
+
+.card:hover .icon {
+  transform: scale(1.1);
+}
+
+.cardTitle {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #0f172a; /* slate-900 */
+}
+
+.cardText {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #475569; /* slate-600 */
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 992px) {
+  .featuresGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .quickFacts {
+    flex-direction: column;
+    padding: 30px 20px;
+  }
+  
+  .factItem {
+    margin-bottom: 20px;
+  }
+  
+  .factItem:last-child {
+    margin-bottom: 0;
+  }
+  
+  .factMain {
+    font-size: 28px;
+  }
+}

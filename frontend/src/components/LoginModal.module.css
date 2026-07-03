@@ -1,0 +1,237 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Немного светлее оверлей */
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal {
+  background-color: #ffffff; /* Белый фон */
+  border: 1px solid #e2e8f0; /* Тонкая серая рамка */
+  border-radius: 1rem; /* rounded-2xl */
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); /* Мягкая глубокая тень */
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  animation: modalIn 0.3s ease-out;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #94a3b8; /* slate-400 */
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.closeBtn:hover {
+  color: #0f172a; /* slate-900 */
+}
+
+.header {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.header h2 {
+  color: #0f172a; /* Темный заголовок slate-900 */
+  font-weight: 700;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.header p {
+  color: #64748b; /* slate-500 */
+  font-size: 0.875rem; /* text-sm */
+}
+
+.googleBtn {
+  width: 100%;
+  background-color: #ffffff; /* Белый фон кнопки */
+  color: #0f172a; /* Темный текст */
+  border: 1px solid #cbd5e1; /* border-slate-300 */
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-weight: 500;
+  font-size: 15px;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.googleBtn:hover {
+  background-color: #f8fafc; /* hover:bg-slate-50 */
+}
+
+.googleIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background-color: #e2e8f0; /* Светлая разделительная линия slate-200 */
+}
+
+.divider span {
+  padding: 0 1rem;
+  color: #94a3b8; /* text-slate-400 */
+  font-size: 0.875rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.errorBox {
+  background-color: #fef2f2; /* bg-red-50 */
+  color: #ef4444; /* text-red-500 */
+  border-left: 4px solid #ef4444; /* border-l-4 border-red-500 */
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  border-radius: 0.25rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field label {
+  color: #475569; /* text-slate-600 */
+  font-size: 0.875rem; /* text-sm */
+  font-weight: 500;
+}
+
+.field input {
+  width: 100%;
+  background-color: #f8fafc; /* bg-slate-50 */
+  color: #0f172a; /* Текст темный */
+  border: 1px solid transparent;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.passwordWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.passwordWrapper input {
+  padding-right: 2.5rem;
+}
+
+.eyeBtn {
+  position: absolute;
+  right: 12px;
+  background: transparent;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+}
+
+.eyeBtn:hover {
+  color: #475569;
+}
+
+.field input:focus {
+  outline: none;
+  background-color: #ffffff; /* focus:bg-white */
+  border-color: transparent;
+  box-shadow: 0 0 0 2px var(--primary-gold, #d4af37); /* золотая рамка */
+}
+
+.submitBtn {
+  width: 100%;
+  background-color: var(--primary-gold, #d4af37);
+  color: var(--white);
+  font-weight: 600;
+  padding: 0.875rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 0.5rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background-color: #a88444; /* более темный золотой */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+.submitSuccess {
+  background-color: #22c55e !important; /* Tailwind green-500 */
+  border-color: #22c55e !important;
+  color: white !important;
+  transform: scale(1.02);
+  pointer-events: none;
+}
+
+.checkIcon {
+  animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes scaleIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

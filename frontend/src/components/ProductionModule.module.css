@@ -1,0 +1,623 @@
+.container {
+  background-color: #f8fafc; /* bg-slate-50 */
+  min-height: 100vh;
+  font-family: var(--font-body);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  background-color: #ffffff;
+  padding: 1.25rem 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  color: #64748b;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 0;
+}
+
+.backBtn:hover {
+  color: #0f172a;
+}
+
+.title {
+  font-family: var(--font-body) !important;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+/* Main Area */
+.main {
+  padding: 2rem 2.5rem;
+  flex: 1;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Widgets */
+.widgetsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.widget {
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  border: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.widgetProgress {
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  border: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.progressHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.progressIconWrapper,
+.widgetIconWrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progressIconWrapper {
+  background-color: #f0fdf4;
+  color: #16a34a;
+}
+
+.widgetInfo, .progressInfo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.widgetLabel {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}
+
+.widgetValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.progressPercent {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #16a34a;
+}
+
+.progressBarBg {
+  width: 100%;
+  height: 8px;
+  background-color: #f1f5f9;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  background-color: #16a34a;
+  border-radius: 9999px;
+  transition: width 0.5s ease-out;
+}
+
+/* Split Layout */
+.splitLayout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.sectionTitle {
+  font-family: var(--font-body) !important;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 1.25rem;
+}
+
+/* Tasks Column */
+.tasksCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.tasksList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.taskCard {
+  background-color: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.taskCard:hover {
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+.taskCardDone {
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+  opacity: 0.7;
+}
+
+.taskInfo {
+  flex: 1;
+  padding-right: 2rem;
+}
+
+.taskName {
+  font-family: var(--font-body) !important;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 0.25rem 0;
+}
+
+.taskMeta {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 0.75rem;
+}
+
+.taskProgressBg {
+  width: 100%;
+  height: 6px;
+  background-color: #f1f5f9;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.taskProgressFill {
+  height: 100%;
+  background-color: #0ea5e9; /* sky-500 */
+  border-radius: 9999px;
+  transition: width 0.5s ease-out;
+}
+
+.fillDone {
+  background-color: #10b981; /* emerald-500 */
+}
+
+.taskActions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+  min-width: 140px;
+}
+
+.taskLeftBadge {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.taskLeftBadge strong {
+  color: #ea580c;
+  font-weight: 700;
+}
+
+.actionBtn {
+  background-color: #0f172a;
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.actionBtn:hover {
+  background-color: #1e293b;
+  transform: translateY(-1px);
+}
+
+.actionBtn:active {
+  transform: scale(0.97);
+}
+
+.doneBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: #10b981;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.75rem 0;
+}
+
+/* Logs Column */
+.logsCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.logsContainer {
+  background-color: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  height: calc(100vh - 280px);
+  overflow-y: auto;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+}
+
+.logNode {
+  display: flex;
+  gap: 1rem;
+  position: relative;
+  padding-bottom: 1.5rem;
+}
+
+.logNode:last-child {
+  padding-bottom: 0;
+}
+
+.logNode:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  top: 1.25rem;
+  left: 63px;
+  bottom: 0;
+  width: 2px;
+  background-color: #f1f5f9;
+}
+
+.logTime {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #94a3b8;
+  width: 50px;
+  padding-top: 0.125rem;
+}
+
+.timeIcon {
+  margin-top: 0.125rem;
+}
+
+.logDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  position: relative;
+  z-index: 2;
+  margin-top: 0.375rem;
+}
+
+.dotSuccess {
+  background-color: #10b981;
+  box-shadow: 0 0 0 4px #ecfdf5;
+}
+
+.dotDanger {
+  background-color: #ef4444;
+  box-shadow: 0 0 0 4px #fef2f2;
+}
+
+.logContent {
+  flex: 1;
+  background-color: #f8fafc;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+}
+
+.logProduct {
+  font-weight: 600;
+  color: #0f172a;
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+
+.logDetails {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logQuantity {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.logTypeBadge {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+}
+
+.badgeSuccess {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.badgeDanger {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modalCard {
+  background-color: #ffffff;
+  border-radius: 1.5rem;
+  width: 100%;
+  max-width: 480px;
+  padding: 2.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.modalTitle {
+  font-family: var(--font-body) !important;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.closeBtn:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+.modalProductName {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 0.25rem;
+}
+
+.modalProductMeta {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 2rem;
+}
+
+.inputWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.inputLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.hugeInputContainer {
+  display: grid;
+  grid-template-columns: 64px 1fr 64px;
+  gap: 1rem;
+  align-items: center;
+  width: 100%;
+}
+
+.hugeInputBtn {
+  background-color: #f1f5f9;
+  color: #0f172a;
+  border: none;
+  width: 100%;
+  height: 64px;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.hugeInputBtn:hover {
+  background-color: #e2e8f0;
+}
+
+.hugeInputBtn:active {
+  transform: scale(0.95);
+}
+
+.hugeInput {
+  width: 100%;
+  min-width: 0;
+  height: 80px;
+  background-color: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 1.25rem;
+  font-size: 3rem;
+  font-weight: 800;
+  color: #0f172a;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s;
+  padding: 0 1rem;
+  font-family: var(--font-body);
+}
+
+.hugeInput:focus {
+  border-color: #0f172a;
+  background-color: #ffffff;
+}
+
+/* Chrome, Safari, Edge, Opera */
+.hugeInput::-webkit-outer-spin-button,
+.hugeInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+/* Firefox */
+.hugeInput[type=number] {
+  -moz-appearance: textfield;
+}
+
+.typeToggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.toggleBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  background-color: #f8fafc;
+  border: 2px solid #f1f5f9;
+  border-radius: 1rem;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggleBtnSuccess {
+  background-color: #f0fdf4;
+  border-color: #16a34a;
+  color: #16a34a;
+}
+
+.toggleBtnDanger {
+  background-color: #fef2f2;
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.submitBtn {
+  width: 100%;
+  height: 4rem;
+  background-color: #0f172a;
+  color: #ffffff;
+  border: none;
+  border-radius: 1rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background-color: #1e293b;
+}
+
+.submitBtn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.submitBtn:disabled {
+  background-color: #cbd5e1;
+  cursor: not-allowed;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}

@@ -1,0 +1,109 @@
+.section {
+  background-color: #f9fafb; /* bg-gray-50 */
+  padding: 4rem 1rem; /* py-16 px-4 */
+}
+
+.container {
+  max-width: 80rem; /* max-w-7xl */
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.subheading {
+  display: block;
+  color: var(--primary-gold, #d4af37); /* text-[#d4af37] */
+  text-transform: uppercase;
+  font-weight: 700; /* font-bold */
+  letter-spacing: 0.05em; /* tracking-wider */
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.heading {
+  color: #0a1128; /* text-[#0a1128] */
+  font-family: var(--font-heading);
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.description {
+  color: #6b7280; /* text-gray-500 */
+  max-width: 42rem;
+  margin: 0 auto;
+  font-size: 1.125rem;
+}
+
+/* Сетка карточек */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* grid-cols-2 на мобильных */
+  gap: 1.5rem; /* gap-6 */
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr); /* md:grid-cols-3 */
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr); /* lg:grid-cols-4 */
+  }
+}
+
+/* Дизайн карточки */
+.card {
+  background-color: #ffffff; /* bg-white */
+  border-radius: 1rem; /* rounded-2xl */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+  border: 1px solid #f3f4f6; /* border-gray-100 */
+  transition: all 0.3s ease; /* transition-all duration-300 */
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: translateY(-4px); /* hover:-translate-y-1 */
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); /* hover:shadow-xl */
+  border-color: var(--primary-gold, #d4af37); /* hover:border-[#d4af37] */
+}
+
+/* Блок изображения */
+.imagePlaceholder {
+  aspect-ratio: 1 / 1; /* Пропорции 1:1 */
+  background-color: #f3f4f6; /* bg-gray-100 */
+  border-top-left-radius: 1rem; /* rounded-t-2xl */
+  border-top-right-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon {
+  color: #c29b57; /* Приглушенный золотой */
+  opacity: 0.5;
+}
+
+/* Текстовый блок */
+.content {
+  padding: 1.25rem; /* p-5 */
+  text-align: center;
+}
+
+.title {
+  color: #0a1128; /* text-[#0a1128] */
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1.125rem;
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  color: #9ca3af; /* Мелкий серый текст (gray-400/500) */
+  font-size: 0.875rem;
+}
