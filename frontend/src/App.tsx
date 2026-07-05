@@ -1,25 +1,51 @@
-import React from 'react';
-import Header from './components/Header';
-import Hero from './components/Hero';
-import Features from './components/Features';
-import Products from './components/Products';
-import AdminDashboard from './components/AdminDashboard';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, HashRouter, useLocation } from 'react-router-dom';
+import { AuthProvider, useAuth } from './utils/AuthContext';
+import AppRoutes from './router';
+import SetPinModal from './components/SetPinModal';
+import DesktopUpdater from './components/DesktopUpdater';
+import { usesHashRouter } from './config/appSurface';
 
-function App() {
-  const token = localStorage.getItem('token');
+function AppContent() {
+  const { user, token } = useAuth();
+  const location = useLocation();
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
 
-  if (token) {
-    return <AdminDashboard />;
-  }
+  useEffect(() => {
+    // Check if PIN code is required
+    if (location.pathname === '/login' || location.pathname === '/') {
+      return;
+    }
+
+    if (token && user) {
+      if (user.has_pin_code === false) {
+        setIsPinModalOpen(true);
+      }
+    }
+  }, [location.pathname, token, user]);
 
   return (
     <>
-      <Header />
-      <Hero />
-      <Features />
-      <Products />
+      <AppRoutes />
+      <SetPinModal
+        isOpen={isPinModalOpen}
+        isClosable={true}
+        onClose={() => setIsPinModalOpen(false)}
+        onSuccess={() => setIsPinModalOpen(false)}
+      />
+      <DesktopUpdater />
     </>
   );
 }
 
-export default App;
+export default function App() {
+  const Router = usesHashRouter ? HashRouter : BrowserRouter;
+
+  return (
+    <AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </AuthProvider>
+  );
+}
