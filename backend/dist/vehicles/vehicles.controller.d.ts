@@ -25,9 +25,10 @@ export declare class VehiclesController {
     }>;
     findOne(id: number): Promise<({
         driver: {
-            email: string;
             id: number;
+            email: string;
             login: string | null;
+            clientId: number | null;
             passwordHash: string;
             name: string | null;
             phone: string | null;

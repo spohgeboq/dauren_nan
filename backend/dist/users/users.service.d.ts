@@ -4,8 +4,8 @@ export declare class UsersService {
     private prisma;
     constructor(prisma: PrismaService);
     findAll(role?: string): Promise<{
-        email: string;
         id: number;
+        email: string;
         login: string | null;
         name: string | null;
         phone: string | null;
@@ -15,8 +15,8 @@ export declare class UsersService {
         createdAt: Date;
     }[]>;
     findOne(id: number): Promise<{
-        email: string;
         id: number;
+        email: string;
         login: string | null;
         name: string | null;
         phone: string | null;
@@ -26,8 +26,8 @@ export declare class UsersService {
         createdAt: Date;
     } | null>;
     create(dto: CreateUserDto): Promise<{
-        email: string;
         id: number;
+        email: string;
         login: string | null;
         name: string | null;
         phone: string | null;
@@ -36,8 +36,8 @@ export declare class UsersService {
         isOnShift: boolean;
     }>;
     update(id: number, dto: UpdateUserDto): Promise<{
-        email: string;
         id: number;
+        email: string;
         login: string | null;
         name: string | null;
         phone: string | null;
@@ -46,9 +46,10 @@ export declare class UsersService {
         isOnShift: boolean;
     }>;
     remove(id: number): Promise<{
-        email: string;
         id: number;
+        email: string;
         login: string | null;
+        clientId: number | null;
         passwordHash: string;
         name: string | null;
         phone: string | null;

@@ -20,6 +20,7 @@ import { PosModule } from './pos/pos.module';
 import { BakerModule } from './baker/baker.module';
 import { CashierModule } from './cashier/cashier.module';
 import { CourierModule } from './courier/courier.module';
+import { ClientWorkspaceModule } from './client-workspace/client-workspace.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { CourierModule } from './courier/courier.module';
     BakerModule,
     CashierModule,
     CourierModule,
+    ClientWorkspaceModule,
   ],
 })
 export class AppModule {}

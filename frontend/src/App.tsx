@@ -8,6 +8,8 @@ import BakerWorkspace from './components/BakerWorkspace/BakerWorkspace';
 import CashierWorkspace from './components/CashierWorkspace/CashierWorkspace';
 import CourierWorkspace from './components/CourierWorkspace/CourierWorkspace';
 
+import ClientWorkspace from './components/ClientWorkspace/ClientWorkspace';
+
 function App() {
   const token = localStorage.getItem('token');
   const userStr = localStorage.getItem('user');
@@ -31,6 +33,9 @@ function App() {
     }
     if (userRole === 'DRIVER') {
       return <CourierWorkspace />;
+    }
+    if (userRole === 'CLIENT') {
+      return <ClientWorkspace />;
     }
     // Для ADMIN, MANAGER и других пока показываем AdminDashboard
     return <AdminDashboard />;

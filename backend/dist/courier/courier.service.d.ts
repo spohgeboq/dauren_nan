@@ -28,6 +28,7 @@ export declare class CourierService {
             })[];
         } & {
             id: number;
+            clientId: number | null;
             status: import(".prisma/client").$Enums.DeliveryOrderStatus;
             createdAt: Date;
             driverId: number | null;

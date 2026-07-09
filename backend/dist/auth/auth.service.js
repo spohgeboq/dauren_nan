@@ -40,6 +40,7 @@ let AuthService = class AuthService {
                 email: user.email,
                 name: user.name,
                 role: user.role,
+                clientId: user.clientId,
             },
         };
     }

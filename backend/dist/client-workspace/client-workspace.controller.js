@@ -1,0 +1,90 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ClientWorkspaceController = void 0;
+const common_1 = require("@nestjs/common");
+const client_workspace_service_1 = require("./client-workspace.service");
+const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+let ClientWorkspaceController = class ClientWorkspaceController {
+    constructor(service) {
+        this.service = service;
+    }
+    async getProfile(req) {
+        return this.service.getProfile(req.user.sub);
+    }
+    async getProducts() {
+        return this.service.getProducts();
+    }
+    async getActiveOrder(req) {
+        return this.service.getActiveOrder(req.user.sub);
+    }
+    async getOrderHistory(req) {
+        return this.service.getOrderHistory(req.user.sub);
+    }
+    async getLastOrder(req) {
+        return this.service.getLastOrder(req.user.sub);
+    }
+    async createOrder(req, body) {
+        return this.service.createOrder(req.user.sub, body.items, body.paymentMethod);
+    }
+};
+exports.ClientWorkspaceController = ClientWorkspaceController;
+__decorate([
+    (0, common_1.Get)('profile'),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], ClientWorkspaceController.prototype, "getProfile", null);
+__decorate([
+    (0, common_1.Get)('products'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], ClientWorkspaceController.prototype, "getProducts", null);
+__decorate([
+    (0, common_1.Get)('active-order'),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], ClientWorkspaceController.prototype, "getActiveOrder", null);
+__decorate([
+    (0, common_1.Get)('orders'),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], ClientWorkspaceController.prototype, "getOrderHistory", null);
+__decorate([
+    (0, common_1.Get)('orders/last'),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], ClientWorkspaceController.prototype, "getLastOrder", null);
+__decorate([
+    (0, common_1.Post)('orders'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], ClientWorkspaceController.prototype, "createOrder", null);
+exports.ClientWorkspaceController = ClientWorkspaceController = __decorate([
+    (0, common_1.Controller)('client-workspace'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __metadata("design:paramtypes", [client_workspace_service_1.ClientWorkspaceService])
+], ClientWorkspaceController);
+//# sourceMappingURL=client-workspace.controller.js.map

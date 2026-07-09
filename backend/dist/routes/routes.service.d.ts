@@ -20,9 +20,9 @@ export declare class RoutesService {
         } | null;
         points: {
             id: number;
+            clientId: number | null;
             status: import(".prisma/client").$Enums.PointStatus;
             sortOrder: number;
-            clientId: number | null;
             storeName: string;
             time: string | null;
             totalSum: number;
@@ -60,9 +60,10 @@ export declare class RoutesService {
             routeId: number;
         })[];
         driver: {
-            email: string;
             id: number;
+            email: string;
             login: string | null;
+            clientId: number | null;
             passwordHash: string;
             name: string | null;
             phone: string | null;
@@ -75,9 +76,9 @@ export declare class RoutesService {
         } | null;
         points: {
             id: number;
+            clientId: number | null;
             status: import(".prisma/client").$Enums.PointStatus;
             sortOrder: number;
-            clientId: number | null;
             storeName: string;
             time: string | null;
             totalSum: number;
@@ -127,9 +128,10 @@ export declare class RoutesService {
             routeId: number;
         })[];
         driver: {
-            email: string;
             id: number;
+            email: string;
             login: string | null;
+            clientId: number | null;
             passwordHash: string;
             name: string | null;
             phone: string | null;
@@ -142,9 +144,9 @@ export declare class RoutesService {
         } | null;
         points: {
             id: number;
+            clientId: number | null;
             status: import(".prisma/client").$Enums.PointStatus;
             sortOrder: number;
-            clientId: number | null;
             storeName: string;
             time: string | null;
             totalSum: number;
@@ -161,9 +163,9 @@ export declare class RoutesService {
     }>;
     updatePointStatus(routeId: number, pointId: number, status: string): Promise<{
         id: number;
+        clientId: number | null;
         status: import(".prisma/client").$Enums.PointStatus;
         sortOrder: number;
-        clientId: number | null;
         storeName: string;
         time: string | null;
         totalSum: number;

@@ -4,80 +4,80 @@ export declare class ClientsService {
     private prisma;
     constructor(prisma: PrismaService);
     findAll(route?: string, debtorsOnly?: boolean): Promise<{
-        email: string | null;
         id: number;
+        email: string | null;
         name: string;
         phone: string | null;
         createdAt: Date;
         updatedAt: Date;
         type: string;
         ownerName: string | null;
-        deliveryTime: string | null;
         route: string | null;
         balance: number;
+        deliveryTime: string | null;
     }[]>;
     findOne(id: number): Promise<({
         orders: {
             id: number;
+            clientId: number;
             status: import(".prisma/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
             deliveryTime: string | null;
-            clientId: number;
             deliveryDate: Date;
             total: number;
         }[];
     } & {
-        email: string | null;
         id: number;
+        email: string | null;
         name: string;
         phone: string | null;
         createdAt: Date;
         updatedAt: Date;
         type: string;
         ownerName: string | null;
-        deliveryTime: string | null;
         route: string | null;
         balance: number;
+        deliveryTime: string | null;
     }) | null>;
     create(dto: CreateClientDto): Promise<{
-        email: string | null;
         id: number;
+        email: string | null;
         name: string;
         phone: string | null;
         createdAt: Date;
         updatedAt: Date;
         type: string;
         ownerName: string | null;
-        deliveryTime: string | null;
         route: string | null;
         balance: number;
+        deliveryTime: string | null;
     }>;
     update(id: number, dto: UpdateClientDto): Promise<{
-        email: string | null;
         id: number;
+        email: string | null;
         name: string;
         phone: string | null;
         createdAt: Date;
         updatedAt: Date;
         type: string;
         ownerName: string | null;
-        deliveryTime: string | null;
         route: string | null;
         balance: number;
+        deliveryTime: string | null;
     }>;
     remove(id: number): Promise<{
-        email: string | null;
         id: number;
+        email: string | null;
         name: string;
         phone: string | null;
         createdAt: Date;
         updatedAt: Date;
         type: string;
         ownerName: string | null;
-        deliveryTime: string | null;
         route: string | null;
         balance: number;
+        deliveryTime: string | null;
     }>;
     getStats(): Promise<{
         activeCount: number;

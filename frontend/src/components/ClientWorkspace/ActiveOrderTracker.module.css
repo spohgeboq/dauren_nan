@@ -1,0 +1,203 @@
+.card, .emptyCard {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.emptyCard {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #64748b;
+}
+
+.emptyIcon {
+  color: #cbd5e1;
+  margin-bottom: 1rem;
+}
+
+.emptyCard h3 {
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #0f172a;
+}
+
+.time {
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.statusTracker {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 2;
+  color: #94a3b8;
+}
+
+.stepIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.stepLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.step.active {
+  color: #f59e0b;
+}
+
+.step.active .stepIcon {
+  background: #f59e0b;
+  color: white;
+  box-shadow: 0 0 0 4px #fef3c7;
+}
+
+.step.completed {
+  color: #10b981;
+}
+
+.step.completed .stepIcon {
+  background: #10b981;
+  color: white;
+}
+
+.line {
+  flex: 1;
+  height: 2px;
+  background: #e2e8f0;
+  margin: 0 10px;
+  margin-bottom: 20px;
+  z-index: 1;
+}
+
+.statusBanner {
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  color: #334155;
+  margin-bottom: 1.5rem;
+}
+
+.courierCard {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.courierAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #e0e7ff;
+  color: #4f46e5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.courierInfo {
+  flex: 1;
+}
+
+.courierName {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.courierRole {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.callBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #10b981;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: background 0.2s;
+}
+
+.callBtn:hover {
+  background: #059669;
+}
+
+.orderSummary {
+  margin-top: 1rem;
+}
+
+.orderSummary h3 {
+  font-size: 1rem;
+  color: #1e293b;
+  margin-bottom: 1rem;
+}
+
+.itemList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem 0;
+}
+
+.itemRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed #e2e8f0;
+  color: #475569;
+  font-size: 0.875rem;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.5rem;
+  font-size: 1.125rem;
+  color: #0f172a;
+}

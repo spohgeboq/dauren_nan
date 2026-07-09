@@ -108,6 +108,10 @@ model User {
   productionBatches ProductionBatch[]
   defects           DefectLog[]
   deliveryOrders    DeliveryOrder[]
+
+  // Client workspace relation
+  clientId     Int?            @unique
+  client       Client?         @relation(fields: [clientId], references: [id])
 }
 
 // ─── Categories ─────────────────────────────────────────
@@ -171,6 +175,8 @@ model Client {
 
   orders       Order[]
   routePoints  RoutePoint[]
+  user         User?
+  deliveryOrders DeliveryOrder[]
 }
 
 // ─── Orders ─────────────────────────────────────────────
@@ -477,6 +483,8 @@ model DeliveryOrder {
   paymentMethod String?             // "CASH", "CARD", "QR", "DEBT"
   driverId      Int?
   driver        User?               @relation(fields: [driverId], references: [id])
+  clientId      Int?
+  client        Client?             @relation(fields: [clientId], references: [id])
   createdAt     DateTime            @default(now())
   items         DeliveryOrderItem[]
 }

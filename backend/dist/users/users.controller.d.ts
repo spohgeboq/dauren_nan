@@ -4,8 +4,8 @@ export declare class UsersController {
     private usersService;
     constructor(usersService: UsersService);
     findAll(role?: string): Promise<{
-        email: string;
         id: number;
+        email: string;
         login: string | null;
         name: string | null;
         phone: string | null;
@@ -15,8 +15,8 @@ export declare class UsersController {
         createdAt: Date;
     }[]>;
     findOne(id: number): Promise<{
-        email: string;
         id: number;
+        email: string;
         login: string | null;
         name: string | null;
         phone: string | null;
@@ -26,8 +26,8 @@ export declare class UsersController {
         createdAt: Date;
     } | null>;
     create(dto: CreateUserDto): Promise<{
-        email: string;
         id: number;
+        email: string;
         login: string | null;
         name: string | null;
         phone: string | null;
@@ -36,8 +36,8 @@ export declare class UsersController {
         isOnShift: boolean;
     }>;
     update(id: number, dto: UpdateUserDto): Promise<{
-        email: string;
         id: number;
+        email: string;
         login: string | null;
         name: string | null;
         phone: string | null;
@@ -46,9 +46,10 @@ export declare class UsersController {
         isOnShift: boolean;
     }>;
     remove(id: number): Promise<{
-        email: string;
         id: number;
+        email: string;
         login: string | null;
+        clientId: number | null;
         passwordHash: string;
         name: string | null;
         phone: string | null;

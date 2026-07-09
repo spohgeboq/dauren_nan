@@ -21,27 +21,27 @@ export declare class OrdersService {
         })[];
     } & {
         id: number;
+        clientId: number;
         status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
         deliveryTime: string | null;
-        clientId: number;
         deliveryDate: Date;
         total: number;
     })[]>;
     findOne(id: number): Promise<({
         client: {
-            email: string | null;
             id: number;
+            email: string | null;
             name: string;
             phone: string | null;
             createdAt: Date;
             updatedAt: Date;
             type: string;
             ownerName: string | null;
-            deliveryTime: string | null;
             route: string | null;
             balance: number;
+            deliveryTime: string | null;
         };
         items: ({
             product: {
@@ -67,11 +67,11 @@ export declare class OrdersService {
         })[];
     } & {
         id: number;
+        clientId: number;
         status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
         deliveryTime: string | null;
-        clientId: number;
         deliveryDate: Date;
         total: number;
     }) | null>;
@@ -85,17 +85,17 @@ export declare class OrdersService {
         }[];
     }): Promise<{
         client: {
-            email: string | null;
             id: number;
+            email: string | null;
             name: string;
             phone: string | null;
             createdAt: Date;
             updatedAt: Date;
             type: string;
             ownerName: string | null;
-            deliveryTime: string | null;
             route: string | null;
             balance: number;
+            deliveryTime: string | null;
         };
         items: ({
             product: {
@@ -121,21 +121,21 @@ export declare class OrdersService {
         })[];
     } & {
         id: number;
+        clientId: number;
         status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
         deliveryTime: string | null;
-        clientId: number;
         deliveryDate: Date;
         total: number;
     }>;
     updateStatus(id: number, status: string): Promise<{
         id: number;
+        clientId: number;
         status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
         deliveryTime: string | null;
-        clientId: number;
         deliveryDate: Date;
         total: number;
     }>;
