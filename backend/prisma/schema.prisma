@@ -7,6 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─── Enums ───────────────────────────────────────────────
+
 enum Role {
   ADMIN
   BAKER
@@ -15,12 +17,399 @@ enum Role {
   CLIENT
 }
 
+enum EmployeeStatus {
+  ACTIVE
+  FIRED
+}
+
+enum OrderStatus {
+  NEW
+  ACCEPTED
+  CANCELLED
+}
+
+enum RouteStatus {
+  BUILDING
+  IN_TRANSIT
+  COMPLETED
+}
+
+enum PointStatus {
+  PENDING
+  DELIVERED
+  CANCELLED
+}
+
+enum PurchaseStatus {
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+enum VehicleStatus {
+  ACTIVE
+  REPAIR
+}
+
+enum BatchType {
+  READY
+  DEFECT
+}
+
+enum PaymentMethod {
+  CASH
+  KASPI
+}
+
+enum ExpenseCategory {
+  RENT
+  SALARY
+  FUEL
+  REPAIR
+  RAW_MATERIAL
+  OTHER
+}
+
+// ─── Users / Employees ──────────────────────────────────
+
 model User {
-  id           Int      @id @default(autoincrement())
-  email        String   @unique
+  id           Int             @id @default(autoincrement())
+  email        String          @unique
   passwordHash String
   name         String?
-  role         Role     @default(CLIENT)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  phone        String?
+  login        String?         @unique
+  pin          String?
+  role         Role            @default(CLIENT)
+  status       EmployeeStatus  @default(ACTIVE)
+  isOnShift    Boolean         @default(false)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  // Relations
+  shifts       Shift[]
+  sales        Sale[]
+  routes       DeliveryRoute[]
+  vehicles     Vehicle[]       @relation("DriverVehicle")
+}
+
+// ─── Categories ─────────────────────────────────────────
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String
+  iconName  String    @default("Flame")
+  sortOrder Int       @default(0)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  products  Product[]
+}
+
+// ─── Products ───────────────────────────────────────────
+
+model Product {
+  id         Int       @id @default(autoincrement())
+  sku        String    @unique
+  name       String
+  categoryId Int
+  weight     Int       @default(0)
+  cost       Float     @default(0)
+  price      Float     @default(0)
+  isActive   Boolean   @default(true)
+  imageUrl   String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  category   Category  @relation(fields: [categoryId], references: [id])
+
+  orderItems      OrderItem[]
+  saleItems       SaleItem[]
+  loadItems       LoadItem[]
+  recipe          Recipe?
+  productionTasks ProductionTask[]
+}
+
+// ─── Clients ────────────────────────────────────────────
+
+model Client {
+  id           Int       @id @default(autoincrement())
+  name         String
+  type         String    @default("Магазин у дома")
+  ownerName    String?
+  phone        String?
+  email        String?
+  route        String?
+  balance      Float     @default(0)
+  deliveryTime String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  orders       Order[]
+  routePoints  RoutePoint[]
+}
+
+// ─── Orders ─────────────────────────────────────────────
+
+model Order {
+  id           Int          @id @default(autoincrement())
+  clientId     Int
+  deliveryDate DateTime     @default(now())
+  deliveryTime String?
+  status       OrderStatus  @default(NEW)
+  total        Float        @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  client       Client       @relation(fields: [clientId], references: [id])
+  items        OrderItem[]
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int     @default(1)
+  price     Float   @default(0)
+
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+// ─── Delivery Routes ────────────────────────────────────
+
+model DeliveryRoute {
+  id        Int          @id @default(autoincrement())
+  name      String
+  driverId  Int?
+  status    RouteStatus  @default(BUILDING)
+  date      DateTime     @default(now())
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  driver    User?        @relation(fields: [driverId], references: [id])
+  points    RoutePoint[]
+  loadItems LoadItem[]
+}
+
+model RoutePoint {
+  id        Int          @id @default(autoincrement())
+  routeId   Int
+  clientId  Int?
+  storeName String
+  time      String?
+  totalSum  Float        @default(0)
+  status    PointStatus  @default(PENDING)
+  sortOrder Int          @default(0)
+
+  route     DeliveryRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  client    Client?       @relation(fields: [clientId], references: [id])
+}
+
+model LoadItem {
+  id        Int           @id @default(autoincrement())
+  routeId   Int
+  productId Int
+  quantity  Int           @default(0)
+
+  route     DeliveryRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  product   Product       @relation(fields: [productId], references: [id])
+}
+
+// ─── Inventory (Raw Materials Stock) ────────────────────
+
+model InventoryItem {
+  id              Int      @id @default(autoincrement())
+  name            String
+  currentStock    Float    @default(0)
+  minLimit        Float    @default(0)
+  costPerUnit     Float    @default(0)
+  baseUnit        String   @default("кг")
+  purchaseUnit    String   @default("Мешок")
+  conversionRatio Float    @default(1)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  purchaseItems   PurchaseItem[]
+}
+
+// ─── Raw Materials for Recipes ──────────────────────────
+
+model RawMaterial {
+  id          Int     @id @default(autoincrement())
+  name        String
+  unit        String  @default("г")
+  costPerUnit Float   @default(0)
+
+  recipeIngredients RecipeIngredient[]
+}
+
+// ─── Recipes ────────────────────────────────────────────
+
+model Recipe {
+  id        Int                @id @default(autoincrement())
+  productId Int                @unique
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  product     Product          @relation(fields: [productId], references: [id])
+  ingredients RecipeIngredient[]
+}
+
+model RecipeIngredient {
+  id            Int         @id @default(autoincrement())
+  recipeId      Int
+  rawMaterialId Int
+  amount        Float       @default(0)
+
+  recipe        Recipe      @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  rawMaterial   RawMaterial @relation(fields: [rawMaterialId], references: [id])
+}
+
+// ─── Purchases ──────────────────────────────────────────
+
+model Purchase {
+  id        Int             @id @default(autoincrement())
+  date      DateTime        @default(now())
+  supplier  String?
+  totalSum  Float           @default(0)
+  status    PurchaseStatus  @default(IN_TRANSIT)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  items     PurchaseItem[]
+}
+
+model PurchaseItem {
+  id              Int           @id @default(autoincrement())
+  purchaseId      Int
+  inventoryItemId Int?
+  name            String
+  orderedQty      Float         @default(0)
+  unit            String        @default("шт")
+
+  purchase        Purchase      @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  inventoryItem   InventoryItem? @relation(fields: [inventoryItemId], references: [id])
+}
+
+// ─── Expenses ───────────────────────────────────────────
+
+model Expense {
+  id            Int              @id @default(autoincrement())
+  date          DateTime         @default(now())
+  category      ExpenseCategory  @default(OTHER)
+  description   String?
+  paymentMethod PaymentMethod    @default(CASH)
+  amount        Float            @default(0)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+
+// ─── Vehicles (Fleet) ───────────────────────────────────
+
+model Vehicle {
+  id              Int            @id @default(autoincrement())
+  brandModel      String
+  licensePlate    String         @unique
+  capacityTrays   Int            @default(0)
+  driverId        Int?
+  status          VehicleStatus  @default(ACTIVE)
+  fuelConsumption Float          @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  driver          User?          @relation("DriverVehicle", fields: [driverId], references: [id])
+}
+
+// ─── Roles & Permissions ────────────────────────────────
+
+model CustomRole {
+  id          Int              @id @default(autoincrement())
+  name        String           @unique
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  permissions RolePermission[]
+}
+
+model RolePermission {
+  id         Int        @id @default(autoincrement())
+  roleId     Int
+  module     String
+  canView    Boolean    @default(false)
+  canCreate  Boolean    @default(false)
+  canEdit    Boolean    @default(false)
+  canDelete  Boolean    @default(false)
+
+  role       CustomRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, module])
+}
+
+// ─── Production ─────────────────────────────────────────
+
+model ProductionTask {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  planned   Int      @default(0)
+  completed Int      @default(0)
+  date      DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product   Product  @relation(fields: [productId], references: [id])
+  batches   BatchLog[]
+}
+
+model BatchLog {
+  id          Int            @id @default(autoincrement())
+  taskId      Int
+  time        String
+  productName String
+  quantity    Int            @default(0)
+  type        BatchType      @default(READY)
+  createdAt   DateTime       @default(now())
+
+  task        ProductionTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+// ─── POS (Point of Sale) ────────────────────────────────
+
+model Shift {
+  id         Int       @id @default(autoincrement())
+  userId     Int
+  startCash  Float     @default(0)
+  endCash    Float?
+  isOpen     Boolean   @default(true)
+  openedAt   DateTime  @default(now())
+  closedAt   DateTime?
+
+  user       User      @relation(fields: [userId], references: [id])
+  sales      Sale[]
+}
+
+model Sale {
+  id            Int           @id @default(autoincrement())
+  shiftId       Int
+  userId        Int
+  total         Float         @default(0)
+  paymentMethod PaymentMethod @default(CASH)
+  createdAt     DateTime      @default(now())
+
+  shift         Shift         @relation(fields: [shiftId], references: [id])
+  user          User          @relation(fields: [userId], references: [id])
+  items         SaleItem[]
+}
+
+model SaleItem {
+  id        Int     @id @default(autoincrement())
+  saleId    Int
+  productId Int
+  quantity  Int     @default(1)
+  price     Float   @default(0)
+
+  sale      Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
 }

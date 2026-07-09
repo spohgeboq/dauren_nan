@@ -1,0 +1,24 @@
+import { Controller, Get, Post, Patch, Param, Body, UseGuards, ParseIntPipe } from '@nestjs/common';
+import { InventoryService } from './inventory.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+
+@Controller('inventory')
+@UseGuards(JwtAuthGuard)
+export class InventoryController {
+  constructor(private service: InventoryService) {}
+
+  @Get()
+  findAll() { return this.service.findAll(); }
+
+  @Get('stats')
+  getStats() { return this.service.getStats(); }
+
+  @Get(':id')
+  findOne(@Param('id', ParseIntPipe) id: number) { return this.service.findOne(id); }
+
+  @Post()
+  create(@Body() dto: any) { return this.service.create(dto); }
+
+  @Patch(':id')
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: any) { return this.service.update(id, dto); }
+}
