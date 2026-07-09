@@ -6,6 +6,31 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Seeding database...');
 
+  // Clean up database tables in order
+  console.log('🧹 Cleaning up database tables...');
+  await prisma.rolePermission.deleteMany({});
+  await prisma.customRole.deleteMany({});
+  await prisma.defectLog.deleteMany({});
+  await prisma.productionBatch.deleteMany({});
+  await prisma.deliveryOrderItem.deleteMany({});
+  await prisma.deliveryOrder.deleteMany({});
+  await prisma.saleItem.deleteMany({});
+  await prisma.sale.deleteMany({});
+  await prisma.shift.deleteMany({});
+  await prisma.batchLog.deleteMany({});
+  await prisma.productionTask.deleteMany({});
+  await prisma.vehicle.deleteMany({});
+  await prisma.expense.deleteMany({});
+  await prisma.recipeIngredient.deleteMany({});
+  await prisma.recipe.deleteMany({});
+  await prisma.rawMaterial.deleteMany({});
+  await prisma.inventoryItem.deleteMany({});
+  await prisma.client.deleteMany({});
+  await prisma.product.deleteMany({});
+  await prisma.category.deleteMany({});
+  await prisma.user.deleteMany({});
+  console.log('🧹 Cleaned up all tables.');
+
   // ─── 1. Admin User ────────────────────────────────────
   const salt = await bcrypt.genSalt(10);
   const adminHash = await bcrypt.hash('admin12', salt);
@@ -26,7 +51,34 @@ async function main() {
   });
   console.log('✅ Admin:', admin.email);
 
-  // ─── 2. Employees ─────────────────────────────────────
+  // ─── 2. Workspace Users ───────────────────────────────
+  const workspacesUsers = [
+    { email: 'baker@gmail.com', password: 'baker12', name: 'Тестовый Пекарь', login: 'baker', role: 'BAKER' as const },
+    { email: 'cashier@gmail.com', password: 'cashier12', name: 'Главный Кассир', login: 'cashier', role: 'CASHIER' as const },
+    { email: 'driver@gmail.com', password: 'driver12', name: 'Главный Курьер', login: 'driver', role: 'DRIVER' as const },
+  ];
+
+  const seededUsers: any[] = [];
+  for (const wu of workspacesUsers) {
+    const hash = await bcrypt.hash(wu.password, salt);
+    const u = await prisma.user.upsert({
+      where: { email: wu.email },
+      update: {},
+      create: {
+        email: wu.email,
+        passwordHash: hash,
+        name: wu.name,
+        login: wu.login,
+        role: wu.role,
+        status: 'ACTIVE',
+        isOnShift: true,
+      },
+    });
+    seededUsers.push(u);
+  }
+  console.log('✅ Workspace Users seeded');
+
+  // ─── 3. Employees ─────────────────────────────────────
   const employees = [
     { email: 'madina@daurennan.kz', name: 'Мадина Саматова', phone: '+7 705 222 3344', login: 'madina_c', role: 'CASHIER' as const, isOnShift: true },
     { email: 'bauyrzhan@daurennan.kz', name: 'Бауыржан Оспанов', phone: '+7 707 333 4455', login: 'b_ospanov', role: 'BAKER' as const, isOnShift: true },
@@ -44,7 +96,7 @@ async function main() {
   }
   console.log('✅ Employees created');
 
-  // ─── 3. Categories ────────────────────────────────────
+  // ─── 4. Categories ────────────────────────────────────
   const categories = [
     { name: 'Тандырные лепешки', iconName: 'Flame', sortOrder: 1 },
     { name: 'Формовой хлеб', iconName: 'Wheat', sortOrder: 2 },
@@ -59,28 +111,32 @@ async function main() {
   }
   console.log('✅ Categories created');
 
-  // ─── 4. Products ──────────────────────────────────────
+  // ─── 5. Products ──────────────────────────────────────
   const products = [
-    { sku: 'TBN-001', name: 'Таба нан', categoryId: createdCategories[0].id, weight: 350, cost: 70, price: 150 },
-    { sku: 'UYN-002', name: 'Уй наны', categoryId: createdCategories[0].id, weight: 400, cost: 80, price: 170 },
-    { sku: 'PTR-003', name: 'Патыр нан', categoryId: createdCategories[0].id, weight: 300, cost: 65, price: 140 },
-    { sku: 'BTN-004', name: 'Батон нарезной', categoryId: createdCategories[1].id, weight: 450, cost: 90, price: 200 },
-    { sku: 'HLB-005', name: 'Хлеб Пшеничный', categoryId: createdCategories[1].id, weight: 500, cost: 60, price: 150 },
-    { sku: 'HLB-006', name: 'Хлеб Бородинский', categoryId: createdCategories[1].id, weight: 400, cost: 75, price: 180 },
-    { sku: 'KRS-007', name: 'Круассан классический', categoryId: createdCategories[2].id, weight: 80, cost: 120, price: 350 },
-    { sku: 'SNB-008', name: 'Синнабон', categoryId: createdCategories[2].id, weight: 120, cost: 180, price: 550 },
-    { sku: 'BLM-009', name: 'Булочка с маком', categoryId: createdCategories[2].id, weight: 100, cost: 45, price: 120 },
-    { sku: 'SMS-010', name: 'Самса с говядиной', categoryId: createdCategories[3].id, weight: 150, cost: 100, price: 350 },
+    { sku: 'TBN-001', name: 'Таба нан', categoryId: createdCategories[0].id, weight: 350, cost: 70, price: 200, stock: 15 },
+    { sku: 'UYN-002', name: 'Уй наны', categoryId: createdCategories[0].id, weight: 400, cost: 80, price: 150, stock: 10 },
+    { sku: 'PTR-003', name: 'Патыр нан', categoryId: createdCategories[0].id, weight: 300, cost: 65, price: 250, stock: 8 },
+    { sku: 'BTN-004', name: 'Батон нарезной', categoryId: createdCategories[1].id, weight: 450, cost: 90, price: 180, stock: 20 },
+    { sku: 'HLB-005', name: 'Хлеб Пшеничный', categoryId: createdCategories[1].id, weight: 500, cost: 60, price: 160, stock: 30 },
+    { sku: 'KRS-007', name: 'Круассан классический', categoryId: createdCategories[2].id, weight: 80, cost: 120, price: 350, stock: 5 },
+  ];
+
+  // Additional products from remote cashier lists
+  const additionalProducts = [
+    { sku: 'ROM-008', name: 'Ромашка нан', categoryId: createdCategories[1].id, weight: 350, cost: 75, price: 180, stock: 12 },
+    { sku: 'LEP-009', name: 'Лепешка нан', categoryId: createdCategories[0].id, weight: 300, cost: 80, price: 220, stock: 14 },
+    { sku: 'SLP-010', name: 'Серый лепешка', categoryId: createdCategories[0].id, weight: 320, cost: 70, price: 190, stock: 10 },
+    { sku: 'BLK-011', name: 'Булка нан', categoryId: createdCategories[1].id, weight: 400, cost: 65, price: 160, stock: 15 },
   ];
 
   const createdProducts: any[] = [];
-  for (const p of products) {
+  for (const p of [...products, ...additionalProducts]) {
     const prod = await prisma.product.create({ data: p });
     createdProducts.push(prod);
   }
   console.log('✅ Products created');
 
-  // ─── 5. Clients ───────────────────────────────────────
+  // ─── 6. Clients ───────────────────────────────────────
   const clients = [
     { name: 'Продуктовый "Айгерим"', type: 'Магазин у дома', ownerName: 'Айгерим', phone: '+7 (701) 123-45-67', email: 'aigerim@mail.ru', route: 'Маршрут #1 (Центр)', balance: -15500, deliveryTime: '08:00 - 10:00' },
     { name: 'Кофейня "Зерно"', type: 'Кафе', ownerName: 'Данияр', phone: '+7 (705) 987-65-43', email: 'zerno@cafe.kz', route: 'Маршрут #2 (Юг)', balance: 0, deliveryTime: '07:00 - 08:30' },
@@ -94,7 +150,7 @@ async function main() {
   }
   console.log('✅ Clients created');
 
-  // ─── 6. Inventory (Raw Materials Stock) ───────────────
+  // ─── 7. Inventory (Warehouse Stock) ───────────────
   const inventoryItems = [
     { name: 'Мука высший сорт', currentStock: 450, minLimit: 500, costPerUnit: 250, baseUnit: 'кг', purchaseUnit: 'Мешок', conversionRatio: 50 },
     { name: 'Мука 1 сорт', currentStock: 1200, minLimit: 1000, costPerUnit: 220, baseUnit: 'кг', purchaseUnit: 'Мешок', conversionRatio: 50 },
@@ -109,16 +165,14 @@ async function main() {
   }
   console.log('✅ Inventory items created');
 
-  // ─── 7. Raw Materials for Recipes ─────────────────────
+  // ─── 8. Raw Materials for Recipes (With Stock) ────────
   const rawMaterials = [
-    { name: 'Мука пшеничная 1 сорт', unit: 'г', costPerUnit: 0.18 },
-    { name: 'Вода очищенная', unit: 'мл', costPerUnit: 0.01 },
-    { name: 'Соль пищевая', unit: 'г', costPerUnit: 0.05 },
-    { name: 'Дрожжи прессованные', unit: 'г', costPerUnit: 0.6 },
-    { name: 'Кунжут белый', unit: 'г', costPerUnit: 1.5 },
-    { name: 'Масло подсолнечное', unit: 'мл', costPerUnit: 0.45 },
-    { name: 'Пакет брендированный', unit: 'шт', costPerUnit: 15 },
-    { name: 'Сахар', unit: 'г', costPerUnit: 0.35 },
+    { name: 'Мука пшеничная', unit: 'кг', costPerUnit: 250, stock: 1000 },
+    { name: 'Вода', unit: 'л', costPerUnit: 0, stock: 500 },
+    { name: 'Дрожжи', unit: 'кг', costPerUnit: 1200, stock: 10 },
+    { name: 'Соль', unit: 'кг', costPerUnit: 80, stock: 50 },
+    { name: 'Масло подсолнечное', unit: 'л', costPerUnit: 750, stock: 25 },
+    { name: 'Сахар', unit: 'кг', costPerUnit: 400, stock: 30 },
   ];
 
   const createdRM: any[] = [];
@@ -128,42 +182,45 @@ async function main() {
   }
   console.log('✅ Raw materials created');
 
-  // ─── 8. Recipes ───────────────────────────────────────
+  // ─── 9. Recipes ───────────────────────────────────────
   // Таба нан recipe
-  await prisma.recipe.create({
-    data: {
-      productId: createdProducts[0].id,
-      ingredients: {
-        create: [
-          { rawMaterialId: createdRM[0].id, amount: 350 },
-          { rawMaterialId: createdRM[1].id, amount: 180 },
-          { rawMaterialId: createdRM[2].id, amount: 6 },
-          { rawMaterialId: createdRM[3].id, amount: 4 },
-          { rawMaterialId: createdRM[5].id, amount: 15 },
-        ],
+  const tabaProduct = createdProducts.find(p => p.name === 'Таба нан');
+  if (tabaProduct) {
+    await prisma.recipe.create({
+      data: {
+        productId: tabaProduct.id,
+        ingredients: {
+          create: [
+            { rawMaterialId: createdRM[0].id, amount: 0.3, quantity: 0.3 }, // 300g flour
+            { rawMaterialId: createdRM[1].id, amount: 0.15, quantity: 0.15 }, // 150ml water
+            { rawMaterialId: createdRM[2].id, amount: 0.005, quantity: 0.005 }, // 5g yeast
+            { rawMaterialId: createdRM[3].id, amount: 0.005, quantity: 0.005 }, // 5g salt
+          ],
+        },
       },
-    },
-  });
+    });
+  }
 
   // Батон нарезной recipe
-  await prisma.recipe.create({
-    data: {
-      productId: createdProducts[3].id,
-      ingredients: {
-        create: [
-          { rawMaterialId: createdRM[0].id, amount: 400 },
-          { rawMaterialId: createdRM[1].id, amount: 200 },
-          { rawMaterialId: createdRM[2].id, amount: 7 },
-          { rawMaterialId: createdRM[3].id, amount: 5 },
-          { rawMaterialId: createdRM[7].id, amount: 15 },
-          { rawMaterialId: createdRM[6].id, amount: 1 },
-        ],
+  const batonProduct = createdProducts.find(p => p.name === 'Батон нарезной');
+  if (batonProduct) {
+    await prisma.recipe.create({
+      data: {
+        productId: batonProduct.id,
+        ingredients: {
+          create: [
+            { rawMaterialId: createdRM[0].id, amount: 0.4, quantity: 0.4 },
+            { rawMaterialId: createdRM[1].id, amount: 0.2, quantity: 0.2 },
+            { rawMaterialId: createdRM[3].id, amount: 0.007, quantity: 0.007 },
+            { rawMaterialId: createdRM[2].id, amount: 0.005, quantity: 0.005 },
+          ],
+        },
       },
-    },
-  });
+    });
+  }
   console.log('✅ Recipes created');
 
-  // ─── 9. Vehicles ──────────────────────────────────────
+  // ─── 10. Vehicles ──────────────────────────────────────
   const vehicles = [
     { brandModel: 'ГАЗель Next', licensePlate: '512 ASD 02', capacityTrays: 120, fuelConsumption: 16, status: 'ACTIVE' as const },
     { brandModel: 'ГАЗель Бизнес', licensePlate: '777 VIP 02', capacityTrays: 100, fuelConsumption: 18.5, status: 'ACTIVE' as const },
@@ -176,7 +233,7 @@ async function main() {
   }
   console.log('✅ Vehicles created');
 
-  // ─── 10. Expenses ─────────────────────────────────────
+  // ─── 11. Expenses ─────────────────────────────────────
   const expenses = [
     { date: new Date('2026-07-04'), category: 'FUEL' as const, description: 'Заправка Газель (045 ABC)', paymentMethod: 'KASPI' as const, amount: 12000 },
     { date: new Date('2026-07-03'), category: 'SALARY' as const, description: 'Аванс пекарям за июль', paymentMethod: 'CASH' as const, amount: 450000 },
@@ -189,7 +246,48 @@ async function main() {
   }
   console.log('✅ Expenses created');
 
-  // ─── 11. Custom Roles ─────────────────────────────────
+  // ─── 12. Courier Delivery Orders ──────────────────────
+  const driverUser = seededUsers.find(u => u.role === 'DRIVER');
+  if (driverUser && tabaProduct && batonProduct) {
+    await prisma.deliveryOrder.create({
+      data: {
+        clientName: 'Магазин "Айгуль"',
+        clientPhone: '+77010001122',
+        address: 'Улица Абая 150',
+        status: 'PENDING',
+        totalAmount: tabaProduct.price * 10 + batonProduct.price * 5,
+        isPaid: false,
+        driverId: driverUser.id,
+        items: {
+          create: [
+            { productId: tabaProduct.id, quantity: 10, price: tabaProduct.price },
+            { productId: batonProduct.id, quantity: 5, price: batonProduct.price }
+          ]
+        }
+      }
+    });
+
+    await prisma.deliveryOrder.create({
+      data: {
+        clientName: 'Мини-маркет "Радость"',
+        clientPhone: '+77053334455',
+        address: 'Улица Сейфуллина 45',
+        status: 'IN_TRANSIT',
+        totalAmount: tabaProduct.price * 20,
+        isPaid: true,
+        paymentMethod: 'CASH',
+        driverId: driverUser.id,
+        items: {
+          create: [
+            { productId: tabaProduct.id, quantity: 20, price: tabaProduct.price }
+          ]
+        }
+      }
+    });
+    console.log('✅ Delivery orders created');
+  }
+
+  // ─── 13. Custom Roles ─────────────────────────────────
   await prisma.customRole.create({
     data: {
       name: 'Старший пекарь',

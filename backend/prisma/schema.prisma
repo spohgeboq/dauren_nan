@@ -70,6 +70,18 @@ enum ExpenseCategory {
   OTHER
 }
 
+enum BatchStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum DeliveryOrderStatus {
+  PENDING
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
 // ─── Users / Employees ──────────────────────────────────
 
 model User {
@@ -91,6 +103,11 @@ model User {
   sales        Sale[]
   routes       DeliveryRoute[]
   vehicles     Vehicle[]       @relation("DriverVehicle")
+  
+  // Baker/Courier workspace relations
+  productionBatches ProductionBatch[]
+  defects           DefectLog[]
+  deliveryOrders    DeliveryOrder[]
 }
 
 // ─── Categories ─────────────────────────────────────────
@@ -129,6 +146,12 @@ model Product {
   loadItems       LoadItem[]
   recipe          Recipe?
   productionTasks ProductionTask[]
+  
+  // Baker/Courier workspace relations
+  productionBatches ProductionBatch[]
+  defects           DefectLog[]
+  deliveryOrderItems DeliveryOrderItem[]
+  stock             Int             @default(0) // Showcase stock (На витрине)
 }
 
 // ─── Clients ────────────────────────────────────────────
@@ -238,9 +261,10 @@ model InventoryItem {
 
 model RawMaterial {
   id          Int     @id @default(autoincrement())
-  name        String
+  name        String  @unique
   unit        String  @default("г")
   costPerUnit Float   @default(0)
+  stock       Float   @default(0) // Raw material stock (Единый склад)
 
   recipeIngredients RecipeIngredient[]
 }
@@ -262,6 +286,7 @@ model RecipeIngredient {
   recipeId      Int
   rawMaterialId Int
   amount        Float       @default(0)
+  quantity      Float       @default(0) // Quantity of raw material for 1 item (for baker)
 
   recipe        Recipe      @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   rawMaterial   RawMaterial @relation(fields: [rawMaterialId], references: [id])
@@ -412,4 +437,56 @@ model SaleItem {
 
   sale      Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
   product   Product @relation(fields: [productId], references: [id])
+}
+
+// ─── Baker Workspace Models ─────────────────────────────
+
+model ProductionBatch {
+  id          Int         @id @default(autoincrement())
+  productId   Int
+  product     Product     @relation(fields: [productId], references: [id])
+  quantity    Int
+  status      BatchStatus @default(IN_PROGRESS)
+  bakerId     Int
+  baker       User        @relation(fields: [bakerId], references: [id])
+  startTime   DateTime    @default(now())
+  endTime     DateTime?
+}
+
+model DefectLog {
+  id          Int      @id @default(autoincrement())
+  productId   Int
+  product     Product  @relation(fields: [productId], references: [id])
+  quantity    Int
+  reason      String?
+  bakerId     Int
+  baker       User     @relation(fields: [bakerId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+// ─── Courier Workspace Models ───────────────────────────
+
+model DeliveryOrder {
+  id            Int                 @id @default(autoincrement())
+  clientName    String
+  clientPhone   String
+  address       String
+  status        DeliveryOrderStatus @default(PENDING)
+  totalAmount   Int
+  isPaid        Boolean             @default(false)
+  paymentMethod String?             // "CASH", "CARD", "QR", "DEBT"
+  driverId      Int?
+  driver        User?               @relation(fields: [driverId], references: [id])
+  createdAt     DateTime            @default(now())
+  items         DeliveryOrderItem[]
+}
+
+model DeliveryOrderItem {
+  id        Int           @id @default(autoincrement())
+  orderId   Int
+  order     DeliveryOrder @relation(fields: [orderId], references: [id])
+  productId Int
+  product   Product       @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Int           // Price per unit at the time of sale
 }
