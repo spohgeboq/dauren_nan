@@ -23,24 +23,48 @@ export class CourierService {
   }
 
   async updateOrderStatus(orderId: number, status: string, paymentMethod?: string) {
-    const order = await this.prisma.deliveryOrder.findUnique({ where: { id: orderId } });
-    if (!order) throw new NotFoundException('Заказ не найден');
+    return this.prisma.$transaction(async (tx) => {
+      const order = await tx.deliveryOrder.findUnique({ where: { id: orderId } });
+      if (!order) throw new NotFoundException('Заказ не найден');
 
-    // Map status string to DeliveryOrderStatus enum
-    let mappedStatus: DeliveryOrderStatus = DeliveryOrderStatus.PENDING;
-    if (status === 'IN_TRANSIT') mappedStatus = DeliveryOrderStatus.IN_TRANSIT;
-    if (status === 'DELIVERED') mappedStatus = DeliveryOrderStatus.DELIVERED;
-    if (status === 'CANCELLED') mappedStatus = DeliveryOrderStatus.CANCELLED;
+      // Map status string to DeliveryOrderStatus enum
+      let mappedStatus: DeliveryOrderStatus = DeliveryOrderStatus.PENDING;
+      if (status === 'IN_TRANSIT') mappedStatus = DeliveryOrderStatus.IN_TRANSIT;
+      if (status === 'DELIVERED') mappedStatus = DeliveryOrderStatus.DELIVERED;
+      if (status === 'CANCELLED') mappedStatus = DeliveryOrderStatus.CANCELLED;
 
-    await this.prisma.deliveryOrder.update({
-      where: { id: orderId },
-      data: {
-        status: mappedStatus,
-        paymentMethod: paymentMethod || order.paymentMethod,
-        isPaid: status === 'DELIVERED' ? true : order.isPaid,
-      },
+      const newPaymentMethod = paymentMethod || order.paymentMethod;
+
+      // Determine B2B debt state transitions
+      const wasDebtDelivered = order.status === DeliveryOrderStatus.DELIVERED && order.paymentMethod === 'DEBT';
+      const isDebtDelivered = mappedStatus === DeliveryOrderStatus.DELIVERED && newPaymentMethod === 'DEBT';
+
+      // Update the order status
+      await tx.deliveryOrder.update({
+        where: { id: orderId },
+        data: {
+          status: mappedStatus,
+          paymentMethod: newPaymentMethod,
+          isPaid: mappedStatus === DeliveryOrderStatus.DELIVERED ? true : order.isPaid,
+        },
+      });
+
+      // Update client balance if needed
+      if (order.clientId) {
+        if (!wasDebtDelivered && isDebtDelivered) {
+          await tx.client.update({
+            where: { id: order.clientId },
+            data: { balance: { decrement: order.totalAmount } },
+          });
+        } else if (wasDebtDelivered && !isDebtDelivered) {
+          await tx.client.update({
+            where: { id: order.clientId },
+            data: { balance: { increment: order.totalAmount } },
+          });
+        }
+      }
+
+      return { success: true };
     });
-
-    return { success: true };
   }
 }

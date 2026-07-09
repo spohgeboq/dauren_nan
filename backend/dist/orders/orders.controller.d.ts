@@ -36,17 +36,17 @@ export declare class OrdersController {
     }>;
     findOne(id: number): Promise<({
         client: {
-            id: number;
             email: string | null;
+            id: number;
             name: string;
             phone: string | null;
             createdAt: Date;
             updatedAt: Date;
             type: string;
             ownerName: string | null;
+            deliveryTime: string | null;
             route: string | null;
             balance: number;
-            deliveryTime: string | null;
         };
         items: ({
             product: {
@@ -90,17 +90,17 @@ export declare class OrdersController {
         }[];
     }): Promise<{
         client: {
-            id: number;
             email: string | null;
+            id: number;
             name: string;
             phone: string | null;
             createdAt: Date;
             updatedAt: Date;
             type: string;
             ownerName: string | null;
+            deliveryTime: string | null;
             route: string | null;
             balance: number;
-            deliveryTime: string | null;
         };
         items: ({
             product: {

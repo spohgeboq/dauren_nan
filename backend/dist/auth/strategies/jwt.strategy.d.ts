@@ -9,6 +9,7 @@ export declare class JwtStrategy extends JwtStrategy_base {
         role: string;
     }): Promise<{
         id: number;
+        sub: number;
         role: string;
     }>;
 }

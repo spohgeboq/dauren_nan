@@ -60,8 +60,8 @@ export declare class RoutesService {
             routeId: number;
         })[];
         driver: {
-            id: number;
             email: string;
+            id: number;
             login: string | null;
             clientId: number | null;
             passwordHash: string;
@@ -128,8 +128,8 @@ export declare class RoutesService {
             routeId: number;
         })[];
         driver: {
-            id: number;
             email: string;
+            id: number;
             login: string | null;
             clientId: number | null;
             passwordHash: string;

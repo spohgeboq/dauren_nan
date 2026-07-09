@@ -4,17 +4,17 @@ export declare class ClientsService {
     private prisma;
     constructor(prisma: PrismaService);
     findAll(route?: string, debtorsOnly?: boolean): Promise<{
-        id: number;
         email: string | null;
+        id: number;
         name: string;
         phone: string | null;
         createdAt: Date;
         updatedAt: Date;
         type: string;
         ownerName: string | null;
+        deliveryTime: string | null;
         route: string | null;
         balance: number;
-        deliveryTime: string | null;
     }[]>;
     findOne(id: number): Promise<({
         orders: {
@@ -28,56 +28,56 @@ export declare class ClientsService {
             total: number;
         }[];
     } & {
-        id: number;
         email: string | null;
+        id: number;
         name: string;
         phone: string | null;
         createdAt: Date;
         updatedAt: Date;
         type: string;
         ownerName: string | null;
+        deliveryTime: string | null;
         route: string | null;
         balance: number;
-        deliveryTime: string | null;
     }) | null>;
     create(dto: CreateClientDto): Promise<{
-        id: number;
         email: string | null;
+        id: number;
         name: string;
         phone: string | null;
         createdAt: Date;
         updatedAt: Date;
         type: string;
         ownerName: string | null;
+        deliveryTime: string | null;
         route: string | null;
         balance: number;
-        deliveryTime: string | null;
     }>;
     update(id: number, dto: UpdateClientDto): Promise<{
-        id: number;
         email: string | null;
+        id: number;
         name: string;
         phone: string | null;
         createdAt: Date;
         updatedAt: Date;
         type: string;
         ownerName: string | null;
+        deliveryTime: string | null;
         route: string | null;
         balance: number;
-        deliveryTime: string | null;
     }>;
     remove(id: number): Promise<{
-        id: number;
         email: string | null;
+        id: number;
         name: string;
         phone: string | null;
         createdAt: Date;
         updatedAt: Date;
         type: string;
         ownerName: string | null;
+        deliveryTime: string | null;
         route: string | null;
         balance: number;
-        deliveryTime: string | null;
     }>;
     getStats(): Promise<{
         activeCount: number;

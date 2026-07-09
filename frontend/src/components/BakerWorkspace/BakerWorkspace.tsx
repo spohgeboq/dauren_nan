@@ -19,13 +19,17 @@ const BakerWorkspace: React.FC = () => {
 
   const fetchDashboard = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/baker/dashboard');
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:5000/api/baker/dashboard', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       if (res.ok) {
         const data = await res.json();
         setProducts(data.products);
         setRawMaterials(data.rawMaterials);
         setActiveBatches(data.activeBatches.map((b: any) => ({
           id: b.id,
+          productId: b.productId,
           name: b.product.name,
           quantity: b.quantity,
           createdAt: b.startTime
@@ -60,9 +64,13 @@ const BakerWorkspace: React.FC = () => {
 
   const handleCompleteBatch = async (id: number) => {
     try {
+      const token = localStorage.getItem('token');
       await fetch('http://localhost:5000/api/baker/batch/finish', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ batchId: id })
       });
       fetchDashboard();
@@ -74,9 +82,13 @@ const BakerWorkspace: React.FC = () => {
   const handleStartBatch = async (productId: number, quantity: number) => {
     if (!user) return;
     try {
+      const token = localStorage.getItem('token');
       await fetch('http://localhost:5000/api/baker/batch/start', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ productId, quantity, bakerId: user.id })
       });
       fetchDashboard();
@@ -92,11 +104,15 @@ const BakerWorkspace: React.FC = () => {
       const batch = activeBatches.find(b => b.id === id);
       if (!batch) return;
       
+      const token = localStorage.getItem('token');
       await fetch('http://localhost:5000/api/baker/defect', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ 
-          productId: batch.id, // В реальном проекте нужен productId партии
+          productId: batch.productId, // В реальном проекте нужен productId партии
           quantity: batch.quantity, 
           reason: reason, 
           bakerId: user.id 

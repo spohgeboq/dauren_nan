@@ -33,25 +33,44 @@ let CourierService = class CourierService {
         return { orders };
     }
     async updateOrderStatus(orderId, status, paymentMethod) {
-        const order = await this.prisma.deliveryOrder.findUnique({ where: { id: orderId } });
-        if (!order)
-            throw new common_1.NotFoundException('Заказ не найден');
-        let mappedStatus = client_1.DeliveryOrderStatus.PENDING;
-        if (status === 'IN_TRANSIT')
-            mappedStatus = client_1.DeliveryOrderStatus.IN_TRANSIT;
-        if (status === 'DELIVERED')
-            mappedStatus = client_1.DeliveryOrderStatus.DELIVERED;
-        if (status === 'CANCELLED')
-            mappedStatus = client_1.DeliveryOrderStatus.CANCELLED;
-        await this.prisma.deliveryOrder.update({
-            where: { id: orderId },
-            data: {
-                status: mappedStatus,
-                paymentMethod: paymentMethod || order.paymentMethod,
-                isPaid: status === 'DELIVERED' ? true : order.isPaid,
-            },
+        return this.prisma.$transaction(async (tx) => {
+            const order = await tx.deliveryOrder.findUnique({ where: { id: orderId } });
+            if (!order)
+                throw new common_1.NotFoundException('Заказ не найден');
+            let mappedStatus = client_1.DeliveryOrderStatus.PENDING;
+            if (status === 'IN_TRANSIT')
+                mappedStatus = client_1.DeliveryOrderStatus.IN_TRANSIT;
+            if (status === 'DELIVERED')
+                mappedStatus = client_1.DeliveryOrderStatus.DELIVERED;
+            if (status === 'CANCELLED')
+                mappedStatus = client_1.DeliveryOrderStatus.CANCELLED;
+            const newPaymentMethod = paymentMethod || order.paymentMethod;
+            const wasDebtDelivered = order.status === client_1.DeliveryOrderStatus.DELIVERED && order.paymentMethod === 'DEBT';
+            const isDebtDelivered = mappedStatus === client_1.DeliveryOrderStatus.DELIVERED && newPaymentMethod === 'DEBT';
+            await tx.deliveryOrder.update({
+                where: { id: orderId },
+                data: {
+                    status: mappedStatus,
+                    paymentMethod: newPaymentMethod,
+                    isPaid: mappedStatus === client_1.DeliveryOrderStatus.DELIVERED ? true : order.isPaid,
+                },
+            });
+            if (order.clientId) {
+                if (!wasDebtDelivered && isDebtDelivered) {
+                    await tx.client.update({
+                        where: { id: order.clientId },
+                        data: { balance: { decrement: order.totalAmount } },
+                    });
+                }
+                else if (wasDebtDelivered && !isDebtDelivered) {
+                    await tx.client.update({
+                        where: { id: order.clientId },
+                        data: { balance: { increment: order.totalAmount } },
+                    });
+                }
+            }
+            return { success: true };
         });
-        return { success: true };
     }
 };
 exports.CourierService = CourierService;

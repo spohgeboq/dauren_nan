@@ -28,7 +28,10 @@ const CashierWorkspace: React.FC = () => {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/cashier/products');
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:5000/api/cashier/products', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       if (res.ok) {
         const data = await res.json();
         setProducts(data.products);
@@ -88,9 +91,13 @@ const CashierWorkspace: React.FC = () => {
     if (cart.length === 0 || !user) return;
     
     try {
+      const token = localStorage.getItem('token');
       const res = await fetch('http://localhost:5000/api/cashier/sell', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           cart: cart.map(c => ({ productId: c.id, quantity: c.quantity, price: c.price })),
           paymentMethod: method,

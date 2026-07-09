@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BakerController = void 0;
 const common_1 = require("@nestjs/common");
 const baker_service_1 = require("./baker.service");
+const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 let BakerController = class BakerController {
     constructor(service) {
         this.service = service;
@@ -62,6 +63,7 @@ __decorate([
 ], BakerController.prototype, "recordDefect", null);
 exports.BakerController = BakerController = __decorate([
     (0, common_1.Controller)('baker'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __metadata("design:paramtypes", [baker_service_1.BakerService])
 ], BakerController);
 //# sourceMappingURL=baker.controller.js.map

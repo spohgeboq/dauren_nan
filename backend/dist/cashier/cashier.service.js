@@ -47,8 +47,11 @@ let CashierService = class CashierService {
                 });
             }
             let pm = client_1.PaymentMethod.CASH;
-            if (paymentMethod.toUpperCase() === 'KASPI') {
-                pm = client_1.PaymentMethod.KASPI;
+            if (paymentMethod) {
+                const methodUpper = paymentMethod.toUpperCase();
+                if (methodUpper === 'KASPI' || methodUpper === 'QR' || methodUpper === 'CARD') {
+                    pm = client_1.PaymentMethod.KASPI;
+                }
             }
             const sale = await tx.sale.create({
                 data: {

@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CashierController = void 0;
 const common_1 = require("@nestjs/common");
 const cashier_service_1 = require("./cashier.service");
+const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 let CashierController = class CashierController {
     constructor(service) {
         this.service = service;
@@ -42,6 +43,7 @@ __decorate([
 ], CashierController.prototype, "sell", null);
 exports.CashierController = CashierController = __decorate([
     (0, common_1.Controller)('cashier'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __metadata("design:paramtypes", [cashier_service_1.CashierService])
 ], CashierController);
 //# sourceMappingURL=cashier.controller.js.map

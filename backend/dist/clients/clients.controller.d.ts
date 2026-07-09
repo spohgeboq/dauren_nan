@@ -4,17 +4,17 @@ export declare class ClientsController {
     private service;
     constructor(service: ClientsService);
     findAll(route?: string, debtorsOnly?: string): Promise<{
-        id: number;
         email: string | null;
+        id: number;
         name: string;
         phone: string | null;
         createdAt: Date;
         updatedAt: Date;
         type: string;
         ownerName: string | null;
+        deliveryTime: string | null;
         route: string | null;
         balance: number;
-        deliveryTime: string | null;
     }[]>;
     getStats(): Promise<{
         activeCount: number;
@@ -32,55 +32,55 @@ export declare class ClientsController {
             total: number;
         }[];
     } & {
-        id: number;
         email: string | null;
+        id: number;
         name: string;
         phone: string | null;
         createdAt: Date;
         updatedAt: Date;
         type: string;
         ownerName: string | null;
+        deliveryTime: string | null;
         route: string | null;
         balance: number;
-        deliveryTime: string | null;
     }) | null>;
     create(dto: CreateClientDto): Promise<{
-        id: number;
         email: string | null;
+        id: number;
         name: string;
         phone: string | null;
         createdAt: Date;
         updatedAt: Date;
         type: string;
         ownerName: string | null;
+        deliveryTime: string | null;
         route: string | null;
         balance: number;
-        deliveryTime: string | null;
     }>;
     update(id: number, dto: UpdateClientDto): Promise<{
-        id: number;
         email: string | null;
+        id: number;
         name: string;
         phone: string | null;
         createdAt: Date;
         updatedAt: Date;
         type: string;
         ownerName: string | null;
+        deliveryTime: string | null;
         route: string | null;
         balance: number;
-        deliveryTime: string | null;
     }>;
     remove(id: number): Promise<{
-        id: number;
         email: string | null;
+        id: number;
         name: string;
         phone: string | null;
         createdAt: Date;
         updatedAt: Date;
         type: string;
         ownerName: string | null;
+        deliveryTime: string | null;
         route: string | null;
         balance: number;
-        deliveryTime: string | null;
     }>;
 }

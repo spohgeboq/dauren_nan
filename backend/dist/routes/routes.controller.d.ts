@@ -60,8 +60,8 @@ export declare class RoutesController {
             routeId: number;
         })[];
         driver: {
-            id: number;
             email: string;
+            id: number;
             login: string | null;
             clientId: number | null;
             passwordHash: string;
@@ -116,8 +116,8 @@ export declare class RoutesController {
             routeId: number;
         })[];
         driver: {
-            id: number;
             email: string;
+            id: number;
             login: string | null;
             clientId: number | null;
             passwordHash: string;

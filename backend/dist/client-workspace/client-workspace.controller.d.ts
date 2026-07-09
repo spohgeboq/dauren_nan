@@ -15,44 +15,44 @@ export declare class ClientWorkspaceController {
         imageUrl: string | null;
     }[]>;
     getActiveOrder(req: any): Promise<({
-        driver: {
-            name: string | null;
-            phone: string | null;
-        } | null;
         items: ({
             product: {
                 id: number;
                 name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                isActive: boolean;
                 sku: string;
                 categoryId: number;
                 weight: number;
                 cost: number;
                 price: number;
-                isActive: boolean;
                 imageUrl: string | null;
                 stock: number;
             };
         } & {
             id: number;
             price: number;
-            orderId: number;
-            productId: number;
             quantity: number;
+            productId: number;
+            orderId: number;
         })[];
+        driver: {
+            name: string | null;
+            phone: string | null;
+        } | null;
     } & {
         id: number;
         clientId: number | null;
         status: import(".prisma/client").$Enums.DeliveryOrderStatus;
         createdAt: Date;
+        driverId: number | null;
+        paymentMethod: string | null;
+        totalAmount: number;
         clientName: string;
         clientPhone: string;
         address: string;
-        totalAmount: number;
         isPaid: boolean;
-        paymentMethod: string | null;
-        driverId: number | null;
     }) | null>;
     getOrderHistory(req: any): Promise<({
         items: ({
@@ -61,67 +61,67 @@ export declare class ClientWorkspaceController {
                 name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                isActive: boolean;
                 sku: string;
                 categoryId: number;
                 weight: number;
                 cost: number;
                 price: number;
-                isActive: boolean;
                 imageUrl: string | null;
                 stock: number;
             };
         } & {
             id: number;
             price: number;
-            orderId: number;
-            productId: number;
             quantity: number;
+            productId: number;
+            orderId: number;
         })[];
     } & {
         id: number;
         clientId: number | null;
         status: import(".prisma/client").$Enums.DeliveryOrderStatus;
         createdAt: Date;
+        driverId: number | null;
+        paymentMethod: string | null;
+        totalAmount: number;
         clientName: string;
         clientPhone: string;
         address: string;
-        totalAmount: number;
         isPaid: boolean;
-        paymentMethod: string | null;
-        driverId: number | null;
     })[]>;
     getLastOrder(req: any): Promise<({
         items: {
             id: number;
             price: number;
-            orderId: number;
-            productId: number;
             quantity: number;
+            productId: number;
+            orderId: number;
         }[];
     } & {
         id: number;
         clientId: number | null;
         status: import(".prisma/client").$Enums.DeliveryOrderStatus;
         createdAt: Date;
+        driverId: number | null;
+        paymentMethod: string | null;
+        totalAmount: number;
         clientName: string;
         clientPhone: string;
         address: string;
-        totalAmount: number;
         isPaid: boolean;
-        paymentMethod: string | null;
-        driverId: number | null;
     }) | null>;
     createOrder(req: any, body: any): Promise<{
         id: number;
         clientId: number | null;
         status: import(".prisma/client").$Enums.DeliveryOrderStatus;
         createdAt: Date;
+        driverId: number | null;
+        paymentMethod: string | null;
+        totalAmount: number;
         clientName: string;
         clientPhone: string;
         address: string;
-        totalAmount: number;
         isPaid: boolean;
-        paymentMethod: string | null;
-        driverId: number | null;
     }>;
 }

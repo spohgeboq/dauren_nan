@@ -41,8 +41,11 @@ export class CashierService {
 
       // 2. Map payment method enum (CASH or KASPI)
       let pm: PaymentMethod = PaymentMethod.CASH;
-      if (paymentMethod.toUpperCase() === 'KASPI') {
-        pm = PaymentMethod.KASPI;
+      if (paymentMethod) {
+        const methodUpper = paymentMethod.toUpperCase();
+        if (methodUpper === 'KASPI' || methodUpper === 'QR' || methodUpper === 'CARD') {
+          pm = PaymentMethod.KASPI;
+        }
       }
 
       // 3. Create sale
