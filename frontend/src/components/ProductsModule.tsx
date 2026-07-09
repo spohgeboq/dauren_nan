@@ -1,14 +1,19 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ArrowLeft, Search, Filter, Plus, Image as ImageIcon, UploadCloud, X } from 'lucide-react';
 import styles from './ProductsModule.module.css';
+import { api } from '../utils/api';
 
-type ProductCategory = 'Лепешки' | 'Хлеб' | 'Сдоба' | 'Прочее';
+interface Category {
+  id: number;
+  name: string;
+}
 
 interface Product {
-  id: string;
+  id: string | number;
   sku: string;
   name: string;
-  category: ProductCategory;
+  categoryId: number;
+  category?: Category;
   weight: number; // in grams
   cost: number;
   price: number;
@@ -16,69 +21,86 @@ interface Product {
   imageUrl?: string;
 }
 
-const MOCK_PRODUCTS: Product[] = [
-  { id: '1', sku: 'TBN-001', name: 'Таба нан', category: 'Лепешки', weight: 350, cost: 70, price: 150, isActive: true },
-  { id: '2', sku: 'UYN-002', name: 'Уй наны', category: 'Лепешки', weight: 400, cost: 80, price: 170, isActive: true },
-  { id: '3', sku: 'PTR-003', name: 'Патыр нан', category: 'Лепешки', weight: 300, cost: 65, price: 140, isActive: true },
-  { id: '4', sku: 'BTN-004', name: 'Батон нарезной', category: 'Хлеб', weight: 450, cost: 90, price: 200, isActive: true },
-  { id: '5', sku: 'KRS-005', name: 'Круассан классический', category: 'Сдоба', weight: 80, cost: 120, price: 350, isActive: true },
-  { id: '6', sku: 'BLH-006', name: 'Булочка с маком', category: 'Сдоба', weight: 100, cost: 45, price: 120, isActive: false },
-];
-
 interface ProductsModuleProps {
   onBack: () => void;
 }
 
 const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
-  const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterCategory, setFilterCategory] = useState<ProductCategory | 'Все'>('Все');
+  const [filterCategoryId, setFilterCategoryId] = useState<number | 'Все'>('Все');
 
   // Modal (Drawer) State
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [newName, setNewName] = useState('');
-  const [newCategory, setNewCategory] = useState<ProductCategory>('Лепешки');
+  const [newCategoryId, setNewCategoryId] = useState<number>(0);
   const [newWeight, setNewWeight] = useState('');
   const [newCost, setNewCost] = useState('');
   const [newPrice, setNewPrice] = useState('');
 
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const cats = await api.get('/categories');
+        setCategories(cats);
+        if (cats.length > 0) {
+          setNewCategoryId(cats[0].id);
+        }
+        
+        const prods = await api.get('/products');
+        setProducts(prods);
+      } catch (err) {
+        console.error('Error loading products module data:', err);
+      }
+    };
+    loadData();
+  }, []);
+
   const filteredProducts = useMemo(() => {
     return products.filter(p => {
-      const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            p.sku.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = filterCategory === 'Все' || p.category === filterCategory;
+      const matchesSearch = (p.name || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            (p.sku || '').toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = filterCategoryId === 'Все' || p.categoryId === filterCategoryId;
       return matchesSearch && matchesCategory;
     });
-  }, [products, searchQuery, filterCategory]);
+  }, [products, searchQuery, filterCategoryId]);
 
-  const toggleStatus = (id: string) => {
-    setProducts(prev => prev.map(p => p.id === id ? { ...p, isActive: !p.isActive } : p));
+  const toggleStatus = async (id: string | number, currentActive: boolean) => {
+    try {
+      const updated = await api.patch(`/products/${id}`, {
+        isActive: !currentActive
+      });
+      setProducts(prev => prev.map(p => p.id === id ? updated : p));
+    } catch (err) {
+      console.error('Error toggling product status:', err);
+    }
   };
 
-  const handleAddProduct = (e: React.FormEvent) => {
+  const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newName.trim()) return;
+    if (!newName.trim() || !newCategoryId) return;
 
-    const newProd: Product = {
-      id: Date.now().toString(),
-      sku: `NEW-${Math.floor(100 + Math.random() * 900)}`,
-      name: newName,
-      category: newCategory,
-      weight: parseInt(newWeight) || 0,
-      cost: parseInt(newCost) || 0,
-      price: parseInt(newPrice) || 0,
-      isActive: true
-    };
-
-    setProducts([newProd, ...products]);
-    setIsDrawerOpen(false);
-    
-    // Reset
-    setNewName('');
-    setNewCategory('Лепешки');
-    setNewWeight('');
-    setNewCost('');
-    setNewPrice('');
+    try {
+      const added = await api.post('/products', {
+        name: newName,
+        categoryId: newCategoryId,
+        weight: parseInt(newWeight) || 0,
+        cost: parseInt(newCost) || 0,
+        price: parseInt(newPrice) || 0,
+        isActive: true
+      });
+      setProducts([added, ...products]);
+      setIsDrawerOpen(false);
+      
+      // Reset
+      setNewName('');
+      setNewWeight('');
+      setNewCost('');
+      setNewPrice('');
+    } catch (err) {
+      console.error('Error adding product:', err);
+    }
   };
 
   const formatPrice = (num: number) => num.toLocaleString('ru-RU') + ' ₸';
@@ -122,14 +144,16 @@ const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
                 <Filter size={18} className={styles.filterIcon} />
                 <select 
                   className={styles.filterSelect}
-                  value={filterCategory}
-                  onChange={(e) => setFilterCategory(e.target.value as ProductCategory | 'Все')}
+                  value={filterCategoryId}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setFilterCategoryId(val === 'Все' ? 'Все' : parseInt(val));
+                  }}
                 >
                   <option value="Все">Все категории</option>
-                  <option value="Лепешки">Лепешки</option>
-                  <option value="Хлеб">Хлеб</option>
-                  <option value="Сдоба">Сдоба</option>
-                  <option value="Прочее">Прочее</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -178,7 +202,7 @@ const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
                         </div>
                       </td>
                       <td>
-                        <span className={styles.categoryBadge}>{product.category}</span>
+                        <span className={styles.categoryBadge}>{product.category?.name || 'Без категории'}</span>
                       </td>
                       <td>
                         <span className={styles.weightText}>{product.weight} г</span>
@@ -197,7 +221,7 @@ const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
                       <td className={styles.textCenter}>
                         <div 
                           className={`${styles.toggleSwitch} ${product.isActive ? styles.toggleOn : styles.toggleOff}`}
-                          onClick={() => toggleStatus(product.id)}
+                          onClick={() => toggleStatus(product.id, product.isActive)}
                         >
                           <div className={`${styles.toggleKnob} ${product.isActive ? styles.knobOn : styles.knobOff}`} />
                         </div>
@@ -256,13 +280,12 @@ const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
                     <label className={styles.formLabel}>Категория</label>
                     <select 
                       className={styles.formSelect}
-                      value={newCategory}
-                      onChange={(e) => setNewCategory(e.target.value as ProductCategory)}
+                      value={newCategoryId}
+                      onChange={(e) => setNewCategoryId(parseInt(e.target.value))}
                     >
-                      <option value="Лепешки">Лепешки</option>
-                      <option value="Хлеб">Хлеб</option>
-                      <option value="Сдоба">Сдоба</option>
-                      <option value="Прочее">Прочее</option>
+                      {categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
                     </select>
                   </div>
                   

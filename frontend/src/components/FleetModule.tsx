@@ -1,86 +1,81 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   ArrowLeft, Search, Plus, Trash2, Edit2, 
   Truck, CarFront, Wrench, CheckCircle2, User, Fuel, Boxes, X
 } from 'lucide-react';
 import styles from './FleetModule.module.css';
+import { api } from '../utils/api';
 
 type VehicleStatus = 'active' | 'repair';
 
+interface DriverUser {
+  id: number;
+  name: string;
+}
+
 interface Vehicle {
-  id: string;
+  id: string | number;
   brandModel: string;
   licensePlate: string;
   capacityTrays: number;
-  driverName: string | null;
+  driverId: number | null;
+  driver?: DriverUser | null;
   status: VehicleStatus;
   fuelConsumption: number; // liters per 100km
 }
-
-const MOCK_VEHICLES: Vehicle[] = [
-  { 
-    id: 'v1', 
-    brandModel: 'ГАЗель Next', 
-    licensePlate: '512 ASD 02', 
-    capacityTrays: 120, 
-    driverName: 'Ермек (Водитель)', 
-    status: 'active', 
-    fuelConsumption: 16 
-  },
-  { 
-    id: 'v2', 
-    brandModel: 'ГАЗель Бизнес', 
-    licensePlate: '777 VIP 02', 
-    capacityTrays: 100, 
-    driverName: 'Руслан (Водитель)', 
-    status: 'active', 
-    fuelConsumption: 18.5 
-  },
-  { 
-    id: 'v3', 
-    brandModel: 'Lada Largus', 
-    licensePlate: '123 QWE 02', 
-    capacityTrays: 40, 
-    driverName: 'Свободна', 
-    status: 'repair', 
-    fuelConsumption: 9.5 
-  },
-  { 
-    id: 'v4', 
-    brandModel: 'Ford Transit', 
-    licensePlate: '001 BBB 02', 
-    capacityTrays: 150, 
-    driverName: 'Алишер (Водитель)', 
-    status: 'active', 
-    fuelConsumption: 14 
-  },
-];
 
 interface FleetModuleProps {
   onBack: () => void;
 }
 
 const FleetModule: React.FC<FleetModuleProps> = ({ onBack }) => {
-  const [vehicles, setVehicles] = useState<Vehicle[]>(MOCK_VEHICLES);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [drivers, setDrivers] = useState<DriverUser[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | number | null>(null);
 
   const [formData, setFormData] = useState({
     brandModel: '',
     licensePlate: '',
     capacityTrays: '',
-    driverName: '',
+    driverId: '',
     status: 'active' as VehicleStatus,
     fuelConsumption: ''
   });
 
+  const fetchFleetData = async () => {
+    try {
+      const drvs = await api.get('/users?role=DRIVER');
+      setDrivers(drvs);
+
+      const fleet = await api.get('/vehicles');
+      const mapped = fleet.map((v: any) => ({
+        id: v.id,
+        brandModel: v.brandModel,
+        licensePlate: v.licensePlate,
+        capacityTrays: v.capacityTrays,
+        driverId: v.driverId,
+        driver: v.driver,
+        status: v.status === 'REPAIR' ? 'repair' : 'active',
+        fuelConsumption: v.fuelConsumption,
+      }));
+      setVehicles(mapped);
+    } catch (err) {
+      console.error('Error fetching fleet data:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchFleetData();
+  }, []);
+
   const filteredVehicles = useMemo(() => {
     return vehicles.filter(v => 
-      v.brandModel.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      v.licensePlate.toLowerCase().includes(searchQuery.toLowerCase())
+      (v.brandModel || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+      (v.licensePlate || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [vehicles, searchQuery]);
 
@@ -92,9 +87,14 @@ const FleetModule: React.FC<FleetModuleProps> = ({ onBack }) => {
     };
   }, [vehicles]);
 
-  const deleteVehicle = (id: string) => {
+  const deleteVehicle = async (id: string | number) => {
     if (confirm('Вы уверены, что хотите удалить этот автомобиль?')) {
-      setVehicles(prev => prev.filter(v => v.id !== id));
+      try {
+        await api.delete(`/vehicles/${id}`);
+        setVehicles(prev => prev.filter(v => v.id !== id));
+      } catch (err) {
+        console.error('Error deleting vehicle:', err);
+      }
     }
   };
 
@@ -104,7 +104,7 @@ const FleetModule: React.FC<FleetModuleProps> = ({ onBack }) => {
       brandModel: '',
       licensePlate: '',
       capacityTrays: '',
-      driverName: '',
+      driverId: '',
       status: 'active',
       fuelConsumption: ''
     });
@@ -117,34 +117,58 @@ const FleetModule: React.FC<FleetModuleProps> = ({ onBack }) => {
       brandModel: v.brandModel,
       licensePlate: v.licensePlate,
       capacityTrays: v.capacityTrays.toString(),
-      driverName: v.driverName === 'Свободна' ? '' : (v.driverName || ''),
+      driverId: v.driverId ? v.driverId.toString() : '',
       status: v.status,
       fuelConsumption: v.fuelConsumption.toString()
     });
     setIsModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.brandModel.trim() || !formData.licensePlate.trim()) return;
 
-    const newVehicle: Vehicle = {
-      id: editingId || `v_${Date.now()}`,
-      brandModel: formData.brandModel,
-      licensePlate: formData.licensePlate.toUpperCase(),
-      capacityTrays: parseInt(formData.capacityTrays) || 0,
-      driverName: formData.driverName.trim() || 'Свободна',
-      status: formData.status,
-      fuelConsumption: parseFloat(formData.fuelConsumption) || 0
-    };
+    try {
+      const payload = {
+        brandModel: formData.brandModel,
+        licensePlate: formData.licensePlate.toUpperCase(),
+        capacityTrays: parseInt(formData.capacityTrays) || 0,
+        driverId: formData.driverId ? parseInt(formData.driverId) : null,
+        status: formData.status === 'repair' ? 'REPAIR' : 'ACTIVE',
+        fuelConsumption: parseFloat(formData.fuelConsumption) || 0
+      };
 
-    if (editingId) {
-      setVehicles(prev => prev.map(v => v.id === editingId ? newVehicle : v));
-    } else {
-      setVehicles([...vehicles, newVehicle]);
+      if (editingId !== null) {
+        const saved = await api.patch(`/vehicles/${editingId}`, payload);
+        const mapped: Vehicle = {
+          id: saved.id,
+          brandModel: saved.brandModel,
+          licensePlate: saved.licensePlate,
+          capacityTrays: saved.capacityTrays,
+          driverId: saved.driverId,
+          driver: saved.driver,
+          status: saved.status === 'REPAIR' ? 'repair' : 'active',
+          fuelConsumption: saved.fuelConsumption,
+        };
+        setVehicles(prev => prev.map(v => v.id === editingId ? mapped : v));
+      } else {
+        const saved = await api.post('/vehicles', payload);
+        const mapped: Vehicle = {
+          id: saved.id,
+          brandModel: saved.brandModel,
+          licensePlate: saved.licensePlate,
+          capacityTrays: saved.capacityTrays,
+          driverId: saved.driverId,
+          driver: saved.driver,
+          status: saved.status === 'REPAIR' ? 'repair' : 'active',
+          fuelConsumption: saved.fuelConsumption,
+        };
+        setVehicles([mapped, ...vehicles]);
+      }
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error('Error saving vehicle:', err);
     }
-    
-    setIsModalOpen(false);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -274,8 +298,8 @@ const FleetModule: React.FC<FleetModuleProps> = ({ onBack }) => {
                   </div>
                   <div className={styles.driverRow}>
                     <span className={styles.infoLabel}><User size={14}/> Водитель</span>
-                    <span className={`${styles.infoValue} ${v.driverName === 'Свободна' ? styles.driverFree : ''}`}>
-                      {v.driverName}
+                    <span className={`${styles.infoValue} ${!v.driver?.name ? styles.driverFree : ''}`}>
+                      {v.driver?.name || 'Свободна'}
                     </span>
                   </div>
                 </div>
@@ -374,14 +398,17 @@ const FleetModule: React.FC<FleetModuleProps> = ({ onBack }) => {
 
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>Закрепленный водитель</label>
-                <input 
-                  type="text" 
-                  name="driverName"
-                  className={styles.formInput} 
-                  value={formData.driverName}
+                <select 
+                  name="driverId"
+                  className={styles.formSelect}
+                  value={formData.driverId}
                   onChange={handleChange}
-                  placeholder="Имя сотрудника (оставьте пустым, если свободна)"
-                />
+                >
+                  <option value="">Свободна</option>
+                  {drivers.map(drv => (
+                    <option key={drv.id} value={drv.id}>{drv.name}</option>
+                  ))}
+                </select>
               </div>
 
               <div className={styles.modalActions}>

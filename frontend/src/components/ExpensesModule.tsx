@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ArrowLeft, Plus, Filter, Wallet, Receipt, CreditCard, Banknote, Car, Wrench, Home, Users, Search, X } from 'lucide-react';
 import styles from './ExpensesModule.module.css';
+import { api } from '../utils/api';
 
 type ExpenseCategory = 'Аренда' | 'Зарплата' | 'ГСМ' | 'Ремонт' | 'Сырье' | 'Прочее';
 type PaymentMethod = 'Наличные' | 'Kaspi';
@@ -14,13 +15,33 @@ interface Expense {
   amount: number;
 }
 
-const MOCK_EXPENSES: Expense[] = [
-  { id: '1', date: '2026-07-04', category: 'ГСМ', description: 'Заправка Газель (045 ABC)', paymentMethod: 'Kaspi', amount: 12000 },
-  { id: '2', date: '2026-07-03', category: 'Зарплата', description: 'Аванс пекарям за июль', paymentMethod: 'Наличные', amount: 450000 },
-  { id: '3', date: '2026-07-02', category: 'Аренда', description: 'Оплата аренды цеха (Июль)', paymentMethod: 'Kaspi', amount: 800000 },
-  { id: '4', date: '2026-06-28', category: 'Ремонт', description: 'Ремонт тестомеса', paymentMethod: 'Наличные', amount: 45000 },
-  { id: '5', date: '2026-06-25', category: 'Сырье', description: 'Дозакупка соли (срочно)', paymentMethod: 'Kaspi', amount: 8000 },
-];
+const CATEGORY_MAP_TO_BACKEND: Record<ExpenseCategory, string> = {
+  'Аренда': 'RENT',
+  'Зарплата': 'SALARY',
+  'ГСМ': 'FUEL',
+  'Ремонт': 'REPAIR',
+  'Сырье': 'RAW_MATERIAL',
+  'Прочее': 'OTHER',
+};
+
+const CATEGORY_MAP_FROM_BACKEND: Record<string, ExpenseCategory> = {
+  'RENT': 'Аренда',
+  'SALARY': 'Зарплата',
+  'FUEL': 'ГСМ',
+  'REPAIR': 'Ремонт',
+  'RAW_MATERIAL': 'Сырье',
+  'OTHER': 'Прочее',
+};
+
+const PAYMENT_MAP_TO_BACKEND: Record<PaymentMethod, string> = {
+  'Наличные': 'CASH',
+  'Kaspi': 'KASPI',
+};
+
+const PAYMENT_MAP_FROM_BACKEND: Record<string, PaymentMethod> = {
+  'CASH': 'Наличные',
+  'KASPI': 'Kaspi',
+};
 
 const categoryIcons: Record<ExpenseCategory, React.ReactNode> = {
   'Аренда': <Home size={18} />,
@@ -45,7 +66,7 @@ interface ExpensesModuleProps {
 }
 
 const ExpensesModule: React.FC<ExpensesModuleProps> = ({ onBack }) => {
-  const [expenses, setExpenses] = useState<Expense[]>(MOCK_EXPENSES);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [filterMonth, setFilterMonth] = useState<string>('07-2026'); // Mock current month filter
   const [filterCategory, setFilterCategory] = useState<ExpenseCategory | 'Все'>('Все');
   
@@ -60,19 +81,37 @@ const ExpensesModule: React.FC<ExpensesModuleProps> = ({ onBack }) => {
   });
   const [newPayment, setNewPayment] = useState<PaymentMethod>('Kaspi');
 
+  useEffect(() => {
+    const fetchExpenses = async () => {
+      try {
+        const queryParams = new URLSearchParams();
+        if (filterMonth && filterMonth !== 'Все') {
+          queryParams.append('month', filterMonth);
+        }
+        if (filterCategory && filterCategory !== 'Все') {
+          queryParams.append('category', CATEGORY_MAP_TO_BACKEND[filterCategory]);
+        }
+        const data = await api.get(`/expenses?${queryParams.toString()}`);
+        const mapped = data.map((exp: any) => ({
+          id: String(exp.id),
+          date: exp.date.split('T')[0],
+          category: CATEGORY_MAP_FROM_BACKEND[exp.category] || 'Прочее',
+          description: exp.description || '',
+          paymentMethod: PAYMENT_MAP_FROM_BACKEND[exp.paymentMethod] || 'Kaspi',
+          amount: exp.amount,
+        }));
+        setExpenses(mapped);
+      } catch (err) {
+        console.error('Error fetching expenses:', err);
+      }
+    };
+    fetchExpenses();
+  }, [filterMonth, filterCategory]);
+
   // Logic
   const filteredExpenses = useMemo(() => {
-    return expenses.filter(exp => {
-      // Very basic mock month filtering based on date string (YYYY-MM-DD)
-      const expMonth = exp.date.substring(5, 7);
-      const expYear = exp.date.substring(0, 4);
-      const formattedExpMonth = `${expMonth}-${expYear}`;
-      
-      const matchesMonth = filterMonth === 'Все' || formattedExpMonth === filterMonth;
-      const matchesCategory = filterCategory === 'Все' || exp.category === filterCategory;
-      return matchesMonth && matchesCategory;
-    });
-  }, [expenses, filterMonth, filterCategory]);
+    return expenses; // Filtered by API
+  }, [expenses]);
 
   const totalExpenses = filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0);
 
@@ -88,28 +127,39 @@ const ExpensesModule: React.FC<ExpensesModuleProps> = ({ onBack }) => {
 
   const topCategory = expensesByCategory.length > 0 ? expensesByCategory[0] : null;
 
-  const handleAddExpense = (e: React.FormEvent) => {
+  const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
     const amountNum = parseInt(newAmount, 10);
     if (isNaN(amountNum) || amountNum <= 0) return;
 
-    const newExp: Expense = {
-      id: Date.now().toString(),
-      date: newDate,
-      category: newCategory,
-      description: newDescription,
-      paymentMethod: newPayment,
-      amount: amountNum
-    };
+    try {
+      const saved = await api.post('/expenses', {
+        date: newDate,
+        category: CATEGORY_MAP_TO_BACKEND[newCategory] || 'OTHER',
+        description: newDescription,
+        paymentMethod: PAYMENT_MAP_TO_BACKEND[newPayment] || 'KASPI',
+        amount: amountNum,
+      });
+      
+      const mapped = {
+        id: String(saved.id),
+        date: saved.date.split('T')[0],
+        category: CATEGORY_MAP_FROM_BACKEND[saved.category] || 'Прочее',
+        description: saved.description || '',
+        paymentMethod: PAYMENT_MAP_FROM_BACKEND[saved.paymentMethod] || 'Kaspi',
+        amount: saved.amount,
+      };
 
-    // Keep list sorted by date descending ideally, but unshift is fine for mock
-    setExpenses([newExp, ...expenses]);
-    setIsModalOpen(false);
-    
-    // Reset
-    setNewAmount('');
-    setNewDescription('');
-    setNewCategory('Прочее');
+      setExpenses([mapped, ...expenses]);
+      setIsModalOpen(false);
+      
+      // Reset
+      setNewAmount('');
+      setNewDescription('');
+      setNewCategory('Прочее');
+    } catch (err) {
+      console.error('Error adding expense:', err);
+    }
   };
 
   const formatPrice = (num: number) => num.toLocaleString('ru-RU') + ' ₸';

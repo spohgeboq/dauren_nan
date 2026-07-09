@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, ClipboardList, AlertTriangle, PackageOpen, X, Settings2, Save, Warehouse } from 'lucide-react';
 import styles from './InventoryModule.module.css';
+import { api } from '../utils/api';
 
 interface InventoryItem {
-  id: string;
+  id: string | number;
   name: string;
   currentStock: number;
   minLimit: number;
@@ -13,22 +14,25 @@ interface InventoryItem {
   conversionRatio: number;
 }
 
-const MOCK_INVENTORY: InventoryItem[] = [
-  { id: '1', name: 'Мука высший сорт', currentStock: 450, minLimit: 500, costPerUnit: 250, baseUnit: 'кг', purchaseUnit: 'Мешок', conversionRatio: 50 },
-  { id: '2', name: 'Мука 1 сорт', currentStock: 1200, minLimit: 1000, costPerUnit: 220, baseUnit: 'кг', purchaseUnit: 'Мешок', conversionRatio: 50 },
-  { id: '3', name: 'Дрожжи прессованные', currentStock: 15, minLimit: 20, costPerUnit: 1200, baseUnit: 'кг', purchaseUnit: 'Коробка', conversionRatio: 10 },
-  { id: '4', name: 'Соль йодированная', currentStock: 45, minLimit: 30, costPerUnit: 80, baseUnit: 'кг', purchaseUnit: 'Мешок', conversionRatio: 25 },
-  { id: '5', name: 'Масло подсолнечное', currentStock: 25, minLimit: 15, costPerUnit: 750, baseUnit: 'л', purchaseUnit: 'Канистра', conversionRatio: 5 },
-  { id: '6', name: 'Маргарин', currentStock: 40, minLimit: 40, costPerUnit: 900, baseUnit: 'кг', purchaseUnit: 'Коробка', conversionRatio: 20 },
-];
-
 interface InventoryModuleProps {
   onBack: () => void;
 }
 
 const InventoryModule: React.FC<InventoryModuleProps> = ({ onBack }) => {
-  const [inventory, setInventory] = useState<InventoryItem[]>(MOCK_INVENTORY);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+
+  useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        const data = await api.get('/inventory');
+        setInventory(data);
+      } catch (err) {
+        console.error('Error fetching inventory:', err);
+      }
+    };
+    fetchInventory();
+  }, []);
 
   // Stats
   const totalItemsCount = inventory.length;

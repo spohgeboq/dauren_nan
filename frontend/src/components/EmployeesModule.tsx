@@ -1,12 +1,13 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ArrowLeft, UserPlus, Search, Filter, ShieldCheck, UserCog, Car, ChefHat, CheckCircle2, UserX, X } from 'lucide-react';
 import styles from './EmployeesModule.module.css';
+import { api } from '../utils/api';
 
 type EmployeeRole = 'Администратор' | 'Кассир' | 'Пекарь' | 'Водитель';
 type EmployeeStatus = 'Активен' | 'Уволен';
 
 interface Employee {
-  id: string;
+  id: string | number;
   fullName: string;
   role: EmployeeRole;
   phone: string;
@@ -15,16 +16,24 @@ interface Employee {
   isOnShift: boolean;
 }
 
-const MOCK_EMPLOYEES: Employee[] = [
-  { id: '1', fullName: 'Айдос Нурланов', role: 'Администратор', phone: '+7 701 111 2233', login: 'admin', status: 'Активен', isOnShift: true },
-  { id: '2', fullName: 'Мадина Саматова', role: 'Кассир', phone: '+7 705 222 3344', login: 'madina_c', status: 'Активен', isOnShift: true },
-  { id: '3', fullName: 'Бауыржан Оспанов', role: 'Пекарь', phone: '+7 707 333 4455', login: 'b_ospanov', status: 'Активен', isOnShift: true },
-  { id: '4', fullName: 'Серик Ахметов', role: 'Водитель', phone: '+7 777 444 5566', login: 'serik_drv', status: 'Активен', isOnShift: false },
-  { id: '5', fullName: 'Азамат Ильясов', role: 'Водитель', phone: '+7 701 555 6677', login: 'azamat_drv', status: 'Активен', isOnShift: true },
-  { id: '6', fullName: 'Ерлан Жумабаев', role: 'Администратор', phone: '+7 702 123 4567', login: 'erlan_m', status: 'Активен', isOnShift: false },
-  { id: '7', fullName: 'Ирина Ким', role: 'Кассир', phone: '+7 705 666 7788', login: 'irina_old', status: 'Уволен', isOnShift: false },
-  { id: '8', fullName: 'Максат Туленов', role: 'Водитель', phone: '+7 777 888 9900', login: 'maksat_drv', status: 'Уволен', isOnShift: false },
-];
+const ROLE_MAP_TO_BACKEND: Record<EmployeeRole, string> = {
+  'Администратор': 'ADMIN',
+  'Кассир': 'CASHIER',
+  'Пекарь': 'BAKER',
+  'Водитель': 'DRIVER',
+};
+
+const ROLE_MAP_FROM_BACKEND: Record<string, EmployeeRole> = {
+  'ADMIN': 'Администратор',
+  'CASHIER': 'Кассир',
+  'BAKER': 'Пекарь',
+  'DRIVER': 'Водитель',
+};
+
+const STATUS_MAP_FROM_BACKEND: Record<string, EmployeeStatus> = {
+  'ACTIVE': 'Активен',
+  'FIRED': 'Уволен',
+};
 
 const roleColors: Record<EmployeeRole, string> = {
   'Администратор': styles.badgeAdmin,
@@ -38,7 +47,7 @@ interface EmployeesModuleProps {
 }
 
 const EmployeesModule: React.FC<EmployeesModuleProps> = ({ onBack }) => {
-  const [employees, setEmployees] = useState<Employee[]>(MOCK_EMPLOYEES);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRole, setFilterRole] = useState<EmployeeRole | 'Все'>('Все');
 
@@ -51,6 +60,28 @@ const EmployeesModule: React.FC<EmployeesModuleProps> = ({ onBack }) => {
   const [newEmpPassword, setNewEmpPassword] = useState('');
   const [newEmpPin, setNewEmpPin] = useState('');
 
+  const fetchEmployees = async () => {
+    try {
+      const data = await api.get('/users');
+      const mapped = data.map((emp: any) => ({
+        id: emp.id,
+        fullName: emp.name || '',
+        phone: emp.phone || '',
+        role: ROLE_MAP_FROM_BACKEND[emp.role] || 'Водитель',
+        login: emp.login || '',
+        status: STATUS_MAP_FROM_BACKEND[emp.status] || 'Активен',
+        isOnShift: emp.isOnShift || false,
+      }));
+      setEmployees(mapped);
+    } catch (err) {
+      console.error('Error fetching employees:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
+
   // Stats
   const activeEmployees = employees.filter(e => e.status === 'Активен');
   const totalCount = activeEmployees.length;
@@ -59,38 +90,53 @@ const EmployeesModule: React.FC<EmployeesModuleProps> = ({ onBack }) => {
 
   const filteredEmployees = useMemo(() => {
     return employees.filter(emp => {
-      const matchesSearch = emp.fullName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            emp.phone.includes(searchQuery) || 
-                            emp.login.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = (emp.fullName || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            (emp.phone || '').includes(searchQuery) || 
+                            (emp.login || '').toLowerCase().includes(searchQuery.toLowerCase());
       const matchesRole = filterRole === 'Все' || emp.role === filterRole;
       return matchesSearch && matchesRole;
     });
   }, [employees, searchQuery, filterRole]);
 
-  const handleAddEmployee = (e: React.FormEvent) => {
+  const handleAddEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newEmpName.trim() || !newEmpRole) return;
 
-    const newEmp: Employee = {
-      id: Date.now().toString(),
-      fullName: newEmpName,
-      phone: newEmpPhone,
-      role: newEmpRole,
-      login: newEmpLogin,
-      status: 'Активен',
-      isOnShift: false
-    };
+    try {
+      const loginVal = newEmpLogin.trim() || `user_${Date.now()}`;
+      const saved = await api.post('/users', {
+        email: `${loginVal}@daurennan.kz`,
+        password: newEmpPassword || 'password123',
+        name: newEmpName,
+        phone: newEmpPhone,
+        login: loginVal,
+        pin: newEmpPin || undefined,
+        role: ROLE_MAP_TO_BACKEND[newEmpRole],
+      });
 
-    setEmployees([newEmp, ...employees]);
-    setIsModalOpen(false);
-    
-    // Reset form
-    setNewEmpName('');
-    setNewEmpPhone('');
-    setNewEmpRole('Водитель');
-    setNewEmpLogin('');
-    setNewEmpPassword('');
-    setNewEmpPin('');
+      const mapped: Employee = {
+        id: saved.id,
+        fullName: saved.name || '',
+        phone: saved.phone || '',
+        role: ROLE_MAP_FROM_BACKEND[saved.role] || 'Водитель',
+        login: saved.login || '',
+        status: STATUS_MAP_FROM_BACKEND[saved.status] || 'Активен',
+        isOnShift: saved.isOnShift || false,
+      };
+
+      setEmployees([mapped, ...employees]);
+      setIsModalOpen(false);
+      
+      // Reset form
+      setNewEmpName('');
+      setNewEmpPhone('');
+      setNewEmpRole('Водитель');
+      setNewEmpLogin('');
+      setNewEmpPassword('');
+      setNewEmpPin('');
+    } catch (err) {
+      console.error('Error adding employee:', err);
+    }
   };
 
   return (

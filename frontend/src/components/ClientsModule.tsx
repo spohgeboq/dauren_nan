@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Search, Plus, Store, User, Phone, MapPin, X, TrendingDown, Building2, PackageCheck } from 'lucide-react';
 import styles from './ClientsModule.module.css';
+import { api } from '../utils/api';
 
 interface Client {
-  id: string;
+  id: string | number;
   name: string;
   type: string;
   ownerName: string;
@@ -14,14 +15,6 @@ interface Client {
   deliveryTime: string;
 }
 
-const MOCK_CLIENTS: Client[] = [
-  { id: '1', name: 'Продуктовый "Айгерим"', type: 'Магазин у дома', ownerName: 'Айгерим', phone: '+7 (701) 123-45-67', email: 'aigerim@mail.ru', route: 'Маршрут #1 (Центр)', balance: -15500, deliveryTime: '08:00 - 10:00' },
-  { id: '2', name: 'Кофейня "Зерно"', type: 'Кафе', ownerName: 'Данияр', phone: '+7 (705) 987-65-43', email: 'zerno@cafe.kz', route: 'Маршрут #2 (Юг)', balance: 0, deliveryTime: '07:00 - 08:30' },
-  { id: '3', name: 'Супермаркет "Алма"', type: 'Супермаркет', ownerName: 'ТОО АлмаТрейд', phone: '+7 (777) 555-44-33', email: 'info@alma.kz', route: 'Маршрут #1 (Центр)', balance: -45000, deliveryTime: '06:00 - 08:00' },
-  { id: '4', name: 'Столовая "Вкусно"', type: 'Столовая', ownerName: 'Гульмира', phone: '+7 (707) 111-22-33', email: '-', route: 'Маршрут #3 (Север)', balance: 12000, deliveryTime: '09:00 - 11:00' },
-  { id: '5', name: 'Минимаркет "24/7"', type: 'Магазин у дома', ownerName: 'Азамат', phone: '+7 (775) 333-22-11', email: 'aza24@yandex.ru', route: 'Маршрут #2 (Юг)', balance: -5000, deliveryTime: '09:00 - 12:00' },
-];
-
 const ROUTES = ['Все маршруты', 'Маршрут #1 (Центр)', 'Маршрут #2 (Юг)', 'Маршрут #3 (Север)'];
 const CLIENT_TYPES = ['Магазин у дома', 'Супермаркет', 'Кафе', 'Ресторан', 'Столовая'];
 
@@ -30,7 +23,7 @@ interface ClientsModuleProps {
 }
 
 const ClientsModule: React.FC<ClientsModuleProps> = ({ onBack }) => {
-  const [clients, setClients] = useState<Client[]>(MOCK_CLIENTS);
+  const [clients, setClients] = useState<Client[]>([]);
   
   // Filters state
   const [searchQuery, setSearchQuery] = useState('');
@@ -43,6 +36,25 @@ const ClientsModule: React.FC<ClientsModuleProps> = ({ onBack }) => {
     name: '', type: 'Магазин у дома', ownerName: '', phone: '', email: '', deliveryTime: ''
   });
 
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        const queryParams = new URLSearchParams();
+        if (routeFilter && routeFilter !== 'Все маршруты') {
+          queryParams.append('route', routeFilter);
+        }
+        if (debtorsOnly) {
+          queryParams.append('debtorsOnly', 'true');
+        }
+        const data = await api.get(`/clients?${queryParams.toString()}`);
+        setClients(data);
+      } catch (err) {
+        console.error('Error fetching clients:', err);
+      }
+    };
+    fetchClients();
+  }, [routeFilter, debtorsOnly]);
+
   // Derived Stats
   const activeCount = clients.length;
   const totalDebt = clients.filter(c => c.balance < 0).reduce((acc, c) => acc + Math.abs(c.balance), 0);
@@ -50,30 +62,30 @@ const ClientsModule: React.FC<ClientsModuleProps> = ({ onBack }) => {
 
   // Filtering
   const filteredClients = clients.filter(c => {
-    const matchSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                        c.ownerName.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchSearch = (c.name || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+                        (c.ownerName || '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchRoute = routeFilter === 'Все маршруты' || c.route === routeFilter;
     const matchDebt = debtorsOnly ? c.balance < 0 : true;
     return matchSearch && matchRoute && matchDebt;
   });
 
-  const handleAddClient = (e: React.FormEvent) => {
+  const handleAddClient = async (e: React.FormEvent) => {
     e.preventDefault();
-    const id = (clients.length + 1).toString();
-    const added: Client = {
-      id,
-      name: newClient.name || '',
-      type: newClient.type || '',
-      ownerName: newClient.ownerName || '',
-      phone: newClient.phone || '',
-      email: newClient.email || '',
-      route: 'Не назначен', // Default
-      balance: 0,
-      deliveryTime: newClient.deliveryTime || '',
-    };
-    setClients([added, ...clients]);
-    setIsModalOpen(false);
-    setNewClient({ name: '', type: 'Магазин у дома', ownerName: '', phone: '', email: '', deliveryTime: '' });
+    try {
+      const added = await api.post('/clients', {
+        name: newClient.name || '',
+        type: newClient.type || 'Магазин у дома',
+        ownerName: newClient.ownerName || '',
+        phone: newClient.phone || '',
+        email: newClient.email || '',
+        deliveryTime: newClient.deliveryTime || '',
+      });
+      setClients([added, ...clients]);
+      setIsModalOpen(false);
+      setNewClient({ name: '', type: 'Магазин у дома', ownerName: '', phone: '', email: '', deliveryTime: '' });
+    } catch (err) {
+      console.error('Error adding client:', err);
+    }
   };
 
   return (

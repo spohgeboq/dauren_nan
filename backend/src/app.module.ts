@@ -17,6 +17,9 @@ import { VehiclesModule } from './vehicles/vehicles.module';
 import { RolesModule } from './roles/roles.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { PosModule } from './pos/pos.module';
+import { BakerModule } from './baker/baker.module';
+import { CashierModule } from './cashier/cashier.module';
+import { CourierModule } from './courier/courier.module';
 
 @Module({
   imports: [
@@ -38,6 +41,9 @@ import { PosModule } from './pos/pos.module';
     RolesModule,
     AnalyticsModule,
     PosModule,
+    BakerModule,
+    CashierModule,
+    CourierModule,
   ],
 })
 export class AppModule {}

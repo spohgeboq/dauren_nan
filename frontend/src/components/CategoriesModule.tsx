@@ -1,27 +1,21 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   ArrowLeft, Search, Plus, Trash2, Edit2, 
   Flame, Wheat, Cookie, Cake, Coffee, Sun, Star, ShoppingBag, X 
 } from 'lucide-react';
 import styles from './CategoriesModule.module.css';
+import { api } from '../utils/api';
 
 interface Category {
-  id: string;
+  id: string | number;
   name: string;
-  itemCount: number;
   isActive: boolean;
   iconName: string;
   sortOrder: number;
+  _count?: {
+    products: number;
+  };
 }
-
-const MOCK_CATEGORIES: Category[] = [
-  { id: 'c1', name: 'Тандырные лепешки', itemCount: 8, isActive: true, iconName: 'Flame', sortOrder: 1 },
-  { id: 'c2', name: 'Формовой хлеб', itemCount: 12, isActive: true, iconName: 'Wheat', sortOrder: 2 },
-  { id: 'c3', name: 'Сдоба и Булочки', itemCount: 25, isActive: true, iconName: 'Cookie', sortOrder: 3 },
-  { id: 'c4', name: 'Кондитерские изделия', itemCount: 10, isActive: true, iconName: 'Cake', sortOrder: 4 },
-  { id: 'c5', name: 'Напитки', itemCount: 15, isActive: true, iconName: 'Coffee', sortOrder: 5 },
-  { id: 'c6', name: 'Сезонная выпечка', itemCount: 4, isActive: false, iconName: 'Sun', sortOrder: 6 },
-];
 
 const AVAILABLE_ICONS = [
   { name: 'Flame', component: Flame, color: '#f97316', bg: '#ffedd5' }, // Orange
@@ -39,30 +33,53 @@ interface CategoriesModuleProps {
 }
 
 const CategoriesModule: React.FC<CategoriesModuleProps> = ({ onBack }) => {
-  const [categories, setCategories] = useState<Category[]>(MOCK_CATEGORIES);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | number | null>(null);
   
   const [newName, setNewName] = useState('');
   const [newIcon, setNewIcon] = useState('Flame');
   const [newSortOrder, setNewSortOrder] = useState('1');
 
+  const fetchCategories = async () => {
+    try {
+      const data = await api.get('/categories');
+      setCategories(data);
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
   const filteredCategories = useMemo(() => {
     return categories
-      .filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      .filter(c => (c.name || '').toLowerCase().includes(searchQuery.toLowerCase()))
       .sort((a, b) => a.sortOrder - b.sortOrder);
   }, [categories, searchQuery]);
 
-  const toggleStatus = (id: string) => {
-    setCategories(prev => prev.map(c => c.id === id ? { ...c, isActive: !c.isActive } : c));
+  const toggleStatus = async (id: string | number, currentActive: boolean) => {
+    try {
+      const updated = await api.patch(`/categories/${id}`, { isActive: !currentActive });
+      setCategories(prev => prev.map(c => c.id === id ? updated : c));
+    } catch (err) {
+      console.error('Error toggling category status:', err);
+    }
   };
 
-  const deleteCategory = (id: string) => {
+  const deleteCategory = async (id: string | number) => {
     if (confirm('Вы уверены, что хотите удалить эту категорию?')) {
-      setCategories(prev => prev.filter(c => c.id !== id));
+      try {
+        await api.delete(`/categories/${id}`);
+        setCategories(prev => prev.filter(c => c.id !== id));
+      } catch (err) {
+        console.error('Error deleting category:', err);
+      }
     }
   };
 
@@ -82,29 +99,31 @@ const CategoriesModule: React.FC<CategoriesModuleProps> = ({ onBack }) => {
     setIsModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName.trim()) return;
 
-    if (editingId) {
-      setCategories(prev => prev.map(c => 
-        c.id === editingId 
-          ? { ...c, name: newName, iconName: newIcon, sortOrder: parseInt(newSortOrder) || 0 }
-          : c
-      ));
-    } else {
-      const newCat: Category = {
-        id: `cat_${Date.now()}`,
-        name: newName,
-        itemCount: 0,
-        isActive: true,
-        iconName: newIcon,
-        sortOrder: parseInt(newSortOrder) || 0
-      };
-      setCategories([...categories, newCat]);
+    try {
+      if (editingId !== null) {
+        const updated = await api.patch(`/categories/${editingId}`, {
+          name: newName,
+          iconName: newIcon,
+          sortOrder: parseInt(newSortOrder) || 0
+        });
+        setCategories(prev => prev.map(c => c.id === editingId ? updated : c));
+      } else {
+        const added = await api.post('/categories', {
+          name: newName,
+          iconName: newIcon,
+          sortOrder: parseInt(newSortOrder) || 0,
+          isActive: true
+        });
+        setCategories([...categories, added]);
+      }
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error('Error saving category:', err);
     }
-    
-    setIsModalOpen(false);
   };
 
   // Helper to render icon component
@@ -174,7 +193,7 @@ const CategoriesModule: React.FC<CategoriesModuleProps> = ({ onBack }) => {
 
               <div className={styles.cardBody}>
                 <h3 className={styles.catName}>{cat.name}</h3>
-                <span className={styles.itemCount}>Товаров внутри: {cat.itemCount}</span>
+                <span className={styles.itemCount}>Товаров внутри: {cat._count?.products || 0}</span>
               </div>
 
               <div className={styles.cardFooter}>
@@ -183,7 +202,7 @@ const CategoriesModule: React.FC<CategoriesModuleProps> = ({ onBack }) => {
                 </span>
                 <div 
                   className={`${styles.toggleSwitch} ${cat.isActive ? styles.toggleOn : styles.toggleOff}`}
-                  onClick={() => toggleStatus(cat.id)}
+                  onClick={() => toggleStatus(cat.id, cat.isActive)}
                 >
                   <div className={`${styles.toggleKnob} ${cat.isActive ? styles.knobOn : styles.knobOff}`} />
                 </div>
