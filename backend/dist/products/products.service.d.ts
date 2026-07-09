@@ -14,12 +14,13 @@ export declare class ProductsService {
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
-        categoryId: number;
         sku: string;
+        categoryId: number;
         weight: number;
         cost: number;
         price: number;
         imageUrl: string | null;
+        stock: number;
     })[]>;
     findOne(id: number): Promise<({
         category: {
@@ -37,12 +38,13 @@ export declare class ProductsService {
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
-        categoryId: number;
         sku: string;
+        categoryId: number;
         weight: number;
         cost: number;
         price: number;
         imageUrl: string | null;
+        stock: number;
     }) | null>;
     create(dto: CreateProductDto): Promise<{
         category: {
@@ -55,12 +57,13 @@ export declare class ProductsService {
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
-        categoryId: number;
         sku: string;
+        categoryId: number;
         weight: number;
         cost: number;
         price: number;
         imageUrl: string | null;
+        stock: number;
     }>;
     update(id: number, dto: UpdateProductDto): Promise<{
         category: {
@@ -73,12 +76,13 @@ export declare class ProductsService {
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
-        categoryId: number;
         sku: string;
+        categoryId: number;
         weight: number;
         cost: number;
         price: number;
         imageUrl: string | null;
+        stock: number;
     }>;
     remove(id: number): Promise<{
         id: number;
@@ -86,11 +90,12 @@ export declare class ProductsService {
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
-        categoryId: number;
         sku: string;
+        categoryId: number;
         weight: number;
         cost: number;
         price: number;
         imageUrl: string | null;
+        stock: number;
     }>;
 }

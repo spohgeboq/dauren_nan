@@ -26,6 +26,9 @@ const vehicles_module_1 = require("./vehicles/vehicles.module");
 const roles_module_1 = require("./roles/roles.module");
 const analytics_module_1 = require("./analytics/analytics.module");
 const pos_module_1 = require("./pos/pos.module");
+const baker_module_1 = require("./baker/baker.module");
+const cashier_module_1 = require("./cashier/cashier.module");
+const courier_module_1 = require("./courier/courier.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -50,6 +53,9 @@ exports.AppModule = AppModule = __decorate([
             roles_module_1.RolesModule,
             analytics_module_1.AnalyticsModule,
             pos_module_1.PosModule,
+            baker_module_1.BakerModule,
+            cashier_module_1.CashierModule,
+            courier_module_1.CourierModule,
         ],
     })
 ], AppModule);

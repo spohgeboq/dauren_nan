@@ -11,11 +11,13 @@ export declare class RecipesService {
             rawMaterial: {
                 id: number;
                 name: string;
+                stock: number;
                 costPerUnit: number;
                 unit: string;
             };
         } & {
             id: number;
+            quantity: number;
             amount: number;
             rawMaterialId: number;
             recipeId: number;
@@ -33,22 +35,25 @@ export declare class RecipesService {
             createdAt: Date;
             updatedAt: Date;
             isActive: boolean;
-            categoryId: number;
             sku: string;
+            categoryId: number;
             weight: number;
             cost: number;
             price: number;
             imageUrl: string | null;
+            stock: number;
         };
         ingredients: ({
             rawMaterial: {
                 id: number;
                 name: string;
+                stock: number;
                 costPerUnit: number;
                 unit: string;
             };
         } & {
             id: number;
+            quantity: number;
             amount: number;
             rawMaterialId: number;
             recipeId: number;
@@ -66,22 +71,25 @@ export declare class RecipesService {
             createdAt: Date;
             updatedAt: Date;
             isActive: boolean;
-            categoryId: number;
             sku: string;
+            categoryId: number;
             weight: number;
             cost: number;
             price: number;
             imageUrl: string | null;
+            stock: number;
         };
         ingredients: ({
             rawMaterial: {
                 id: number;
                 name: string;
+                stock: number;
                 costPerUnit: number;
                 unit: string;
             };
         } & {
             id: number;
+            quantity: number;
             amount: number;
             rawMaterialId: number;
             recipeId: number;
@@ -105,22 +113,25 @@ export declare class RecipesService {
             createdAt: Date;
             updatedAt: Date;
             isActive: boolean;
-            categoryId: number;
             sku: string;
+            categoryId: number;
             weight: number;
             cost: number;
             price: number;
             imageUrl: string | null;
+            stock: number;
         };
         ingredients: ({
             rawMaterial: {
                 id: number;
                 name: string;
+                stock: number;
                 costPerUnit: number;
                 unit: string;
             };
         } & {
             id: number;
+            quantity: number;
             amount: number;
             rawMaterialId: number;
             recipeId: number;
@@ -138,11 +149,13 @@ export declare class RecipesService {
         rawMaterial: {
             id: number;
             name: string;
+            stock: number;
             costPerUnit: number;
             unit: string;
         };
     } & {
         id: number;
+        quantity: number;
         amount: number;
         rawMaterialId: number;
         recipeId: number;
@@ -154,17 +167,20 @@ export declare class RecipesService {
         rawMaterial: {
             id: number;
             name: string;
+            stock: number;
             costPerUnit: number;
             unit: string;
         };
     } & {
         id: number;
+        quantity: number;
         amount: number;
         rawMaterialId: number;
         recipeId: number;
     }>;
     removeIngredient(ingredientId: number): Promise<{
         id: number;
+        quantity: number;
         amount: number;
         rawMaterialId: number;
         recipeId: number;
@@ -172,6 +188,7 @@ export declare class RecipesService {
     getRawMaterials(): Promise<{
         id: number;
         name: string;
+        stock: number;
         costPerUnit: number;
         unit: string;
     }[]>;
@@ -182,6 +199,7 @@ export declare class RecipesService {
     }): Promise<{
         id: number;
         name: string;
+        stock: number;
         costPerUnit: number;
         unit: string;
     }>;

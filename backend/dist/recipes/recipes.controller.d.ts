@@ -11,11 +11,13 @@ export declare class RecipesController {
             rawMaterial: {
                 id: number;
                 name: string;
+                stock: number;
                 costPerUnit: number;
                 unit: string;
             };
         } & {
             id: number;
+            quantity: number;
             amount: number;
             rawMaterialId: number;
             recipeId: number;
@@ -29,6 +31,7 @@ export declare class RecipesController {
     getRawMaterials(): Promise<{
         id: number;
         name: string;
+        stock: number;
         costPerUnit: number;
         unit: string;
     }[]>;
@@ -39,22 +42,25 @@ export declare class RecipesController {
             createdAt: Date;
             updatedAt: Date;
             isActive: boolean;
-            categoryId: number;
             sku: string;
+            categoryId: number;
             weight: number;
             cost: number;
             price: number;
             imageUrl: string | null;
+            stock: number;
         };
         ingredients: ({
             rawMaterial: {
                 id: number;
                 name: string;
+                stock: number;
                 costPerUnit: number;
                 unit: string;
             };
         } & {
             id: number;
+            quantity: number;
             amount: number;
             rawMaterialId: number;
             recipeId: number;
@@ -72,22 +78,25 @@ export declare class RecipesController {
             createdAt: Date;
             updatedAt: Date;
             isActive: boolean;
-            categoryId: number;
             sku: string;
+            categoryId: number;
             weight: number;
             cost: number;
             price: number;
             imageUrl: string | null;
+            stock: number;
         };
         ingredients: ({
             rawMaterial: {
                 id: number;
                 name: string;
+                stock: number;
                 costPerUnit: number;
                 unit: string;
             };
         } & {
             id: number;
+            quantity: number;
             amount: number;
             rawMaterialId: number;
             recipeId: number;
@@ -105,22 +114,25 @@ export declare class RecipesController {
             createdAt: Date;
             updatedAt: Date;
             isActive: boolean;
-            categoryId: number;
             sku: string;
+            categoryId: number;
             weight: number;
             cost: number;
             price: number;
             imageUrl: string | null;
+            stock: number;
         };
         ingredients: ({
             rawMaterial: {
                 id: number;
                 name: string;
+                stock: number;
                 costPerUnit: number;
                 unit: string;
             };
         } & {
             id: number;
+            quantity: number;
             amount: number;
             rawMaterialId: number;
             recipeId: number;
@@ -138,6 +150,7 @@ export declare class RecipesController {
     }): Promise<{
         id: number;
         name: string;
+        stock: number;
         costPerUnit: number;
         unit: string;
     }>;
@@ -148,11 +161,13 @@ export declare class RecipesController {
         rawMaterial: {
             id: number;
             name: string;
+            stock: number;
             costPerUnit: number;
             unit: string;
         };
     } & {
         id: number;
+        quantity: number;
         amount: number;
         rawMaterialId: number;
         recipeId: number;
@@ -161,17 +176,20 @@ export declare class RecipesController {
         rawMaterial: {
             id: number;
             name: string;
+            stock: number;
             costPerUnit: number;
             unit: string;
         };
     } & {
         id: number;
+        quantity: number;
         amount: number;
         rawMaterialId: number;
         recipeId: number;
     }>;
     removeIngredient(ingredientId: number): Promise<{
         id: number;
+        quantity: number;
         amount: number;
         rawMaterialId: number;
         recipeId: number;
