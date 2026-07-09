@@ -23,4 +23,146 @@ model User {
   role         Role     @default(CLIENT)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  batches      ProductionBatch[]
+  defects      DefectLog[]
+  sales        Sale[]
+  deliveries   DeliveryOrder[]
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  stock       Int      @default(0) // На витрине
+  price       Int      @default(0) // Цена в тенге
+  
+  recipeId    Int?     @unique
+  recipe      Recipe?  @relation(fields: [recipeId], references: [id])
+  
+  batches     ProductionBatch[]
+  defects     DefectLog[]
+  saleItems   SaleItem[]
+  deliveryItems DeliveryOrderItem[]
+}
+
+model RawMaterial {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  unit        String   // kg, g, l
+  stock       Float    @default(0) // Единый склад
+  
+  ingredients RecipeIngredient[]
+}
+
+model Recipe {
+  id          Int      @id @default(autoincrement())
+  name        String
+  
+  product     Product?
+  ingredients RecipeIngredient[]
+}
+
+model RecipeIngredient {
+  id            Int         @id @default(autoincrement())
+  recipeId      Int
+  recipe        Recipe      @relation(fields: [recipeId], references: [id])
+  
+  rawMaterialId Int
+  rawMaterial   RawMaterial @relation(fields: [rawMaterialId], references: [id])
+  
+  quantity      Float       // Количество на 1 штуку хлеба
+}
+
+enum BatchStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+model ProductionBatch {
+  id          Int         @id @default(autoincrement())
+  productId   Int
+  product     Product     @relation(fields: [productId], references: [id])
+  
+  quantity    Int
+  status      BatchStatus @default(IN_PROGRESS)
+  
+  bakerId     Int
+  baker       User        @relation(fields: [bakerId], references: [id])
+  
+  startTime   DateTime    @default(now())
+  endTime     DateTime?
+}
+
+model DefectLog {
+  id          Int      @id @default(autoincrement())
+  productId   Int
+  product     Product  @relation(fields: [productId], references: [id])
+  
+  quantity    Int
+  reason      String?
+  
+  bakerId     Int
+  baker       User     @relation(fields: [bakerId], references: [id])
+  
+  createdAt   DateTime @default(now())
+}
+
+model Sale {
+  id            Int        @id @default(autoincrement())
+  totalAmount   Int
+  paymentMethod String     // "CASH", "CARD", "QR", "DEBT"
+  
+  cashierId     Int
+  cashier       User       @relation(fields: [cashierId], references: [id])
+  
+  createdAt     DateTime   @default(now())
+  items         SaleItem[]
+}
+
+model SaleItem {
+  id        Int      @id @default(autoincrement())
+  saleId    Int
+  sale      Sale     @relation(fields: [saleId], references: [id])
+  
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  
+  quantity  Int
+  price     Int      // Цена за единицу на момент продажи
+}
+
+enum OrderStatus {
+  PENDING
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+model DeliveryOrder {
+  id            Int        @id @default(autoincrement())
+  clientName    String
+  clientPhone   String
+  address       String
+  status        OrderStatus @default(PENDING)
+  totalAmount   Int
+  isPaid        Boolean    @default(false)
+  paymentMethod String?    // "CASH", "CARD", "QR", "DEBT"
+  
+  driverId      Int?
+  driver        User?      @relation(fields: [driverId], references: [id])
+  
+  createdAt     DateTime   @default(now())
+  items         DeliveryOrderItem[]
+}
+
+model DeliveryOrderItem {
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  order     DeliveryOrder @relation(fields: [orderId], references: [id])
+  
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  
+  quantity  Int
+  price     Int      // Цена за единицу на момент продажи
 }
