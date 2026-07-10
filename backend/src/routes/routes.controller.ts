@@ -1,9 +1,11 @@
 import { Controller, Get, Post, Patch, Param, Body, UseGuards, ParseIntPipe } from '@nestjs/common';
 import { RoutesService } from './routes.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PermissionsGuard, CheckPermissions } from '../auth/guards/permissions.guard';
 
 @Controller('routes')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@CheckPermissions('routes')
 export class RoutesController {
   constructor(private service: RoutesService) {}
 

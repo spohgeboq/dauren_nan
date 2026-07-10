@@ -1,9 +1,11 @@
 import { Controller, Get, Post, Patch, Param, Body, Query, UseGuards, ParseIntPipe } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PermissionsGuard, CheckPermissions } from '../auth/guards/permissions.guard';
 
 @Controller('orders')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@CheckPermissions('orders')
 export class OrdersController {
   constructor(private service: OrdersService) {}
 
@@ -24,5 +26,17 @@ export class OrdersController {
   @Patch(':id/status')
   updateStatus(@Param('id', ParseIntPipe) id: number, @Body('status') status: string) {
     return this.service.updateStatus(id, status);
+  }
+
+  @Get('deliveries')
+  findAllDeliveries() {
+    return this.service.findAllDeliveries();
+  }
+
+  @Patch('deliveries/:id/assign-driver')
+  assignDriver(@Param('id', ParseIntPipe) id: number, @Body('driverId') driverId: number | null) {
+    // Body will contain driverId which might be a number or null
+    const parsedDriverId = driverId === null ? null : Number(driverId);
+    return this.service.assignDriver(id, parsedDriverId);
   }
 }

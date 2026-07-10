@@ -16,6 +16,7 @@ exports.RoutesController = void 0;
 const common_1 = require("@nestjs/common");
 const routes_service_1 = require("./routes.service");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const permissions_guard_1 = require("../auth/guards/permissions.guard");
 let RoutesController = class RoutesController {
     constructor(service) {
         this.service = service;
@@ -70,7 +71,8 @@ __decorate([
 ], RoutesController.prototype, "updatePointStatus", null);
 exports.RoutesController = RoutesController = __decorate([
     (0, common_1.Controller)('routes'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),
+    (0, permissions_guard_1.CheckPermissions)('routes'),
     __metadata("design:paramtypes", [routes_service_1.RoutesService])
 ], RoutesController);
 //# sourceMappingURL=routes.controller.js.map

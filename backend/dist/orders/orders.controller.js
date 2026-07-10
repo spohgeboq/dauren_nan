@@ -16,6 +16,7 @@ exports.OrdersController = void 0;
 const common_1 = require("@nestjs/common");
 const orders_service_1 = require("./orders.service");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const permissions_guard_1 = require("../auth/guards/permissions.guard");
 let OrdersController = class OrdersController {
     constructor(service) {
         this.service = service;
@@ -28,6 +29,13 @@ let OrdersController = class OrdersController {
     }
     updateStatus(id, status) {
         return this.service.updateStatus(id, status);
+    }
+    findAllDeliveries() {
+        return this.service.findAllDeliveries();
+    }
+    assignDriver(id, driverId) {
+        const parsedDriverId = driverId === null ? null : Number(driverId);
+        return this.service.assignDriver(id, parsedDriverId);
     }
 };
 exports.OrdersController = OrdersController;
@@ -66,9 +74,24 @@ __decorate([
     __metadata("design:paramtypes", [Number, String]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "updateStatus", null);
+__decorate([
+    (0, common_1.Get)('deliveries'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "findAllDeliveries", null);
+__decorate([
+    (0, common_1.Patch)('deliveries/:id/assign-driver'),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Body)('driverId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "assignDriver", null);
 exports.OrdersController = OrdersController = __decorate([
     (0, common_1.Controller)('orders'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),
+    (0, permissions_guard_1.CheckPermissions)('orders'),
     __metadata("design:paramtypes", [orders_service_1.OrdersService])
 ], OrdersController);
 //# sourceMappingURL=orders.controller.js.map

@@ -7,9 +7,9 @@ export declare class ExpensesService {
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         description: string | null;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+        date: Date;
         amount: number;
     }[]>;
     create(data: {
@@ -23,9 +23,9 @@ export declare class ExpensesService {
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         description: string | null;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
+        date: Date;
         amount: number;
     }>;
     getStats(month?: string): Promise<{

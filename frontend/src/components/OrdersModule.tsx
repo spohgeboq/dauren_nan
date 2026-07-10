@@ -1,73 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar as CalendarIcon, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp, ShoppingBag, Receipt, AlertCircle } from 'lucide-react';
 import styles from './OrdersModule.module.css';
+import { api } from '../utils/api';
 
-type OrderStatus = 'Новый' | 'Принят' | 'Отменен';
+type OrderStatus = string;
 
 interface OrderItem {
-  id: string;
+  id: string | number;
   name: string;
   quantity: number;
   price: number;
 }
 
+interface Driver {
+  id: number;
+  name: string;
+  email?: string;
+}
+
 interface Order {
-  id: string;
+  id: number;
   clientName: string;
   deliveryTime: string;
   status: OrderStatus;
   items: OrderItem[];
   total: number;
+  driverId: number | null;
 }
-
-const MOCK_ORDERS: Order[] = [
-  {
-    id: 'ORD-001',
-    clientName: 'Продуктовый "Айгерим"',
-    deliveryTime: '07:00 - 08:00',
-    status: 'Новый',
-    total: 12500,
-    items: [
-      { id: 'i1', name: 'Таба нан', quantity: 20, price: 150 },
-      { id: 'i2', name: 'Багет французский', quantity: 10, price: 250 },
-      { id: 'i3', name: 'Булочка с повидлом', quantity: 35, price: 200 }
-    ]
-  },
-  {
-    id: 'ORD-002',
-    clientName: 'Кофейня "Зерно"',
-    deliveryTime: '08:00 - 09:00',
-    status: 'Принят',
-    total: 8400,
-    items: [
-      { id: 'i4', name: 'Круассан классический', quantity: 15, price: 400 },
-      { id: 'i5', name: 'Синнабон', quantity: 4, price: 600 }
-    ]
-  },
-  {
-    id: 'ORD-003',
-    clientName: 'Супермаркет "Алма"',
-    deliveryTime: '06:00 - 07:30',
-    status: 'Новый',
-    total: 45000,
-    items: [
-      { id: 'i6', name: 'Хлеб Пшеничный', quantity: 100, price: 150 },
-      { id: 'i7', name: 'Хлеб Бородинский', quantity: 50, price: 180 },
-      { id: 'i8', name: 'Батон нарезной', quantity: 80, price: 170 },
-      { id: 'i9', name: 'Самса с мясом', quantity: 20, price: 370 }
-    ]
-  },
-  {
-    id: 'ORD-004',
-    clientName: 'Минимаркет "24/7"',
-    deliveryTime: '09:00 - 10:00',
-    status: 'Отменен',
-    total: 4500,
-    items: [
-      { id: 'i10', name: 'Пирожок с картошкой', quantity: 30, price: 150 }
-    ]
-  }
-];
 
 const DATES = ['Вчера', 'Сегодня', 'Завтра'];
 
@@ -76,16 +35,52 @@ interface OrdersModuleProps {
 }
 
 const OrdersModule: React.FC<OrdersModuleProps> = ({ onBack }) => {
-  const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
   const [selectedDate, setSelectedDate] = useState('Завтра');
-  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchOrdersAndDrivers = async () => {
+    try {
+      setIsLoading(true);
+      const ordersData = await api.get('/orders/deliveries');
+      const driversData = await api.get('/users?role=DRIVER');
+      
+      const mappedOrders = ordersData.map((order: any) => ({
+        id: order.id,
+        clientName: order.clientName || (order.client ? order.client.name : 'Без имени'),
+        deliveryTime: new Date(order.createdAt).toLocaleDateString('ru-RU') + ' ' + new Date(order.createdAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+        status: order.status,
+        total: order.totalAmount || 0,
+        driverId: order.driverId,
+        items: (order.items || []).map((item: any) => ({
+          id: item.id,
+          name: item.product ? item.product.name : 'Неизвестный товар',
+          quantity: item.quantity || 0,
+          price: item.price || 0
+        }))
+      }));
+      
+      setOrders(mappedOrders);
+      setDrivers(driversData || []);
+    } catch (e) {
+      console.error('Failed to load orders or drivers', e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrdersAndDrivers();
+  }, []);
 
   // Stats
   const totalOrders = orders.length;
-  const totalSum = orders.filter(o => o.status !== 'Отменен').reduce((acc, o) => acc + o.total, 0);
-  const pendingOrders = orders.filter(o => o.status === 'Новый').length;
+  const totalSum = orders.filter(o => o.status !== 'CANCELLED' && o.status !== 'Отменен').reduce((acc, o) => acc + o.total, 0);
+  const pendingOrders = orders.filter(o => o.status === 'PENDING' || o.status === 'Новый').length;
 
-  const toggleExpand = (id: string) => {
+  const toggleExpand = (id: number) => {
     if (expandedOrderId === id) {
       setExpandedOrderId(null);
     } else {
@@ -93,16 +88,42 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({ onBack }) => {
     }
   };
 
-  const changeStatus = (id: string, newStatus: OrderStatus) => {
-    setOrders(prev => prev.map(o => o.id === id ? { ...o, status: newStatus } : o));
+  const changeStatus = async (id: number, newStatus: string) => {
+    try {
+      const statusMap: Record<string, string> = {
+        'Принят': 'IN_TRANSIT',
+        'Отменен': 'CANCELLED'
+      };
+      const mapped = statusMap[newStatus] || newStatus;
+      await api.post(`/courier/order/${id}/status`, { status: mapped });
+      setOrders(prev => prev.map(o => o.id === id ? { ...o, status: mapped } : o));
+    } catch (e) {
+      console.error('Failed to update status', e);
+    }
   };
 
-  const getStatusBadge = (status: OrderStatus) => {
+  const handleAssignDriver = async (orderId: number, driverIdStr: string) => {
+    try {
+      const driverId = driverIdStr === '' ? null : parseInt(driverIdStr, 10);
+      await api.patch(`/orders/deliveries/${orderId}/assign-driver`, { driverId });
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, driverId } : o));
+    } catch (e) {
+      console.error('Failed to assign driver', e);
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
     switch (status) {
+      case 'PENDING':
       case 'Новый':
         return <span className={`${styles.badge} ${styles.badgeNew}`}>Новый</span>;
+      case 'IN_TRANSIT':
       case 'Принят':
-        return <span className={`${styles.badge} ${styles.badgeAccepted}`}>Принят</span>;
+        return <span className={`${styles.badge} ${styles.badgeAccepted}`}>В пути</span>;
+      case 'DELIVERED':
+      case 'Доставлено':
+        return <span className={`${styles.badge} ${styles.badgeAccepted}`} style={{ backgroundColor: '#f0fdf4', color: '#16a34a' }}>Доставлен</span>;
+      case 'CANCELLED':
       case 'Отменен':
         return <span className={`${styles.badge} ${styles.badgeCancelled}`}>Отменен</span>;
       default:
@@ -178,78 +199,96 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({ onBack }) => {
 
         {/* Orders Table */}
         <div className={styles.tableContainer}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Магазин / Кафе</th>
-                <th>Сумма</th>
-                <th>Время доставки</th>
-                <th>Статус</th>
-                <th className={styles.textRight}>Действия</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map(order => (
-                <React.Fragment key={order.id}>
-                  <tr 
-                    className={`${styles.tableRow} ${expandedOrderId === order.id ? styles.tableRowExpanded : ''}`}
-                    onClick={() => toggleExpand(order.id)}
-                  >
-                    <td className={styles.cellId}>{order.id}</td>
-                    <td className={styles.cellName}>{order.clientName}</td>
-                    <td className={styles.cellTotal}>{order.total.toLocaleString('ru-RU')} ₸</td>
-                    <td>
-                      <div className={styles.deliveryTime}>
-                        <Clock size={14} />
-                        {order.deliveryTime}
-                      </div>
-                    </td>
-                    <td>{getStatusBadge(order.status)}</td>
-                    <td className={styles.textRight}>
-                      <div className={styles.actions} onClick={e => e.stopPropagation()}>
-                        {order.status === 'Новый' && (
-                          <>
-                            <button className={styles.btnAccept} onClick={() => changeStatus(order.id, 'Принят')} title="Принять заказ">
-                              <CheckCircle2 size={18} />
-                            </button>
-                            <button className={styles.btnCancel} onClick={() => changeStatus(order.id, 'Отменен')} title="Отменить заказ">
-                              <XCircle size={18} />
-                            </button>
-                          </>
-                        )}
-                        <button className={styles.btnExpand} onClick={() => toggleExpand(order.id)}>
-                          {expandedOrderId === order.id ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  
-                  {/* Accordion Details */}
-                  {expandedOrderId === order.id && (
-                    <tr className={styles.detailsRow}>
-                      <td colSpan={6} className={styles.detailsCell}>
-                        <div className={styles.detailsContent}>
-                          <h4 className={styles.detailsTitle}>Состав заказа</h4>
-                          <div className={styles.itemsList}>
-                            {order.items.map(item => (
-                              <div key={item.id} className={styles.itemRow}>
-                                <div className={styles.itemName}>{item.name}</div>
-                                <div className={styles.itemDots}></div>
-                                <div className={styles.itemQty}>{item.quantity} шт</div>
-                                <div className={styles.itemPrice}>x {item.price} ₸</div>
-                                <div className={styles.itemSum}>{(item.quantity * item.price).toLocaleString('ru-RU')} ₸</div>
-                              </div>
-                            ))}
-                          </div>
+          {isLoading ? (
+            <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Загрузка заказов...</div>
+          ) : (
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Магазин / Кафе</th>
+                  <th>Сумма</th>
+                  <th>Время заказа</th>
+                  <th>Назначить водителя</th>
+                  <th>Статус</th>
+                  <th className={styles.textRight}>Действия</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map(order => (
+                  <React.Fragment key={order.id}>
+                    <tr 
+                      className={`${styles.tableRow} ${expandedOrderId === order.id ? styles.tableRowExpanded : ''}`}
+                      onClick={() => toggleExpand(order.id)}
+                    >
+                      <td className={styles.cellId}>{order.id}</td>
+                      <td className={styles.cellName}>{order.clientName}</td>
+                      <td className={styles.cellTotal}>{order.total.toLocaleString('ru-RU')} ₸</td>
+                      <td>
+                        <div className={styles.deliveryTime}>
+                          <Clock size={14} />
+                          {order.deliveryTime}
+                        </div>
+                      </td>
+                      <td>
+                        <select 
+                          value={order.driverId || ''} 
+                          onChange={(e) => handleAssignDriver(order.id, e.target.value)}
+                          className={styles.driverSelect}
+                          onClick={e => e.stopPropagation()}
+                        >
+                          <option value="">Не назначен</option>
+                          {drivers.map(d => (
+                            <option key={d.id} value={d.id}>{d.name || d.email}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td>{getStatusBadge(order.status)}</td>
+                      <td className={styles.textRight}>
+                        <div className={styles.actions} onClick={e => e.stopPropagation()}>
+                          {(order.status === 'PENDING' || order.status === 'Новый') && (
+                            <>
+                              <button className={styles.btnAccept} onClick={() => changeStatus(order.id, 'Принят')} title="Принять заказ">
+                                <CheckCircle2 size={18} />
+                              </button>
+                              <button className={styles.btnCancel} onClick={() => changeStatus(order.id, 'Отменен')} title="Отменить заказ">
+                                <XCircle size={18} />
+                              </button>
+                            </>
+                          )}
+                          <button className={styles.btnExpand} onClick={() => toggleExpand(order.id)}>
+                            {expandedOrderId === order.id ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                          </button>
                         </div>
                       </td>
                     </tr>
-                  )}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
+                    
+                    {/* Accordion Details */}
+                    {expandedOrderId === order.id && (
+                      <tr className={styles.detailsRow}>
+                        <td colSpan={7} className={styles.detailsCell}>
+                          <div className={styles.detailsContent}>
+                            <h4 className={styles.detailsTitle}>Состав заказа</h4>
+                            <div className={styles.itemsList}>
+                              {order.items.map(item => (
+                                <div key={item.id} className={styles.itemRow}>
+                                  <div className={styles.itemName}>{item.name}</div>
+                                  <div className={styles.itemDots}></div>
+                                  <div className={styles.itemQty}>{item.quantity} шт</div>
+                                  <div className={styles.itemPrice}>x {item.price} ₸</div>
+                                  <div className={styles.itemSum}>{(item.quantity * item.price).toLocaleString('ru-RU')} ₸</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </main>
     </div>

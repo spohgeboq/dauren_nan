@@ -47,4 +47,23 @@ export class OrdersService {
     const totalSum = orders.reduce((sum, o) => sum + o.total, 0);
     return { totalOrders: total, pendingOrders: pending, totalSum };
   }
+
+  async findAllDeliveries() {
+    return this.prisma.deliveryOrder.findMany({
+      include: {
+        items: { include: { product: { select: { id: true, name: true } } } },
+        driver: { select: { id: true, name: true } },
+        client: { select: { id: true, name: true } }
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async assignDriver(id: number, driverId: number | null) {
+    return this.prisma.deliveryOrder.update({
+      where: { id },
+      data: { driverId },
+      include: { driver: { select: { id: true, name: true } } }
+    });
+  }
 }

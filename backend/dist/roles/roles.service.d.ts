@@ -2,40 +2,42 @@ import { PrismaService } from '../prisma/prisma.service';
 export declare class RolesService {
     private prisma;
     constructor(prisma: PrismaService);
-    findAll(): Promise<({
+    findAll(): Promise<{
+        employeeCount: number;
+        isSystemAdmin: boolean;
         permissions: {
             id: number;
             module: string;
+            roleId: number;
             canView: boolean;
             canCreate: boolean;
             canEdit: boolean;
             canDelete: boolean;
-            roleId: number;
         }[];
-    } & {
         id: number;
         name: string;
         createdAt: Date;
         updatedAt: Date;
         description: string | null;
-    })[]>;
-    findOne(id: number): Promise<({
+    }[]>;
+    findOne(id: number): Promise<{
+        employeeCount: number;
+        isSystemAdmin: boolean;
         permissions: {
             id: number;
             module: string;
+            roleId: number;
             canView: boolean;
             canCreate: boolean;
             canEdit: boolean;
             canDelete: boolean;
-            roleId: number;
         }[];
-    } & {
         id: number;
         name: string;
         createdAt: Date;
         updatedAt: Date;
         description: string | null;
-    }) | null>;
+    } | null>;
     create(data: {
         name: string;
         description?: string;
@@ -50,11 +52,11 @@ export declare class RolesService {
         permissions: {
             id: number;
             module: string;
+            roleId: number;
             canView: boolean;
             canCreate: boolean;
             canEdit: boolean;
             canDelete: boolean;
-            roleId: number;
         }[];
     } & {
         id: number;
@@ -70,11 +72,11 @@ export declare class RolesService {
         permissions: {
             id: number;
             module: string;
+            roleId: number;
             canView: boolean;
             canCreate: boolean;
             canEdit: boolean;
             canDelete: boolean;
-            roleId: number;
         }[];
     } & {
         id: number;
@@ -91,11 +93,11 @@ export declare class RolesService {
     }): Promise<{
         id: number;
         module: string;
+        roleId: number;
         canView: boolean;
         canCreate: boolean;
         canEdit: boolean;
         canDelete: boolean;
-        roleId: number;
     }>;
     remove(id: number): Promise<{
         id: number;

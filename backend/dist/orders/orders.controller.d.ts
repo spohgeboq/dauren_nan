@@ -144,4 +144,56 @@ export declare class OrdersController {
         deliveryDate: Date;
         total: number;
     }>;
+    findAllDeliveries(): Promise<({
+        client: {
+            id: number;
+            name: string;
+        } | null;
+        items: ({
+            product: {
+                id: number;
+                name: string;
+            };
+        } & {
+            id: number;
+            price: number;
+            quantity: number;
+            productId: number;
+            orderId: number;
+        })[];
+        driver: {
+            id: number;
+            name: string | null;
+        } | null;
+    } & {
+        id: number;
+        clientId: number | null;
+        status: import(".prisma/client").$Enums.DeliveryOrderStatus;
+        createdAt: Date;
+        clientName: string;
+        clientPhone: string;
+        address: string;
+        totalAmount: number;
+        isPaid: boolean;
+        paymentMethod: string | null;
+        driverId: number | null;
+    })[]>;
+    assignDriver(id: number, driverId: number | null): Promise<{
+        driver: {
+            id: number;
+            name: string | null;
+        } | null;
+    } & {
+        id: number;
+        clientId: number | null;
+        status: import(".prisma/client").$Enums.DeliveryOrderStatus;
+        createdAt: Date;
+        clientName: string;
+        clientPhone: string;
+        address: string;
+        totalAmount: number;
+        isPaid: boolean;
+        paymentMethod: string | null;
+        driverId: number | null;
+    }>;
 }

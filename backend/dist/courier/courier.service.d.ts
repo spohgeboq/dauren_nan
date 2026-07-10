@@ -31,13 +31,13 @@ export declare class CourierService {
             clientId: number | null;
             status: import(".prisma/client").$Enums.DeliveryOrderStatus;
             createdAt: Date;
-            driverId: number | null;
-            paymentMethod: string | null;
-            totalAmount: number;
             clientName: string;
             clientPhone: string;
             address: string;
+            totalAmount: number;
             isPaid: boolean;
+            paymentMethod: string | null;
+            driverId: number | null;
         })[];
     }>;
     updateOrderStatus(orderId: number, status: string, paymentMethod?: string): Promise<{

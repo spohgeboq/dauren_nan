@@ -35,6 +35,19 @@ let BakerService = class BakerService {
         });
         if (!product)
             throw new common_1.NotFoundException('Продукт не найден');
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const todayEnd = new Date();
+        todayEnd.setHours(23, 59, 59, 999);
+        const taskExists = await this.prisma.productionTask.findFirst({
+            where: {
+                productId,
+                date: {
+                    gte: todayStart,
+                    lte: todayEnd,
+                },
+            },
+        });
         return this.prisma.$transaction(async (tx) => {
             const batch = await tx.productionBatch.create({
                 data: {
@@ -53,7 +66,7 @@ let BakerService = class BakerService {
                     });
                 }
             }
-            return { success: true, batch };
+            return { success: true, batch, hasPlannedTask: !!taskExists };
         });
     }
     async finishBatch(batchId) {
@@ -70,6 +83,36 @@ let BakerService = class BakerService {
                 where: { id: batch.productId },
                 data: { stock: { increment: batch.quantity } },
             });
+            const dayStart = new Date(batch.startTime);
+            dayStart.setHours(0, 0, 0, 0);
+            const dayEnd = new Date(batch.startTime);
+            dayEnd.setHours(23, 59, 59, 999);
+            const task = await tx.productionTask.findFirst({
+                where: {
+                    productId: batch.productId,
+                    date: {
+                        gte: dayStart,
+                        lte: dayEnd,
+                    },
+                },
+            });
+            if (task) {
+                await tx.productionTask.update({
+                    where: { id: task.id },
+                    data: { completed: { increment: batch.quantity } },
+                });
+                const timeStr = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+                const product = await tx.product.findUnique({ where: { id: batch.productId } });
+                await tx.batchLog.create({
+                    data: {
+                        taskId: task.id,
+                        time: timeStr,
+                        productName: product?.name || 'Партия',
+                        quantity: batch.quantity,
+                        type: 'READY',
+                    },
+                });
+            }
             return { success: true };
         });
     }

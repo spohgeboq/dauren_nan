@@ -27,4 +27,33 @@ export declare class AnalyticsService {
         };
         profit: number;
     }>;
+    getStats(period: string): Promise<{
+        revenue: number;
+        expenses: number;
+        profit: number;
+        debt: number;
+        debtors: {
+            id: number;
+            name: string;
+            amount: number;
+            daysOverdue: number;
+        }[];
+        barData: {
+            day: string;
+            revenue: number;
+            expenses: number;
+        }[];
+        pieData: {
+            name: string;
+            percent: number;
+            color: string;
+        }[];
+        drivers: {
+            id: number;
+            name: string;
+            points: number;
+            returns: number;
+            status: string;
+        }[];
+    }>;
 }

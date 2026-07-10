@@ -16,6 +16,7 @@ exports.InventoryController = void 0;
 const common_1 = require("@nestjs/common");
 const inventory_service_1 = require("./inventory.service");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const permissions_guard_1 = require("../auth/guards/permissions.guard");
 let InventoryController = class InventoryController {
     constructor(service) {
         this.service = service;
@@ -63,7 +64,8 @@ __decorate([
 ], InventoryController.prototype, "update", null);
 exports.InventoryController = InventoryController = __decorate([
     (0, common_1.Controller)('inventory'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),
+    (0, permissions_guard_1.CheckPermissions)('inventory'),
     __metadata("design:paramtypes", [inventory_service_1.InventoryService])
 ], InventoryController);
 //# sourceMappingURL=inventory.controller.js.map

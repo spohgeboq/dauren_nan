@@ -16,6 +16,7 @@ exports.ProductionController = void 0;
 const common_1 = require("@nestjs/common");
 const production_service_1 = require("./production.service");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const permissions_guard_1 = require("../auth/guards/permissions.guard");
 let ProductionController = class ProductionController {
     constructor(service) {
         this.service = service;
@@ -63,7 +64,8 @@ __decorate([
 ], ProductionController.prototype, "addBatch", null);
 exports.ProductionController = ProductionController = __decorate([
     (0, common_1.Controller)('production'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),
+    (0, permissions_guard_1.CheckPermissions)('production'),
     __metadata("design:paramtypes", [production_service_1.ProductionService])
 ], ProductionController);
 //# sourceMappingURL=production.controller.js.map

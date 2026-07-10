@@ -1,9 +1,11 @@
 import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards, ParseIntPipe } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PermissionsGuard, CheckPermissions } from '../auth/guards/permissions.guard';
 
 @Controller('roles')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@CheckPermissions('roles')
 export class RolesController {
   constructor(private service: RolesService) {}
 

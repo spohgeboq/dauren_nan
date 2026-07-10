@@ -96,6 +96,75 @@ async function main() {
   }
   console.log('✅ Employees created');
 
+  // ─── 4. Custom Roles and Permissions ───────────────────
+  console.log('🌱 Seeding Custom Roles and Permissions...');
+  const modulesList = ['pos', 'clients', 'orders', 'routes', 'production', 'inventory', 'purchases', 'employees', 'roles'];
+
+  await prisma.customRole.create({
+    data: {
+      name: 'ADMIN',
+      description: 'Главный Администратор',
+      permissions: {
+        create: modulesList.map(m => ({
+          module: m,
+          canView: true,
+          canCreate: true,
+          canEdit: true,
+          canDelete: true
+        }))
+      }
+    }
+  });
+
+  await prisma.customRole.create({
+    data: {
+      name: 'BAKER',
+      description: 'Пекарь',
+      permissions: {
+        create: modulesList.map(m => ({
+          module: m,
+          canView: m === 'production' || m === 'inventory',
+          canCreate: m === 'production',
+          canEdit: m === 'production',
+          canDelete: false
+        }))
+      }
+    }
+  });
+
+  await prisma.customRole.create({
+    data: {
+      name: 'DRIVER',
+      description: 'Водитель / Курьер',
+      permissions: {
+        create: modulesList.map(m => ({
+          module: m,
+          canView: m === 'routes',
+          canCreate: false,
+          canEdit: false,
+          canDelete: false
+        }))
+      }
+    }
+  });
+
+  await prisma.customRole.create({
+    data: {
+      name: 'CASHIER',
+      description: 'Кассир',
+      permissions: {
+        create: modulesList.map(m => ({
+          module: m,
+          canView: m === 'pos' || m === 'clients',
+          canCreate: m === 'pos' || m === 'clients',
+          canEdit: m === 'pos' || m === 'clients',
+          canDelete: false
+        }))
+      }
+    }
+  });
+  console.log('✅ Custom Roles and Permissions seeded');
+
   console.log('\n🎉 Database seeded successfully!');
 }
 

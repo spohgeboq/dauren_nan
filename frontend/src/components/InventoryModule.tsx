@@ -21,16 +21,21 @@ interface InventoryModuleProps {
 const InventoryModule: React.FC<InventoryModuleProps> = ({ onBack }) => {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+  
+  // Drawer form inputs state
+  const [editMinLimit, setEditMinLimit] = useState('');
+  const [editConversion, setEditConversion] = useState('');
+
+  const fetchInventory = async () => {
+    try {
+      const data = await api.get('/inventory');
+      setInventory(data);
+    } catch (err) {
+      console.error('Error fetching inventory:', err);
+    }
+  };
 
   useEffect(() => {
-    const fetchInventory = async () => {
-      try {
-        const data = await api.get('/inventory');
-        setInventory(data);
-      } catch (err) {
-        console.error('Error fetching inventory:', err);
-      }
-    };
     fetchInventory();
   }, []);
 
@@ -41,10 +46,31 @@ const InventoryModule: React.FC<InventoryModuleProps> = ({ onBack }) => {
 
   const handleRowClick = (item: InventoryItem) => {
     setSelectedItem(item);
+    setEditMinLimit(String(item.minLimit));
+    setEditConversion(String(item.conversionRatio));
   };
 
   const closeDrawer = () => {
     setSelectedItem(null);
+  };
+
+  const handleSaveSettings = async () => {
+    if (!selectedItem) return;
+
+    try {
+      const minLimitVal = parseFloat(editMinLimit);
+      const conversionVal = parseFloat(editConversion);
+
+      await api.patch(`/inventory/${selectedItem.id}`, {
+        minLimit: isNaN(minLimitVal) ? selectedItem.minLimit : minLimitVal,
+        conversionRatio: isNaN(conversionVal) ? selectedItem.conversionRatio : conversionVal
+      });
+
+      await fetchInventory();
+      closeDrawer();
+    } catch (err) {
+      console.error('Failed to update inventory item settings', err);
+    }
   };
 
   return (
@@ -61,11 +87,11 @@ const InventoryModule: React.FC<InventoryModuleProps> = ({ onBack }) => {
         <div className={styles.headerActions}>
           <button className={styles.secondaryBtn}>
             <ClipboardList size={18} />
-            Инвентаризация
+            <span>Инвентаризация</span>
           </button>
           <button className={styles.primaryBtn}>
             <Plus size={18} />
-            Добавить сырье
+            <span>Добавить сырье</span>
           </button>
         </div>
       </header>
@@ -162,7 +188,7 @@ const InventoryModule: React.FC<InventoryModuleProps> = ({ onBack }) => {
             <div className={styles.drawerHeader}>
               <div className={styles.drawerTitleWrapper}>
                 <Settings2 size={24} className={styles.drawerIcon} />
-                <h2 className={styles.drawerTitle}>Настройки упаковки</h2>
+                <h2 className={styles.drawerTitle}>Настройки сырья</h2>
               </div>
               <button className={styles.closeBtn} onClick={closeDrawer}>
                 <X size={24} />
@@ -173,6 +199,22 @@ const InventoryModule: React.FC<InventoryModuleProps> = ({ onBack }) => {
               <div className={styles.drawerItemInfo}>
                 <div className={styles.drawerItemName}>{selectedItem.name}</div>
                 <div className={styles.drawerItemStock}>Остаток: {selectedItem.currentStock} {selectedItem.baseUnit}</div>
+              </div>
+
+              <div className={styles.settingsGroup}>
+                <h3 className={styles.settingsSubtitle}>Пороговые значения</h3>
+                
+                <div className={styles.formField}>
+                  <label>Минимальный остаток (лимит)</label>
+                  <input 
+                    type="number" 
+                    className={styles.inputField} 
+                    value={editMinLimit}
+                    onChange={(e) => setEditMinLimit(e.target.value)}
+                    placeholder="0"
+                  />
+                  <span className={styles.fieldHint}>Минимальный объем сырья, при достижении которого срабатывает предупреждение</span>
+                </div>
               </div>
 
               <div className={styles.settingsGroup}>
@@ -193,7 +235,12 @@ const InventoryModule: React.FC<InventoryModuleProps> = ({ onBack }) => {
                   <label>Коэффициент (в 1 закуп. ед.)</label>
                   <div className={styles.conversionFormula}>
                     <span className={styles.formulaText}>1 {selectedItem.purchaseUnit.toLowerCase()} =</span>
-                    <input type="text" readOnly value={selectedItem.conversionRatio} className={`${styles.inputField} ${styles.inputShort}`} />
+                    <input 
+                      type="number" 
+                      className={`${styles.inputField} ${styles.inputShort}`} 
+                      value={editConversion}
+                      onChange={(e) => setEditConversion(e.target.value)}
+                    />
                     <span className={styles.formulaText}>{selectedItem.baseUnit}</span>
                   </div>
                 </div>
@@ -201,7 +248,7 @@ const InventoryModule: React.FC<InventoryModuleProps> = ({ onBack }) => {
             </div>
 
             <div className={styles.drawerFooter}>
-              <button className={styles.saveBtn} onClick={closeDrawer}>
+              <button className={styles.saveBtn} onClick={handleSaveSettings} disabled={!editMinLimit || !editConversion}>
                 <Save size={18} />
                 Сохранить настройки
               </button>

@@ -1,9 +1,11 @@
 import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
 import { ProductionService } from './production.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PermissionsGuard, CheckPermissions } from '../auth/guards/permissions.guard';
 
 @Controller('production')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@CheckPermissions('production')
 export class ProductionController {
   constructor(private service: ProductionService) {}
 

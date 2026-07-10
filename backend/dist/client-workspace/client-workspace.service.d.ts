@@ -46,13 +46,13 @@ export declare class ClientWorkspaceService {
         clientId: number | null;
         status: import(".prisma/client").$Enums.DeliveryOrderStatus;
         createdAt: Date;
-        driverId: number | null;
-        paymentMethod: string | null;
-        totalAmount: number;
         clientName: string;
         clientPhone: string;
         address: string;
+        totalAmount: number;
         isPaid: boolean;
+        paymentMethod: string | null;
+        driverId: number | null;
     }) | null>;
     getLastOrder(userId: number): Promise<({
         items: {
@@ -67,13 +67,13 @@ export declare class ClientWorkspaceService {
         clientId: number | null;
         status: import(".prisma/client").$Enums.DeliveryOrderStatus;
         createdAt: Date;
-        driverId: number | null;
-        paymentMethod: string | null;
-        totalAmount: number;
         clientName: string;
         clientPhone: string;
         address: string;
+        totalAmount: number;
         isPaid: boolean;
+        paymentMethod: string | null;
+        driverId: number | null;
     }) | null>;
     getOrderHistory(userId: number): Promise<({
         items: ({
@@ -103,13 +103,13 @@ export declare class ClientWorkspaceService {
         clientId: number | null;
         status: import(".prisma/client").$Enums.DeliveryOrderStatus;
         createdAt: Date;
-        driverId: number | null;
-        paymentMethod: string | null;
-        totalAmount: number;
         clientName: string;
         clientPhone: string;
         address: string;
+        totalAmount: number;
         isPaid: boolean;
+        paymentMethod: string | null;
+        driverId: number | null;
     })[]>;
     createOrder(userId: number, items: {
         productId: number;
@@ -119,12 +119,12 @@ export declare class ClientWorkspaceService {
         clientId: number | null;
         status: import(".prisma/client").$Enums.DeliveryOrderStatus;
         createdAt: Date;
-        driverId: number | null;
-        paymentMethod: string | null;
-        totalAmount: number;
         clientName: string;
         clientPhone: string;
         address: string;
+        totalAmount: number;
         isPaid: boolean;
+        paymentMethod: string | null;
+        driverId: number | null;
     }>;
 }

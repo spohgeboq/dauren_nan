@@ -79,6 +79,7 @@ export declare class BakerController {
             startTime: Date;
             endTime: Date | null;
         };
+        hasPlannedTask: boolean;
     }>;
     finishBatch(body: {
         batchId: number;

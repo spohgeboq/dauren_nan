@@ -16,6 +16,7 @@ exports.RolesController = void 0;
 const common_1 = require("@nestjs/common");
 const roles_service_1 = require("./roles.service");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const permissions_guard_1 = require("../auth/guards/permissions.guard");
 let RolesController = class RolesController {
     constructor(service) {
         this.service = service;
@@ -76,7 +77,8 @@ __decorate([
 ], RolesController.prototype, "remove", null);
 exports.RolesController = RolesController = __decorate([
     (0, common_1.Controller)('roles'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),
+    (0, permissions_guard_1.CheckPermissions)('roles'),
     __metadata("design:paramtypes", [roles_service_1.RolesService])
 ], RolesController);
 //# sourceMappingURL=roles.controller.js.map

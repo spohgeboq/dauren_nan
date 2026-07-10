@@ -2,9 +2,11 @@ import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards, Pa
 import { UsersService } from './users.service';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PermissionsGuard, CheckPermissions } from '../auth/guards/permissions.guard';
 
 @Controller('users')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@CheckPermissions('employees')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 

@@ -75,6 +75,7 @@ export declare class BakerService {
             startTime: Date;
             endTime: Date | null;
         };
+        hasPlannedTask: boolean;
     }>;
     finishBatch(batchId: number): Promise<{
         success: boolean;

@@ -1,96 +1,145 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, CheckCircle2, AlertTriangle, Plus, Minus, Factory, Clock, PackageCheck, Scale, X } from 'lucide-react';
 import styles from './ProductionModule.module.css';
+import { api } from '../utils/api';
 
 interface ProductionTask {
-  id: string;
+  id: string | number;
   name: string;
   planned: number;
   completed: number;
 }
 
 interface BatchLog {
-  id: string;
+  id: string | number;
   time: string;
   productName: string;
   quantity: number;
   type: 'Готово' | 'Брак';
 }
 
-const MOCK_TASKS: ProductionTask[] = [
-  { id: 't1', name: 'Таба нан', planned: 500, completed: 350 },
-  { id: 't2', name: 'Батон нарезной', planned: 300, completed: 280 },
-  { id: 't3', name: 'Хлеб Пшеничный', planned: 250, completed: 100 },
-  { id: 't4', name: 'Круассан классический', planned: 150, completed: 0 },
-  { id: 't5', name: 'Синнабон', planned: 80, completed: 80 },
-];
-
-const MOCK_LOGS: BatchLog[] = [
-  { id: 'l1', time: '08:15', productName: 'Таба нан', quantity: 200, type: 'Готово' },
-  { id: 'l2', time: '08:45', productName: 'Батон нарезной', quantity: 150, type: 'Готово' },
-  { id: 'l3', time: '09:20', productName: 'Таба нан', quantity: 150, type: 'Готово' },
-  { id: 'l4', time: '09:35', productName: 'Таба нан', quantity: 5, type: 'Брак' },
-  { id: 'l5', time: '10:00', productName: 'Батон нарезной', quantity: 130, type: 'Готово' },
-  { id: 'l6', time: '10:15', productName: 'Хлеб Пшеничный', quantity: 100, type: 'Готово' },
-];
-
 interface ProductionModuleProps {
   onBack: () => void;
 }
 
 const ProductionModule: React.FC<ProductionModuleProps> = ({ onBack }) => {
-  const [tasks, setTasks] = useState<ProductionTask[]>(MOCK_TASKS);
-  const [logs, setLogs] = useState<BatchLog[]>(MOCK_LOGS);
+  const [tasks, setTasks] = useState<ProductionTask[]>([]);
+  const [logs, setLogs] = useState<BatchLog[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Modal State
+  // New plan form state
+  const [isPlanFormOpen, setIsPlanFormOpen] = useState(false);
+  const [newPlanProductId, setNewPlanProductId] = useState('');
+  const [newPlanQty, setNewPlanQty] = useState('');
+
+  // Modal State for Enter Fact
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | number | null>(null);
   const [inputValue, setInputValue] = useState<string>('');
   const [batchType, setBatchType] = useState<'Готово' | 'Брак'>('Готово');
+
+  const getTodayDateString = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      const dateStr = getTodayDateString();
+      const [tasksData, logsData, productsData] = await Promise.all([
+        api.get(`/production/tasks?date=${dateStr}`),
+        api.get('/production/logs'),
+        api.get('/products')
+      ]);
+
+      const mappedTasks = (tasksData || []).map((t: any) => ({
+        id: t.id,
+        name: t.product ? t.product.name : 'Неизвестно',
+        planned: t.planned || 0,
+        completed: t.completed || 0
+      }));
+
+      const mappedLogs = (logsData || []).map((l: any) => ({
+        id: l.id,
+        time: l.time,
+        productName: l.productName || 'Товар',
+        quantity: l.quantity || 0,
+        type: l.type === 'READY' ? 'Готово' : 'Брак'
+      }));
+
+      setTasks(mappedTasks);
+      setLogs(mappedLogs);
+      setProducts(productsData || []);
+    } catch (e) {
+      console.error('Failed to load production data', e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   // Stats
   const totalPlanned = tasks.reduce((sum, t) => sum + t.planned, 0);
   const totalCompleted = tasks.reduce((sum, t) => sum + t.completed, 0);
-  const progressPercent = Math.round((totalCompleted / totalPlanned) * 100) || 0;
+  const progressPercent = totalPlanned > 0 ? Math.round((totalCompleted / totalPlanned) * 100) : 0;
   
-  // Mocked raw material used (e.g. 1 unit roughly uses 0.4kg of flour/water)
+  // Mocked raw material used: 1 unit roughly uses 0.45kg of raw material
   const rawMaterialsUsed = Math.round(totalCompleted * 0.45);
 
-  const handleOpenModal = (taskId: string) => {
+  const handleOpenModal = (taskId: string | number) => {
     setSelectedTaskId(taskId);
     setInputValue('');
     setBatchType('Готово');
     setIsModalOpen(true);
   };
 
-  const handleFixBatch = (e: React.FormEvent) => {
+  const handleFixBatch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedTaskId || !inputValue) return;
     
     const qty = parseInt(inputValue, 10);
     if (isNaN(qty) || qty <= 0) return;
 
-    const task = tasks.find(t => t.id === selectedTaskId);
-    if (!task) return;
-
-    // Update Logs
-    const newLog: BatchLog = {
-      id: `l${Date.now()}`,
-      time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-      productName: task.name,
-      quantity: qty,
-      type: batchType
-    };
-    setLogs([newLog, ...logs]);
-
-    // Update Tasks if it's 'Готово'
-    if (batchType === 'Готово') {
-      setTasks(prev => prev.map(t => 
-        t.id === selectedTaskId ? { ...t, completed: t.completed + qty } : t
-      ));
+    try {
+      const type = batchType === 'Готово' ? 'READY' : 'DEFECT';
+      await api.post('/production/batch', {
+        taskId: Number(selectedTaskId),
+        quantity: qty,
+        type: type
+      });
+      setIsModalOpen(false);
+      fetchData();
+    } catch (err) {
+      console.error('Failed to save batch', err);
     }
+  };
 
-    setIsModalOpen(false);
+  const handleCreatePlan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPlanProductId || !newPlanQty) return;
+    const planned = parseInt(newPlanQty, 10);
+    if (isNaN(planned) || planned <= 0) return;
+
+    try {
+      await api.post('/production/tasks', {
+        productId: parseInt(newPlanProductId, 10),
+        planned: planned
+      });
+      setNewPlanProductId('');
+      setNewPlanQty('');
+      setIsPlanFormOpen(false);
+      fetchData();
+    } catch (err) {
+      console.error('Failed to create production task', err);
+    }
   };
 
   const selectedTask = tasks.find(t => t.id === selectedTaskId);
@@ -153,49 +202,107 @@ const ProductionModule: React.FC<ProductionModuleProps> = ({ onBack }) => {
           
           {/* Left Column: Tasks */}
           <div className={styles.tasksCol}>
-            <h2 className={styles.sectionTitle}>Задание на производство</h2>
-            <div className={styles.tasksList}>
-              {tasks.map(task => {
-                const isDone = task.completed >= task.planned;
-                const left = Math.max(0, task.planned - task.completed);
-                const progress = Math.min(100, Math.round((task.completed / task.planned) * 100));
-
-                return (
-                  <div key={task.id} className={`${styles.taskCard} ${isDone ? styles.taskCardDone : ''}`}>
-                    <div className={styles.taskInfo}>
-                      <h3 className={styles.taskName}>{task.name}</h3>
-                      <div className={styles.taskMeta}>
-                        План: {task.planned} • Испечено: {task.completed}
-                      </div>
-                      <div className={styles.taskProgressBg}>
-                        <div className={`${styles.taskProgressFill} ${isDone ? styles.fillDone : ''}`} style={{ width: `${progress}%` }}></div>
-                      </div>
-                    </div>
-                    
-                    <div className={styles.taskActions}>
-                      {!isDone && (
-                        <div className={styles.taskLeftBadge}>
-                          Осталось: <strong>{left} шт</strong>
-                        </div>
-                      )}
-                      {isDone ? (
-                        <div className={styles.doneBadge}>
-                          <CheckCircle2 size={16} />
-                          Выполнено
-                        </div>
-                      ) : (
-                        <button 
-                          className={styles.actionBtn}
-                          onClick={() => handleOpenModal(task.id)}
-                        >
-                          Ввести факт
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h2 className={styles.sectionTitle} style={{ margin: 0 }}>Задание на производство</h2>
+              <button 
+                className={styles.actionBtn} 
+                style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
+                onClick={() => setIsPlanFormOpen(!isPlanFormOpen)}
+              >
+                {isPlanFormOpen ? 'Закрыть' : 'Создать план'}
+              </button>
             </div>
+
+            {/* Inline Plan Form */}
+            {isPlanFormOpen && (
+              <form onSubmit={handleCreatePlan} style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', backgroundColor: '#ffffff', padding: '1rem', borderRadius: '0.75rem', border: '1px solid #e2e8f0', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1, minWidth: '180px' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>Продукт</label>
+                  <select 
+                    value={newPlanProductId} 
+                    onChange={e => setNewPlanProductId(e.target.value)}
+                    style={{ padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid #cbd5e1', outline: 'none' }}
+                    required
+                  >
+                    <option value="">Выберите продукт</option>
+                    {products.map(p => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', width: '100px' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>Кол-во (шт)</label>
+                  <input 
+                    type="number" 
+                    value={newPlanQty} 
+                    onChange={e => setNewPlanQty(e.target.value)}
+                    placeholder="0"
+                    style={{ padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid #cbd5e1', outline: 'none' }}
+                    min="1"
+                    required
+                  />
+                </div>
+                <button 
+                  type="submit" 
+                  className={styles.actionBtn} 
+                  style={{ height: '38px', padding: '0 1.25rem' }}
+                >
+                  Добавить
+                </button>
+              </form>
+            )}
+
+            {isLoading ? (
+              <div style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>Загрузка...</div>
+            ) : (
+              <div className={styles.tasksList}>
+                {tasks.map(task => {
+                  const isDone = task.completed >= task.planned;
+                  const left = Math.max(0, task.planned - task.completed);
+                  const progress = Math.min(100, Math.round((task.completed / task.planned) * 100)) || 0;
+
+                  return (
+                    <div key={task.id} className={`${styles.taskCard} ${isDone ? styles.taskCardDone : ''}`}>
+                      <div className={styles.taskInfo}>
+                        <h3 className={styles.taskName}>{task.name}</h3>
+                        <div className={styles.taskMeta}>
+                          План: {task.planned} • Испечено: {task.completed}
+                        </div>
+                        <div className={styles.taskProgressBg}>
+                          <div className={`${styles.taskProgressFill} ${isDone ? styles.fillDone : ''}`} style={{ width: `${progress}%` }}></div>
+                        </div>
+                      </div>
+                      
+                      <div className={styles.taskActions}>
+                        {!isDone && (
+                          <div className={styles.taskLeftBadge}>
+                            Осталось: <strong>{left} шт</strong>
+                          </div>
+                        )}
+                        {isDone ? (
+                          <div className={styles.doneBadge}>
+                            <CheckCircle2 size={16} />
+                            Выполнено
+                          </div>
+                        ) : (
+                          <button 
+                            className={styles.actionBtn}
+                            onClick={() => handleOpenModal(task.id)}
+                          >
+                            Ввести факт
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+                {tasks.length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8', backgroundColor: '#ffffff', borderRadius: '1rem', border: '1px solid #f1f5f9' }}>
+                    Заданий на сегодня нет. Создайте новый план!
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Right Column: History */}
@@ -221,6 +328,9 @@ const ProductionModule: React.FC<ProductionModuleProps> = ({ onBack }) => {
                     </div>
                   </div>
                 ))}
+                {logs.length === 0 && (
+                  <div style={{ textAlign: 'center', color: '#94a3b8', padding: '2rem' }}>Журнал пуст</div>
+                )}
               </div>
             </div>
           </div>
