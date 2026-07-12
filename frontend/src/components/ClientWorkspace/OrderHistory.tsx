@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Search } from 'lucide-react';
+import { FileText, RotateCw, Download } from 'lucide-react';
 import styles from './OrderHistory.module.css';
+import { notify } from './Toast';
 
 interface OrderItem {
   id: number;
   quantity: number;
   price: number;
   product: {
+    id: number;
     name: string;
   };
 }
@@ -40,6 +42,7 @@ const OrderHistory: React.FC = () => {
       }
     } catch (e) {
       console.error(e);
+      notify('Ошибка при загрузке истории заказов', 'error');
     } finally {
       setLoading(false);
     }
@@ -63,6 +66,36 @@ const OrderHistory: React.FC = () => {
     }
   };
 
+  const handleRepeatOrder = (order: Order) => {
+    const template: Record<number, number> = {};
+    order.items.forEach(item => {
+      // Assuming item.product object exists
+      if (item.product && item.product.id) {
+        template[item.product.id] = item.quantity;
+      }
+    });
+    localStorage.setItem('cartTemplate', JSON.stringify(template));
+    notify('Состав заказа сохранен! Перейдите во вкладку "Каталог" и нажмите "Загрузить шаблон".', 'success');
+  };
+
+  const handleDownloadInvoice = (order: Order) => {
+    let csv = `Накладная по заказу #${order.id}\nДата: ${new Date(order.createdAt).toLocaleString()}\n\n`;
+    csv += "Товар,Количество,Цена,Сумма\n";
+    order.items.forEach(i => {
+      const sum = i.price * i.quantity;
+      csv += `${i.product?.name || 'Товар'},${i.quantity},${i.price},${sum}\n`;
+    });
+    csv += `\nИТОГО,,,${order.totalAmount}`;
+    
+    const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csv);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Накладная_Заказ_${order.id}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (loading) return <div className={styles.loading}>Загрузка истории...</div>;
 
   return (
@@ -79,37 +112,53 @@ const OrderHistory: React.FC = () => {
           <p>Сделайте свой первый заказ, и он появится здесь.</p>
         </div>
       ) : (
-        <div className={styles.tableWrapper}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Номер</th>
-                <th>Дата</th>
-                <th>Статус</th>
-                <th>Оплата</th>
-                <th>Сумма</th>
-                <th>Состав</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map(order => (
-                <tr key={order.id}>
-                  <td><strong>#{order.id}</strong></td>
-                  <td>{new Date(order.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit' })}</td>
-                  <td>{getStatusBadge(order.status)}</td>
-                  <td>{getPaymentText(order.paymentMethod)}</td>
-                  <td className={styles.sumCell}>{order.totalAmount.toLocaleString()} ₸</td>
-                  <td>
-                    <ul className={styles.itemList}>
-                      {order.items.map(item => (
-                        <li key={item.id}>{item.product.name} — {item.quantity} шт</li>
-                      ))}
-                    </ul>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className={styles.ordersList}>
+          {orders.map(order => (
+            <div key={order.id} className={styles.orderCard}>
+              <div className={styles.orderHeader}>
+                <span className={styles.orderNumber}>Заказ #{order.id}</span>
+                <span className={styles.orderDate}>
+                  {new Date(order.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit' })}
+                </span>
+              </div>
+              
+              <div className={styles.orderBody}>
+                <div className={styles.orderProp}>
+                  <span className={styles.propLabel}>Статус:</span>
+                  <span className={styles.propValue}>{getStatusBadge(order.status)}</span>
+                </div>
+                <div className={styles.orderProp}>
+                  <span className={styles.propLabel}>Оплата:</span>
+                  <span className={styles.propValue}>{getPaymentText(order.paymentMethod)}</span>
+                </div>
+                <div className={styles.orderProp}>
+                  <span className={styles.propLabel}>Сумма:</span>
+                  <span className={styles.orderSum}>{order.totalAmount.toLocaleString()} ₸</span>
+                </div>
+              </div>
+
+              <div className={styles.orderItems}>
+                <div className={styles.propLabel}>Состав заказа:</div>
+                <ul className={styles.itemList}>
+                  {order.items.map(item => (
+                    <li key={item.id}>
+                      <span className={styles.itemName}>{item.product?.name || 'Товар'}</span>
+                      <span className={styles.itemQty}>{item.quantity} шт</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className={styles.orderActions}>
+                <button className={styles.btnRepeat} onClick={() => handleRepeatOrder(order)}>
+                  <RotateCw size={16} /> Повторить заказ
+                </button>
+                <button className={styles.btnInvoice} onClick={() => handleDownloadInvoice(order)}>
+                  <Download size={16} /> Накладная (CSV)
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

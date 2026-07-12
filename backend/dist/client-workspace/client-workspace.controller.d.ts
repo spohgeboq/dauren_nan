@@ -5,7 +5,9 @@ export declare class ClientWorkspaceController {
     getProfile(req: any): Promise<{
         name: string;
         address: string;
+        savedAddresses: string[];
         balance: number;
+        debt: number;
         phone: string | null;
     }>;
     getProducts(): Promise<{
@@ -22,8 +24,8 @@ export declare class ClientWorkspaceController {
                 createdAt: Date;
                 updatedAt: Date;
                 isActive: boolean;
-                sku: string;
                 categoryId: number;
+                sku: string;
                 weight: number;
                 cost: number;
                 price: number;
@@ -62,8 +64,8 @@ export declare class ClientWorkspaceController {
                 createdAt: Date;
                 updatedAt: Date;
                 isActive: boolean;
-                sku: string;
                 categoryId: number;
+                sku: string;
                 weight: number;
                 cost: number;
                 price: number;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Truck, CheckCircle2, Phone } from 'lucide-react';
+import { Package, Truck, CheckCircle2, Phone, MessageSquare } from 'lucide-react';
 import styles from './ActiveOrderTracker.module.css';
+import { notify } from './Toast';
 
 const ActiveOrderTracker: React.FC = () => {
   const [activeOrder, setActiveOrder] = useState<any>(null);
@@ -129,6 +130,11 @@ const ActiveOrderTracker: React.FC = () => {
           <span>Итого:</span>
           <strong>{activeOrder.totalAmount.toLocaleString()} ₸</strong>
         </div>
+        
+        <button className={styles.btnManager} onClick={() => notify('Открывается чат с менеджером... (интеграция в разработке)', 'info')}>
+          <MessageSquare size={18} />
+          Связаться с менеджером
+        </button>
       </div>
     </div>
   );

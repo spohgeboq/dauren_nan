@@ -201,3 +201,66 @@
   font-size: 1.125rem;
   color: #0f172a;
 }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .card {
+    padding: 1rem;
+  }
+  
+  .stepIcon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .stepLabel {
+    font-size: 0.65rem;
+    text-align: center;
+    max-width: 60px;
+  }
+
+  .line {
+    margin: 0 4px;
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .courierCard {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .callBtn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.btnManager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--bg-light, #f8fafc);
+  color: var(--text-main, #1e293b);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 8px;
+  font-weight: 500;
+  text-decoration: none;
+  margin-top: 1.5rem;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.btnManager:hover {
+  background: #e2e8f0;
+}

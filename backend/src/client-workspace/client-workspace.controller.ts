@@ -35,6 +35,6 @@ export class ClientWorkspaceController {
 
   @Post('orders')
   async createOrder(@Req() req: any, @Body() body: any) {
-    return this.service.createOrder(req.user.sub, body.items, body.paymentMethod);
+    return this.service.createOrder(req.user.sub, body.items, body.paymentMethod, body.address);
   }
 }

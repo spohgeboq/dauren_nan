@@ -57,48 +57,158 @@
   overflow-x: auto;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
+.ordersList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.table th {
-  padding: 1rem;
-  background: #f8fafc;
-  color: #64748b;
-  font-weight: 600;
-  font-size: 0.875rem;
+.orderCard {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--border, #e2e8f0);
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.orderHeader {
+  background: var(--bg-light, #f8fafc);
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border, #e2e8f0);
+}
+
+.orderNumber {
+  font-weight: 700;
+  color: var(--text-main, #1e293b);
+  font-size: 1.1rem;
+}
+
+.orderDate {
+  color: var(--text-muted, #64748b);
+  font-size: 0.9rem;
+}
+
+.orderBody {
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.5rem;
+  border-bottom: 1px dashed var(--border, #e2e8f0);
+}
+
+.orderProp {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.propLabel {
+  font-size: 0.85rem;
+  color: var(--text-muted, #64748b);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.table td {
-  padding: 1rem;
-  border-bottom: 1px solid #f1f5f9;
-  color: #334155;
-  font-size: 0.95rem;
-  vertical-align: top;
-}
-
-.table tr:last-child td {
-  border-bottom: none;
-}
-
-.sumCell {
   font-weight: 600;
+}
+
+.propValue {
+  color: var(--text-main, #1e293b);
+  font-weight: 500;
+}
+
+.orderSum {
+  color: var(--primary-gold, #d4af37);
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.orderItems {
+  padding: 1.5rem;
 }
 
 .itemList {
-  margin: 0;
-  padding-left: 1.25rem;
-  font-size: 0.875rem;
-  color: #64748b;
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .itemList li {
-  margin-bottom: 0.25rem;
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-main, #1e293b);
+  font-size: 0.95rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--bg-light, #f8fafc);
+}
+
+.itemList li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.itemName {
+  font-weight: 500;
+}
+
+.itemQty {
+  color: var(--text-muted, #64748b);
+}
+
+@media (max-width: 640px) {
+  .orderHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+.orderActions {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: var(--bg-light, #f8fafc);
+  border-top: 1px solid var(--border, #e2e8f0);
+}
+
+.btnRepeat {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--primary-gold, #d4af37);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btnRepeat:hover {
+  background: #c3a033;
+}
+
+.btnInvoice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: white;
+  color: var(--text-main, #1e293b);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btnInvoice:hover {
+  background: var(--bg-light, #f8fafc);
 }
 
 .badge {

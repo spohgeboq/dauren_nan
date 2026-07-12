@@ -130,17 +130,53 @@
   color: #1e293b;
 }
 
-.mainGrid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 2rem;
-  padding: 2rem;
+.trackerWrapper {
+  padding: 1rem 2rem 0;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.mainContent {
+  padding: 1rem 2rem 2rem;
   max-width: 1400px;
   margin: 0 auto;
 }
 
 @media (max-width: 1024px) {
-  .mainGrid {
-    grid-template-columns: 1fr;
+  .header {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem;
+  }
+  
+  .headerLeft {
+    justify-content: center;
+  }
+
+  .tabs {
+    justify-content: center;
+  }
+
+  .headerRight {
+    justify-content: space-between;
+  }
+
+  .logoutText {
+    display: none;
+  }
+
+  .trackerWrapper {
+    padding: 1rem 1rem 0;
+  }
+
+  .mainContent {
+    padding: 1rem;
   }
 }

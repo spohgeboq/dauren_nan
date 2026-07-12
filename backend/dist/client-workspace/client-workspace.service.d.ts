@@ -5,7 +5,9 @@ export declare class ClientWorkspaceService {
     getProfile(userId: number): Promise<{
         name: string;
         address: string;
+        savedAddresses: string[];
         balance: number;
+        debt: number;
         phone: string | null;
     }>;
     getProducts(): Promise<{
@@ -22,8 +24,8 @@ export declare class ClientWorkspaceService {
                 createdAt: Date;
                 updatedAt: Date;
                 isActive: boolean;
-                sku: string;
                 categoryId: number;
+                sku: string;
                 weight: number;
                 cost: number;
                 price: number;
@@ -83,8 +85,8 @@ export declare class ClientWorkspaceService {
                 createdAt: Date;
                 updatedAt: Date;
                 isActive: boolean;
-                sku: string;
                 categoryId: number;
+                sku: string;
                 weight: number;
                 cost: number;
                 price: number;
@@ -114,7 +116,7 @@ export declare class ClientWorkspaceService {
     createOrder(userId: number, items: {
         productId: number;
         quantity: number;
-    }[], paymentMethod: string): Promise<{
+    }[], paymentMethod: string, address?: string): Promise<{
         id: number;
         clientId: number | null;
         status: import(".prisma/client").$Enums.DeliveryOrderStatus;

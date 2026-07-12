@@ -1,20 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, User, Store } from 'lucide-react';
+import { LogOut, User, Store, ShoppingCart } from 'lucide-react';
 import styles from './ClientWorkspace.module.css';
-import BulkOrderForm from './BulkOrderForm';
+import CatalogWithCart from './CatalogWithCart';
 import ActiveOrderTracker from './ActiveOrderTracker';
 import OrderHistory from './OrderHistory';
+import ProfileFinances from './ProfileFinances';
+import Toast from './Toast';
 
-interface Profile {
+export interface Profile {
   name: string;
   address: string;
+  savedAddresses?: string[];
   balance: number;
+  debt: number;
   phone: string;
 }
 
 const ClientWorkspace: React.FC = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'history' | 'profile'>('dashboard');
 
   const fetchProfile = async () => {
     try {
@@ -32,8 +37,6 @@ const ClientWorkspace: React.FC = () => {
       setLoading(false);
     }
   };
-
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'history'>('dashboard');
 
   useEffect(() => {
     fetchProfile();
@@ -65,47 +68,52 @@ const ClientWorkspace: React.FC = () => {
             className={`${styles.tabBtn} ${activeTab === 'dashboard' ? styles.activeTab : ''}`}
             onClick={() => setActiveTab('dashboard')}
           >
-            Текущий заказ
+            Каталог
           </button>
           <button 
             className={`${styles.tabBtn} ${activeTab === 'history' ? styles.activeTab : ''}`}
             onClick={() => setActiveTab('history')}
           >
-            История заказов
+            История
+          </button>
+          <button 
+            className={`${styles.tabBtn} ${activeTab === 'profile' ? styles.activeTab : ''}`}
+            onClick={() => setActiveTab('profile')}
+          >
+            Профиль
           </button>
         </div>
 
         <div className={styles.headerRight}>
-          {profile && profile.balance < 0 && (
-            <div className={styles.debtWidget}>
-              <span className={styles.debtLabel}>Текущий долг:</span>
-              <span className={styles.debtAmount}>{Math.abs(profile.balance)} ₸</span>
-            </div>
-          )}
           <button className={styles.logoutBtn} onClick={handleLogout}>
             <LogOut size={18} />
-            Выйти
+            <span className={styles.logoutText}>Выйти</span>
           </button>
         </div>
       </header>
 
-      <main className={styles.mainGrid}>
-        {activeTab === 'dashboard' ? (
-          <>
-            <section className={styles.leftCol}>
-              <BulkOrderForm onOrderSuccess={() => window.location.reload()} />
-            </section>
-            
-            <section className={styles.rightCol}>
-              <ActiveOrderTracker />
-            </section>
-          </>
-        ) : (
-          <section className={styles.fullWidthCol}>
-            <OrderHistory />
-          </section>
+      {/* Active Order Tracker is always visible if on dashboard */}
+      {activeTab === 'dashboard' && (
+         <div className={styles.trackerWrapper}>
+           <ActiveOrderTracker />
+         </div>
+      )}
+
+      <main className={styles.mainContent}>
+        {activeTab === 'dashboard' && (
+          <CatalogWithCart 
+            profile={profile} 
+            onOrderSuccess={() => {
+              fetchProfile();
+              window.location.reload();
+            }} 
+          />
         )}
+        {activeTab === 'history' && <OrderHistory />}
+        {activeTab === 'profile' && profile && <ProfileFinances profile={profile} />}
       </main>
+      
+      <Toast />
     </div>
   );
 };

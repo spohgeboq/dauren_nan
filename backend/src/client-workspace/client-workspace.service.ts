@@ -15,10 +15,23 @@ export class ClientWorkspaceService {
       throw new NotFoundException('Магазин не найден для данного пользователя');
     }
 
+    const pastOrders = await this.prisma.deliveryOrder.findMany({
+      where: { clientId: user.client.id },
+      select: { address: true },
+      distinct: ['address'],
+    });
+    const savedAddresses = pastOrders.map(o => o.address).filter(a => a && a !== 'Не указан');
+    // If the main route is not in saved addresses, add it
+    if (user.client.route && !savedAddresses.includes(user.client.route)) {
+      savedAddresses.unshift(user.client.route);
+    }
+
     return {
       name: user.client.name,
-      address: user.client.route || 'Адрес не указан', // using route or another field if address is missing
+      address: user.client.route || 'Адрес не указан',
+      savedAddresses,
       balance: user.client.balance,
+      debt: user.client.balance,
       phone: user.client.phone,
     };
   }
@@ -90,7 +103,7 @@ export class ClientWorkspaceService {
     });
   }
 
-  async createOrder(userId: number, items: { productId: number, quantity: number }[], paymentMethod: string) {
+  async createOrder(userId: number, items: { productId: number, quantity: number }[], paymentMethod: string, address?: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: { client: true },
@@ -116,15 +129,17 @@ export class ClientWorkspaceService {
       };
     });
 
+    const finalAddress = address && address.trim() !== '' ? address.trim() : (user.client!.route || 'Не указан');
+
     const newOrder = await this.prisma.deliveryOrder.create({
       data: {
         clientId: user.clientId,
         clientName: user.client!.name,
         clientPhone: user.client!.phone || '',
-        address: user.client!.route || 'Не указан', // fallback
+        address: finalAddress,
         totalAmount,
         status: 'PENDING',
-        paymentMethod: paymentMethod || 'DEBT',
+        paymentMethod: paymentMethod || 'CASH',
         items: {
           create: orderItems,
         },

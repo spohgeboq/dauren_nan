@@ -45,8 +45,8 @@ export declare class RoutesController {
                 createdAt: Date;
                 updatedAt: Date;
                 isActive: boolean;
-                sku: string;
                 categoryId: number;
+                sku: string;
                 weight: number;
                 cost: number;
                 price: number;
@@ -101,8 +101,8 @@ export declare class RoutesController {
                 createdAt: Date;
                 updatedAt: Date;
                 isActive: boolean;
-                sku: string;
                 categoryId: number;
+                sku: string;
                 weight: number;
                 cost: number;
                 price: number;

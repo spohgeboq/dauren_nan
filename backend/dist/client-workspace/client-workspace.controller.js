@@ -36,7 +36,7 @@ let ClientWorkspaceController = class ClientWorkspaceController {
         return this.service.getLastOrder(req.user.sub);
     }
     async createOrder(req, body) {
-        return this.service.createOrder(req.user.sub, body.items, body.paymentMethod);
+        return this.service.createOrder(req.user.sub, body.items, body.paymentMethod, body.address);
     }
 };
 exports.ClientWorkspaceController = ClientWorkspaceController;
