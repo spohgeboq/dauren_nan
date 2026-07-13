@@ -11,12 +11,13 @@ const common_1 = require("@nestjs/common");
 const courier_controller_1 = require("./courier.controller");
 const courier_service_1 = require("./courier.service");
 const prisma_module_1 = require("../prisma/prisma.module");
+const events_module_1 = require("../events/events.module");
 let CourierModule = class CourierModule {
 };
 exports.CourierModule = CourierModule;
 exports.CourierModule = CourierModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule],
+        imports: [prisma_module_1.PrismaModule, events_module_1.EventsModule],
         controllers: [courier_controller_1.CourierController],
         providers: [courier_service_1.CourierService],
     })

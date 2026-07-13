@@ -11,12 +11,13 @@ const common_1 = require("@nestjs/common");
 const baker_controller_1 = require("./baker.controller");
 const baker_service_1 = require("./baker.service");
 const prisma_module_1 = require("../prisma/prisma.module");
+const events_module_1 = require("../events/events.module");
 let BakerModule = class BakerModule {
 };
 exports.BakerModule = BakerModule;
 exports.BakerModule = BakerModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule],
+        imports: [prisma_module_1.PrismaModule, events_module_1.EventsModule],
         controllers: [baker_controller_1.BakerController],
         providers: [baker_service_1.BakerService],
     })

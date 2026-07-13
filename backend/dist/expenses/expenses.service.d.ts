@@ -3,11 +3,11 @@ export declare class ExpensesService {
     private prisma;
     constructor(prisma: PrismaService);
     findAll(category?: string, month?: string): Promise<{
+        description: string | null;
         category: import(".prisma/client").$Enums.ExpenseCategory;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         date: Date;
         amount: number;
@@ -19,11 +19,11 @@ export declare class ExpensesService {
         paymentMethod: string;
         amount: number;
     }): Promise<{
+        description: string | null;
         category: import(".prisma/client").$Enums.ExpenseCategory;
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         date: Date;
         amount: number;

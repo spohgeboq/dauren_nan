@@ -480,6 +480,7 @@ model DeliveryOrder {
   status        DeliveryOrderStatus @default(PENDING)
   totalAmount   Int
   isPaid        Boolean             @default(false)
+  isBaked       Boolean             @default(false)
   paymentMethod String?             // "CASH", "CARD", "QR", "DEBT"
   driverId      Int?
   driver        User?               @relation(fields: [driverId], references: [id])

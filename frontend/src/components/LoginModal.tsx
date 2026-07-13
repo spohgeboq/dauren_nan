@@ -83,12 +83,12 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
           )}
 
           <div className={styles.field}>
-            <label>Email адрес</label>
+            <label>Логин или Email</label>
             <input 
-              type="email" 
+              type="text" 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@daurennan.kz" 
+              placeholder="admin или admin@daurennan.kz" 
             />
           </div>
 

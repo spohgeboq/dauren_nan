@@ -3,8 +3,10 @@ import { CourierController } from './courier.controller';
 import { CourierService } from './courier.service';
 import { PrismaModule } from '../prisma/prisma.module';
 
+import { EventsModule } from '../events/events.module';
+
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, EventsModule],
   controllers: [CourierController],
   providers: [CourierService],
 })

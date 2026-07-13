@@ -45,14 +45,15 @@ export declare class ClientWorkspaceController {
         } | null;
     } & {
         id: number;
-        clientId: number | null;
         status: import(".prisma/client").$Enums.DeliveryOrderStatus;
         createdAt: Date;
+        clientId: number | null;
         clientName: string;
         clientPhone: string;
         address: string;
         totalAmount: number;
         isPaid: boolean;
+        isBaked: boolean;
         paymentMethod: string | null;
         driverId: number | null;
     }) | null>;
@@ -81,14 +82,15 @@ export declare class ClientWorkspaceController {
         })[];
     } & {
         id: number;
-        clientId: number | null;
         status: import(".prisma/client").$Enums.DeliveryOrderStatus;
         createdAt: Date;
+        clientId: number | null;
         clientName: string;
         clientPhone: string;
         address: string;
         totalAmount: number;
         isPaid: boolean;
+        isBaked: boolean;
         paymentMethod: string | null;
         driverId: number | null;
     })[]>;
@@ -102,27 +104,29 @@ export declare class ClientWorkspaceController {
         }[];
     } & {
         id: number;
-        clientId: number | null;
         status: import(".prisma/client").$Enums.DeliveryOrderStatus;
         createdAt: Date;
+        clientId: number | null;
         clientName: string;
         clientPhone: string;
         address: string;
         totalAmount: number;
         isPaid: boolean;
+        isBaked: boolean;
         paymentMethod: string | null;
         driverId: number | null;
     }) | null>;
     createOrder(req: any, body: any): Promise<{
         id: number;
-        clientId: number | null;
         status: import(".prisma/client").$Enums.DeliveryOrderStatus;
         createdAt: Date;
+        clientId: number | null;
         clientName: string;
         clientPhone: string;
         address: string;
         totalAmount: number;
         isPaid: boolean;
+        isBaked: boolean;
         paymentMethod: string | null;
         driverId: number | null;
     }>;

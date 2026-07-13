@@ -22,17 +22,17 @@ export declare class VehiclesService {
         driver: {
             email: string;
             id: number;
-            login: string | null;
-            clientId: number | null;
             passwordHash: string;
             name: string | null;
             phone: string | null;
+            login: string | null;
             pin: string | null;
             role: import(".prisma/client").$Enums.Role;
             status: import(".prisma/client").$Enums.EmployeeStatus;
             isOnShift: boolean;
             createdAt: Date;
             updatedAt: Date;
+            clientId: number | null;
         } | null;
     } & {
         id: number;

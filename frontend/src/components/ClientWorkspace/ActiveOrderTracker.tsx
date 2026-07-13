@@ -2,15 +2,40 @@ import React, { useState, useEffect } from 'react';
 import { Package, Truck, CheckCircle2, Phone, MessageSquare } from 'lucide-react';
 import styles from './ActiveOrderTracker.module.css';
 import { notify } from './Toast';
+import { socket } from '../../utils/socket';
 
 const ActiveOrderTracker: React.FC = () => {
   const [activeOrder, setActiveOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  const getStatusText = (status: string) => {
+    switch(status) {
+      case 'PENDING': return 'Собирается на складе';
+      case 'IN_TRANSIT': return 'В пути';
+      case 'DELIVERED': return 'Доставлен';
+      default: return 'Обрабатывается';
+    }
+  };
+
   useEffect(() => {
     fetchActiveOrder();
     const interval = setInterval(fetchActiveOrder, 30000); // refresh every 30s
-    return () => clearInterval(interval);
+    
+    socket.connect();
+    socket.on('orderStatusUpdated', (data) => {
+      setActiveOrder((prev: any) => {
+        if (prev && prev.id === data.orderId) {
+          notify(`Статус заказа изменен: ${getStatusText(data.status)}`, 'success');
+          return { ...prev, status: data.status };
+        }
+        return prev;
+      });
+    });
+
+    return () => {
+      clearInterval(interval);
+      socket.off('orderStatusUpdated');
+    };
   }, []);
 
   const fetchActiveOrder = async () => {
@@ -46,15 +71,6 @@ const ActiveOrderTracker: React.FC = () => {
       </div>
     );
   }
-
-  const getStatusText = (status: string) => {
-    switch(status) {
-      case 'PENDING': return 'Собирается на складе';
-      case 'IN_TRANSIT': return 'В пути';
-      case 'DELIVERED': return 'Доставлен';
-      default: return 'Обрабатывается';
-    }
-  };
 
   const getStepClass = (step: string, current: string) => {
     if (current === 'DELIVERED') return styles.completed;

@@ -63,6 +63,43 @@ export declare class BakerController {
             startTime: Date;
             endTime: Date | null;
         })[];
+        b2bOrders: ({
+            items: ({
+                product: {
+                    id: number;
+                    name: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    isActive: boolean;
+                    categoryId: number;
+                    sku: string;
+                    weight: number;
+                    cost: number;
+                    price: number;
+                    imageUrl: string | null;
+                    stock: number;
+                };
+            } & {
+                id: number;
+                price: number;
+                quantity: number;
+                productId: number;
+                orderId: number;
+            })[];
+        } & {
+            id: number;
+            status: import(".prisma/client").$Enums.DeliveryOrderStatus;
+            createdAt: Date;
+            clientId: number | null;
+            clientName: string;
+            clientPhone: string;
+            address: string;
+            totalAmount: number;
+            isPaid: boolean;
+            isBaked: boolean;
+            paymentMethod: string | null;
+            driverId: number | null;
+        })[];
     }>;
     startBatch(body: {
         productId: number;
@@ -101,5 +138,18 @@ export declare class BakerController {
             bakerId: number;
             reason: string | null;
         };
+    }>;
+    markB2bOrderReady(body: {
+        orderId: number;
+    }): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    logShowcaseBatch(body: {
+        productId: number;
+        quantity: number;
+        bakerId: number;
+    }): Promise<{
+        success: boolean;
     }>;
 }

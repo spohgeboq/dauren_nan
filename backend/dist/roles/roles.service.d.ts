@@ -14,11 +14,11 @@ export declare class RolesService {
             canEdit: boolean;
             canDelete: boolean;
         }[];
+        description: string | null;
         id: number;
         name: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
     }[]>;
     findOne(id: number): Promise<{
         employeeCount: number;
@@ -32,11 +32,11 @@ export declare class RolesService {
             canEdit: boolean;
             canDelete: boolean;
         }[];
+        description: string | null;
         id: number;
         name: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
     } | null>;
     create(data: {
         name: string;
@@ -59,11 +59,11 @@ export declare class RolesService {
             canDelete: boolean;
         }[];
     } & {
+        description: string | null;
         id: number;
         name: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
     }>;
     update(id: number, data: {
         name?: string;
@@ -79,11 +79,11 @@ export declare class RolesService {
             canDelete: boolean;
         }[];
     } & {
+        description: string | null;
         id: number;
         name: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
     }>;
     updatePermission(roleId: number, module: string, data: {
         canView?: boolean;
@@ -100,10 +100,10 @@ export declare class RolesService {
         canDelete: boolean;
     }>;
     remove(id: number): Promise<{
+        description: string | null;
         id: number;
         name: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
     }>;
 }

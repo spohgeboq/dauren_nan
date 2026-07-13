@@ -1,7 +1,9 @@
 import { PrismaService } from '../prisma/prisma.service';
+import { EventsGateway } from '../events/events.gateway';
 export declare class CourierService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private eventsGateway;
+    constructor(prisma: PrismaService, eventsGateway: EventsGateway);
     getOrders(driverId: number): Promise<{
         orders: ({
             items: ({
@@ -28,14 +30,15 @@ export declare class CourierService {
             })[];
         } & {
             id: number;
-            clientId: number | null;
             status: import(".prisma/client").$Enums.DeliveryOrderStatus;
             createdAt: Date;
+            clientId: number | null;
             clientName: string;
             clientPhone: string;
             address: string;
             totalAmount: number;
             isPaid: boolean;
+            isBaked: boolean;
             paymentMethod: string | null;
             driverId: number | null;
         })[];

@@ -1,7 +1,9 @@
 import { PrismaService } from '../prisma/prisma.service';
+import { EventsGateway } from '../events/events.gateway';
 export declare class BakerService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private eventsGateway;
+    constructor(prisma: PrismaService, eventsGateway: EventsGateway);
     getDashboard(): Promise<{
         products: ({
             recipe: ({
@@ -63,6 +65,43 @@ export declare class BakerService {
             startTime: Date;
             endTime: Date | null;
         })[];
+        b2bOrders: ({
+            items: ({
+                product: {
+                    id: number;
+                    name: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    isActive: boolean;
+                    categoryId: number;
+                    sku: string;
+                    weight: number;
+                    cost: number;
+                    price: number;
+                    imageUrl: string | null;
+                    stock: number;
+                };
+            } & {
+                id: number;
+                price: number;
+                quantity: number;
+                productId: number;
+                orderId: number;
+            })[];
+        } & {
+            id: number;
+            status: import(".prisma/client").$Enums.DeliveryOrderStatus;
+            createdAt: Date;
+            clientId: number | null;
+            clientName: string;
+            clientPhone: string;
+            address: string;
+            totalAmount: number;
+            isPaid: boolean;
+            isBaked: boolean;
+            paymentMethod: string | null;
+            driverId: number | null;
+        })[];
     }>;
     startBatch(productId: number, quantity: number, bakerId: number): Promise<{
         success: boolean;
@@ -90,5 +129,12 @@ export declare class BakerService {
             bakerId: number;
             reason: string | null;
         };
+    }>;
+    markB2bOrderReady(orderId: number): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    logShowcaseBatch(productId: number, quantity: number, bakerId: number): Promise<{
+        success: boolean;
     }>;
 }

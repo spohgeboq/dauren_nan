@@ -21,10 +21,10 @@ export declare class OrdersController {
         })[];
     } & {
         id: number;
-        clientId: number;
         status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        clientId: number;
         deliveryTime: string | null;
         deliveryDate: Date;
         total: number;
@@ -72,10 +72,10 @@ export declare class OrdersController {
         })[];
     } & {
         id: number;
-        clientId: number;
         status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        clientId: number;
         deliveryTime: string | null;
         deliveryDate: Date;
         total: number;
@@ -126,20 +126,20 @@ export declare class OrdersController {
         })[];
     } & {
         id: number;
-        clientId: number;
         status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        clientId: number;
         deliveryTime: string | null;
         deliveryDate: Date;
         total: number;
     }>;
     updateStatus(id: number, status: string): Promise<{
         id: number;
-        clientId: number;
         status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        clientId: number;
         deliveryTime: string | null;
         deliveryDate: Date;
         total: number;
@@ -167,14 +167,15 @@ export declare class OrdersController {
         } | null;
     } & {
         id: number;
-        clientId: number | null;
         status: import(".prisma/client").$Enums.DeliveryOrderStatus;
         createdAt: Date;
+        clientId: number | null;
         clientName: string;
         clientPhone: string;
         address: string;
         totalAmount: number;
         isPaid: boolean;
+        isBaked: boolean;
         paymentMethod: string | null;
         driverId: number | null;
     })[]>;
@@ -185,14 +186,15 @@ export declare class OrdersController {
         } | null;
     } & {
         id: number;
-        clientId: number | null;
         status: import(".prisma/client").$Enums.DeliveryOrderStatus;
         createdAt: Date;
+        clientId: number | null;
         clientName: string;
         clientPhone: string;
         address: string;
         totalAmount: number;
         isPaid: boolean;
+        isBaked: boolean;
         paymentMethod: string | null;
         driverId: number | null;
     }>;

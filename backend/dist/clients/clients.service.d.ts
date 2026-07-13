@@ -19,10 +19,10 @@ export declare class ClientsService {
     findOne(id: number): Promise<({
         orders: {
             id: number;
-            clientId: number;
             status: import(".prisma/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
+            clientId: number;
             deliveryTime: string | null;
             deliveryDate: Date;
             total: number;

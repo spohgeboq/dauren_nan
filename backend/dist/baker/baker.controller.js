@@ -32,6 +32,12 @@ let BakerController = class BakerController {
     recordDefect(body) {
         return this.service.recordDefect(body.productId, body.quantity, body.reason || '', body.bakerId);
     }
+    markB2bOrderReady(body) {
+        return this.service.markB2bOrderReady(body.orderId);
+    }
+    logShowcaseBatch(body) {
+        return this.service.logShowcaseBatch(body.productId, body.quantity, body.bakerId);
+    }
 };
 exports.BakerController = BakerController;
 __decorate([
@@ -61,6 +67,20 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], BakerController.prototype, "recordDefect", null);
+__decorate([
+    (0, common_1.Post)('order/ready'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], BakerController.prototype, "markB2bOrderReady", null);
+__decorate([
+    (0, common_1.Post)('showcase/log'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], BakerController.prototype, "logShowcaseBatch", null);
 exports.BakerController = BakerController = __decorate([
     (0, common_1.Controller)('baker'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { EventsModule } from './events/events.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
@@ -46,6 +47,7 @@ import { ClientWorkspaceModule } from './client-workspace/client-workspace.modul
     CashierModule,
     CourierModule,
     ClientWorkspaceModule,
+    EventsModule,
   ],
 })
 export class AppModule {}

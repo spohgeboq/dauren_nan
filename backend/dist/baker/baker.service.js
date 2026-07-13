@@ -12,9 +12,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BakerService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const events_gateway_1 = require("../events/events.gateway");
 let BakerService = class BakerService {
-    constructor(prisma) {
+    constructor(prisma, eventsGateway) {
         this.prisma = prisma;
+        this.eventsGateway = eventsGateway;
     }
     async getDashboard() {
         const products = await this.prisma.product.findMany({
@@ -26,7 +28,12 @@ let BakerService = class BakerService {
             include: { product: true },
             orderBy: { startTime: 'desc' },
         });
-        return { products, rawMaterials, activeBatches };
+        const b2bOrders = await this.prisma.deliveryOrder.findMany({
+            where: { status: 'PENDING', isBaked: false },
+            include: { items: { include: { product: true } } },
+            orderBy: { createdAt: 'asc' },
+        });
+        return { products, rawMaterials, activeBatches, b2bOrders };
     }
     async startBatch(productId, quantity, bakerId) {
         const product = await this.prisma.product.findUnique({
@@ -122,10 +129,66 @@ let BakerService = class BakerService {
         });
         return { success: true, defect };
     }
+    async markB2bOrderReady(orderId) {
+        const order = await this.prisma.deliveryOrder.findUnique({
+            where: { id: orderId },
+            include: { items: { include: { product: { include: { recipe: { include: { ingredients: true } } } } } } }
+        });
+        if (!order)
+            throw new common_1.NotFoundException('Заказ не найден');
+        await this.prisma.$transaction(async (tx) => {
+            for (const item of order.items) {
+                if (item.product.recipe) {
+                    for (const ing of item.product.recipe.ingredients) {
+                        const totalNeeded = (ing.quantity || ing.amount || 0) * item.quantity;
+                        await tx.rawMaterial.update({
+                            where: { id: ing.rawMaterialId },
+                            data: { stock: { decrement: totalNeeded } },
+                        });
+                    }
+                }
+            }
+            await tx.deliveryOrder.update({
+                where: { id: orderId },
+                data: { isBaked: true }
+            });
+        });
+        this.eventsGateway.server.emit('orderStatusUpdated', {
+            orderId: order.id,
+            status: 'BAKED',
+            message: 'Ваш заказ испечен и ожидает отгрузки курьеру!'
+        });
+        return { success: true, message: 'Заказ отмечен как готовый и сырье списано' };
+    }
+    async logShowcaseBatch(productId, quantity, bakerId) {
+        const product = await this.prisma.product.findUnique({
+            where: { id: productId },
+            include: { recipe: { include: { ingredients: true } } },
+        });
+        if (!product)
+            throw new common_1.NotFoundException('Продукт не найден');
+        return this.prisma.$transaction(async (tx) => {
+            await tx.product.update({
+                where: { id: productId },
+                data: { stock: { increment: quantity } },
+            });
+            if (product.recipe) {
+                for (const ing of product.recipe.ingredients) {
+                    const totalNeeded = (ing.quantity || ing.amount || 0) * quantity;
+                    await tx.rawMaterial.update({
+                        where: { id: ing.rawMaterialId },
+                        data: { stock: { decrement: totalNeeded } },
+                    });
+                }
+            }
+            return { success: true };
+        });
+    }
 };
 exports.BakerService = BakerService;
 exports.BakerService = BakerService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        events_gateway_1.EventsGateway])
 ], BakerService);
 //# sourceMappingURL=baker.service.js.map

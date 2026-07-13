@@ -9,6 +9,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
+const events_module_1 = require("./events/events.module");
 const prisma_module_1 = require("./prisma/prisma.module");
 const auth_module_1 = require("./auth/auth.module");
 const users_module_1 = require("./users/users.module");
@@ -58,6 +59,7 @@ exports.AppModule = AppModule = __decorate([
             cashier_module_1.CashierModule,
             courier_module_1.CourierModule,
             client_workspace_module_1.ClientWorkspaceModule,
+            events_module_1.EventsModule,
         ],
     })
 ], AppModule);

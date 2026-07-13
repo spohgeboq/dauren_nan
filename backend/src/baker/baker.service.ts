@@ -1,9 +1,13 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'; // Trigger IDE cache reset
 import { PrismaService } from '../prisma/prisma.service';
+import { EventsGateway } from '../events/events.gateway';
 
 @Injectable()
 export class BakerService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private eventsGateway: EventsGateway
+  ) {}
 
   async getDashboard() {
     const products = await this.prisma.product.findMany({
@@ -15,8 +19,16 @@ export class BakerService {
       include: { product: true },
       orderBy: { startTime: 'desc' },
     });
+    
+    // Получаем B2B заказы для сборки
+    const b2bOrders = await this.prisma.deliveryOrder.findMany({
+      // @ts-ignore - type cache issue
+      where: { status: 'PENDING', isBaked: false },
+      include: { items: { include: { product: true } } },
+      orderBy: { createdAt: 'asc' },
+    });
 
-    return { products, rawMaterials, activeBatches };
+    return { products, rawMaterials, activeBatches, b2bOrders };
   }
 
   async startBatch(productId: number, quantity: number, bakerId: number) {
@@ -131,5 +143,74 @@ export class BakerService {
       data: { productId, quantity, reason, bakerId },
     });
     return { success: true, defect };
+  }
+
+  // Завершение B2B заказа
+  async markB2bOrderReady(orderId: number) {
+    const order = await this.prisma.deliveryOrder.findUnique({ 
+      where: { id: orderId },
+      include: { items: { include: { product: { include: { recipe: { include: { ingredients: true } } } } } } }
+    });
+    if (!order) throw new NotFoundException('Заказ не найден');
+
+    await this.prisma.$transaction(async (tx) => {
+      // Списываем сырье
+      for (const item of order.items) {
+        if (item.product.recipe) {
+          for (const ing of item.product.recipe.ingredients) {
+            const totalNeeded = (ing.quantity || ing.amount || 0) * item.quantity;
+            await tx.rawMaterial.update({
+              where: { id: ing.rawMaterialId },
+              data: { stock: { decrement: totalNeeded } },
+            });
+          }
+        }
+      }
+
+      // Обновляем статус заказа
+      await tx.deliveryOrder.update({
+        where: { id: orderId },
+        data: { isBaked: true }
+      });
+    });
+
+    // Отправляем сокет-событие клиенту
+    this.eventsGateway.server.emit('orderStatusUpdated', {
+      orderId: order.id,
+      status: 'BAKED',
+      message: 'Ваш заказ испечен и ожидает отгрузки курьеру!'
+    });
+
+    return { success: true, message: 'Заказ отмечен как готовый и сырье списано' };
+  }
+
+  // Фиксация выпечки для витрины (Конец дня)
+  async logShowcaseBatch(productId: number, quantity: number, bakerId: number) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      include: { recipe: { include: { ingredients: true } } },
+    });
+
+    if (!product) throw new NotFoundException('Продукт не найден');
+
+    return this.prisma.$transaction(async (tx) => {
+      // Добавляем на витрину
+      await tx.product.update({
+        where: { id: productId },
+        data: { stock: { increment: quantity } },
+      });
+
+      // Списываем сырье
+      if (product.recipe) {
+        for (const ing of product.recipe.ingredients) {
+          const totalNeeded = (ing.quantity || ing.amount || 0) * quantity;
+          await tx.rawMaterial.update({
+            where: { id: ing.rawMaterialId },
+            data: { stock: { decrement: totalNeeded } },
+          });
+        }
+      }
+      return { success: true };
+    });
   }
 }

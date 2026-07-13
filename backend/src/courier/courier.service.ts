@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { DeliveryOrderStatus } from '@prisma/client';
+import { EventsGateway } from '../events/events.gateway';
 
 @Injectable()
 export class CourierService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private eventsGateway: EventsGateway,
+  ) {}
 
   async getOrders(driverId: number) {
     const orders = await this.prisma.deliveryOrder.findMany({
@@ -63,6 +67,9 @@ export class CourierService {
           });
         }
       }
+
+      // Эмитим событие через WebSockets
+      this.eventsGateway.broadcastOrderStatusUpdate(orderId, mappedStatus);
 
       return { success: true };
     });

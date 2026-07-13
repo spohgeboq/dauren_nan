@@ -14,11 +14,11 @@ export declare class RolesController {
             canEdit: boolean;
             canDelete: boolean;
         }[];
+        description: string | null;
         id: number;
         name: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
     }[]>;
     findOne(id: number): Promise<{
         employeeCount: number;
@@ -32,11 +32,11 @@ export declare class RolesController {
             canEdit: boolean;
             canDelete: boolean;
         }[];
+        description: string | null;
         id: number;
         name: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
     } | null>;
     create(dto: any): Promise<{
         permissions: {
@@ -49,11 +49,11 @@ export declare class RolesController {
             canDelete: boolean;
         }[];
     } & {
+        description: string | null;
         id: number;
         name: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
     }>;
     update(id: number, dto: any): Promise<{
         permissions: {
@@ -66,11 +66,11 @@ export declare class RolesController {
             canDelete: boolean;
         }[];
     } & {
+        description: string | null;
         id: number;
         name: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
     }>;
     updatePermission(id: number, module: string, dto: any): Promise<{
         id: number;
@@ -82,10 +82,10 @@ export declare class RolesController {
         canDelete: boolean;
     }>;
     remove(id: number): Promise<{
+        description: string | null;
         id: number;
         name: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
     }>;
 }

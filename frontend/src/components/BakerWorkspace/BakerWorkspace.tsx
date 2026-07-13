@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import { LogOut, ChefHat, AlertCircle, Menu, X, Truck, Store, AlertTriangle } from 'lucide-react';
 import styles from './BakerWorkspace.module.css';
-import OrdersQueue from './OrdersQueue'; // Теперь это будет отображать активные партии
-import ShowcaseReplenish from './ShowcaseReplenish'; // Запуск новых партий
-import RecipeModal from './RecipeModal';
-import { LogOut, ChefHat } from 'lucide-react';
+import B2bOrdersTab from './B2bOrdersTab';
+import ShowcaseLogTab from './ShowcaseLogTab';
+import DefectsTab from './DefectsTab';
+import { socket } from '../../utils/socket';
+import { notify } from '../ClientWorkspace/Toast';
 
-export type ActiveTab = 'orders' | 'showcase';
+export type ActiveTab = 'b2b' | 'showcase' | 'defects';
 
 const BakerWorkspace: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('orders');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('b2b');
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [selectedRecipeId, setSelectedRecipeId] = useState<number | null>(null);
   
   const [products, setProducts] = useState<any[]>([]);
-  const [activeBatches, setActiveBatches] = useState<any[]>([]);
-  const [rawMaterials, setRawMaterials] = useState<any[]>([]);
+  const [b2bOrders, setB2bOrders] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
 
   const fetchDashboard = async () => {
@@ -26,14 +26,7 @@ const BakerWorkspace: React.FC = () => {
       if (res.ok) {
         const data = await res.json();
         setProducts(data.products);
-        setRawMaterials(data.rawMaterials);
-        setActiveBatches(data.activeBatches.map((b: any) => ({
-          id: b.id,
-          productId: b.productId,
-          name: b.product.name,
-          quantity: b.quantity,
-          createdAt: b.startTime
-        })));
+        setB2bOrders(data.b2bOrders || []);
       }
     } catch (error) {
       console.error('Failed to fetch dashboard', error);
@@ -45,14 +38,24 @@ const BakerWorkspace: React.FC = () => {
     if (userStr) setUser(JSON.parse(userStr));
     
     fetchDashboard();
-    const interval = setInterval(fetchDashboard, 10000); // Обновляем каждые 10 секунд
     
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', handleResize);
     
+    // WebSocket listeners
+    socket.on('stockUpdated', () => {
+      fetchDashboard();
+    });
+
+    socket.on('orderCreated', () => {
+      notify('Поступил новый заказ для магазина!', 'info');
+      fetchDashboard();
+    });
+
     return () => {
-      clearInterval(interval);
       window.removeEventListener('resize', handleResize);
+      socket.off('stockUpdated');
+      socket.off('orderCreated');
     }
   }, []);
 
@@ -62,28 +65,30 @@ const BakerWorkspace: React.FC = () => {
     window.location.reload();
   };
 
-  const handleCompleteBatch = async (id: number) => {
+  const handleMarkB2bReady = async (orderId: number) => {
     try {
       const token = localStorage.getItem('token');
-      await fetch('http://localhost:5000/api/baker/batch/finish', {
+      await fetch('http://localhost:5000/api/baker/order/ready', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ batchId: id })
+        body: JSON.stringify({ orderId })
       });
+      notify('Заказ отмечен как готовый!', 'success');
       fetchDashboard();
     } catch (e) {
       console.error(e);
+      notify('Ошибка при отметке заказа', 'error');
     }
   };
 
-  const handleStartBatch = async (productId: number, quantity: number) => {
+  const handleLogShowcase = async (productId: number, quantity: number) => {
     if (!user) return;
     try {
       const token = localStorage.getItem('token');
-      await fetch('http://localhost:5000/api/baker/batch/start', {
+      await fetch('http://localhost:5000/api/baker/showcase/log', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -91,19 +96,17 @@ const BakerWorkspace: React.FC = () => {
         },
         body: JSON.stringify({ productId, quantity, bakerId: user.id })
       });
+      notify('Выпечка успешно добавлена на витрину!', 'success');
       fetchDashboard();
     } catch (e) {
       console.error(e);
+      notify('Ошибка при сохранении', 'error');
     }
   };
 
-  const handleDefect = async (id: number, reason: string) => {
-    // Здесь мы можем получать количество и ID продукта из партии, 
-    // но для простоты добавим заглушку или зафиксируем всю партию как брак
+  const handleLogDefect = async (productId: number, quantity: number, reason: string) => {
+    if (!user) return;
     try {
-      const batch = activeBatches.find(b => b.id === id);
-      if (!batch) return;
-      
       const token = localStorage.getItem('token');
       await fetch('http://localhost:5000/api/baker/defect', {
         method: 'POST',
@@ -111,83 +114,108 @@ const BakerWorkspace: React.FC = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ 
-          productId: batch.productId, // В реальном проекте нужен productId партии
-          quantity: batch.quantity, 
-          reason: reason, 
-          bakerId: user.id 
-        })
+        body: JSON.stringify({ productId, quantity, reason, bakerId: user.id })
       });
-      // Завершаем/удаляем партию из работы
-      handleCompleteBatch(id);
+      notify('Брак успешно списан', 'success');
     } catch (e) {
       console.error(e);
+      notify('Ошибка при списании', 'error');
     }
   };
 
-  const handleOpenRecipe = (id: number) => {
-    setSelectedRecipeId(id);
-  };
+  const criticalStockProducts = products.filter(p => p.stock < 10);
 
   return (
     <div className={styles.workspace}>
       <header className={styles.header}>
         <div className={styles.headerLeft}>
           <ChefHat size={32} className={styles.logoIcon} />
-          <h1>Рабочее место: Пекарь</h1>
+          <h1>Цех: Пекарь</h1>
         </div>
         
-        {isMobile && (
-          <div className={styles.mobileTabs}>
-            <button 
-              className={`${styles.tabBtn} ${activeTab === 'orders' ? styles.activeTab : ''}`}
-              onClick={() => setActiveTab('orders')}
-            >
-              В печи ({activeBatches.length})
-            </button>
-            <button 
-              className={`${styles.tabBtn} ${activeTab === 'showcase' ? styles.activeTab : ''}`}
-              onClick={() => setActiveTab('showcase')}
-            >
-              Новая партия
-            </button>
-          </div>
-        )}
-
         <button className={styles.logoutBtn} onClick={handleLogout}>
           <LogOut size={24} />
           {!isMobile && <span>Выйти</span>}
         </button>
       </header>
 
-      <main className={styles.mainContent}>
-        {(!isMobile || activeTab === 'orders') && (
-          <div className={`${styles.panel} ${styles.leftPanel}`}>
-            <OrdersQueue 
-              orders={activeBatches} 
-              onComplete={handleCompleteBatch} 
-              onOpenRecipe={handleOpenRecipe} 
-              onDefect={handleDefect}
-            />
+      {criticalStockProducts.length > 0 && (
+        <div className={styles.criticalAlert}>
+          <AlertCircle size={24} />
+          <div className={styles.criticalContent}>
+            <strong>Критический остаток на витрине!</strong>
+            <p>Заканчиваются: {criticalStockProducts.map(p => `${p.name} (${p.stock} шт)`).join(', ')}</p>
           </div>
-        )}
-        
-        {(!isMobile || activeTab === 'showcase') && (
-          <div className={`${styles.panel} ${styles.rightPanel}`}>
-            <ShowcaseReplenish 
-              items={products} 
-              rawMaterials={rawMaterials}
-              onStartBatch={handleStartBatch}
-            />
-          </div>
-        )}
-      </main>
+        </div>
+      )}
 
-      {selectedRecipeId && (
-        <RecipeModal 
-          recipeId={selectedRecipeId} 
-          onClose={() => setSelectedRecipeId(null)} 
-        />
+      <div className={styles.mainLayout}>
+        {!isMobile && (
+          <aside className={styles.sidebar}>
+            <div className={styles.navGroup}>
+              <button 
+                className={`${styles.navItem} ${activeTab === 'b2b' ? styles.active : ''}`}
+                onClick={() => setActiveTab('b2b')}
+              >
+                Заказы (Магазины)
+                {b2bOrders.length > 0 && <span className={styles.badge}>{b2bOrders.length}</span>}
+              </button>
+              <button 
+                className={`${styles.navItem} ${activeTab === 'showcase' ? styles.active : ''}`}
+                onClick={() => setActiveTab('showcase')}
+              >
+                Витрина (Итоги)
+              </button>
+              <button 
+                className={`${styles.navItem} ${activeTab === 'defects' ? styles.active : ''}`}
+                onClick={() => setActiveTab('defects')}
+              >
+                Списание брака
+              </button>
+            </div>
+          </aside>
+        )}
+
+        <main className={styles.content}>
+          {activeTab === 'b2b' && (
+            <B2bOrdersTab orders={b2bOrders} onMarkReady={handleMarkB2bReady} />
+          )}
+          
+          {activeTab === 'showcase' && (
+            <ShowcaseLogTab products={products} onLogShowcase={handleLogShowcase} />
+          )}
+
+          {activeTab === 'defects' && (
+            <DefectsTab products={products} onLogDefect={handleLogDefect} />
+          )}
+        </main>
+      </div>
+
+      {isMobile && (
+        <nav className={styles.bottomNav}>
+          <button 
+            className={`${styles.bottomNavItem} ${activeTab === 'b2b' ? styles.active : ''}`}
+            onClick={() => setActiveTab('b2b')}
+          >
+            <Truck size={24} />
+            <span>Заказы</span>
+            {b2bOrders.length > 0 && <span className={styles.badgeTop}>{b2bOrders.length}</span>}
+          </button>
+          <button 
+            className={`${styles.bottomNavItem} ${activeTab === 'showcase' ? styles.active : ''}`}
+            onClick={() => setActiveTab('showcase')}
+          >
+            <Store size={24} />
+            <span>Витрина</span>
+          </button>
+          <button 
+            className={`${styles.bottomNavItem} ${activeTab === 'defects' ? styles.active : ''}`}
+            onClick={() => setActiveTab('defects')}
+          >
+            <AlertTriangle size={24} />
+            <span>Брак</span>
+          </button>
+        </nav>
       )}
     </div>
   );

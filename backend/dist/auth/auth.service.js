@@ -20,8 +20,13 @@ let AuthService = class AuthService {
         this.jwtService = jwtService;
     }
     async login(dto) {
-        const user = await this.prisma.user.findUnique({
-            where: { email: dto.email },
+        const user = await this.prisma.user.findFirst({
+            where: {
+                OR: [
+                    { email: dto.email },
+                    { login: dto.email }
+                ]
+            },
         });
         if (!user) {
             throw new common_1.UnauthorizedException('Неверный email или пароль');

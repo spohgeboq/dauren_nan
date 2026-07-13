@@ -13,9 +13,11 @@ exports.CourierService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
+const events_gateway_1 = require("../events/events.gateway");
 let CourierService = class CourierService {
-    constructor(prisma) {
+    constructor(prisma, eventsGateway) {
         this.prisma = prisma;
+        this.eventsGateway = eventsGateway;
     }
     async getOrders(driverId) {
         const orders = await this.prisma.deliveryOrder.findMany({
@@ -69,6 +71,7 @@ let CourierService = class CourierService {
                     });
                 }
             }
+            this.eventsGateway.broadcastOrderStatusUpdate(orderId, mappedStatus);
             return { success: true };
         });
     }
@@ -76,6 +79,7 @@ let CourierService = class CourierService {
 exports.CourierService = CourierService;
 exports.CourierService = CourierService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        events_gateway_1.EventsGateway])
 ], CourierService);
 //# sourceMappingURL=courier.service.js.map
