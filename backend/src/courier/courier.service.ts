@@ -68,6 +68,32 @@ export class CourierService {
         }
       }
 
+      // Sync with RoutePoint if exists
+      if (order.clientId) {
+        // Find the active route point for this client
+        const activeRoutePoint = await tx.routePoint.findFirst({
+          where: {
+            clientId: order.clientId,
+            route: {
+              driverId: order.driverId,
+              status: { not: 'COMPLETED' }
+            }
+          },
+          orderBy: { id: 'desc' }
+        });
+
+        if (activeRoutePoint) {
+          let pointStatus: 'PENDING' | 'DELIVERED' | 'CANCELLED' = 'PENDING';
+          if (mappedStatus === 'DELIVERED') pointStatus = 'DELIVERED';
+          if (mappedStatus === 'CANCELLED') pointStatus = 'CANCELLED';
+
+          await tx.routePoint.update({
+            where: { id: activeRoutePoint.id },
+            data: { status: pointStatus }
+          });
+        }
+      }
+
       // Эмитим событие через WebSockets
       this.eventsGateway.broadcastOrderStatusUpdate(orderId, mappedStatus);
 

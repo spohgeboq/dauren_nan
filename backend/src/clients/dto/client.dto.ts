@@ -7,6 +7,8 @@ export class CreateClientDto {
   @IsString() @IsOptional() phone?: string;
   @IsString() @IsOptional() email?: string;
   @IsString() @IsOptional() deliveryTime?: string;
+  @IsString() @IsOptional() login?: string;
+  @IsString() @IsOptional() password?: string;
 }
 
 export class UpdateClientDto {

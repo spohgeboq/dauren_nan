@@ -53,14 +53,57 @@ let OrdersService = class OrdersService {
         const totalSum = orders.reduce((sum, o) => sum + o.total, 0);
         return { totalOrders: total, pendingOrders: pending, totalSum };
     }
-    async findAllDeliveries() {
+    async findAllDeliveries(date) {
+        const where = {};
+        if (date) {
+            if (date === 'Сегодня') {
+                const d = new Date();
+                where.createdAt = { gte: new Date(d.setHours(0, 0, 0, 0)), lt: new Date(d.setHours(23, 59, 59, 999)) };
+            }
+            else if (date === 'Вчера') {
+                const d = new Date();
+                d.setDate(d.getDate() - 1);
+                where.createdAt = { gte: new Date(d.setHours(0, 0, 0, 0)), lt: new Date(d.setHours(23, 59, 59, 999)) };
+            }
+            else if (date === 'Завтра') {
+                const d = new Date();
+                d.setDate(d.getDate() + 1);
+                where.createdAt = { gte: new Date(d.setHours(0, 0, 0, 0)), lt: new Date(d.setHours(23, 59, 59, 999)) };
+            }
+            else {
+                const d = new Date(date);
+                where.createdAt = { gte: new Date(d.setHours(0, 0, 0, 0)), lt: new Date(d.setHours(23, 59, 59, 999)) };
+            }
+        }
         return this.prisma.deliveryOrder.findMany({
+            where,
             include: {
                 items: { include: { product: { select: { id: true, name: true } } } },
                 driver: { select: { id: true, name: true } },
                 client: { select: { id: true, name: true } }
             },
             orderBy: { createdAt: 'desc' },
+        });
+    }
+    async createDelivery(data) {
+        const client = await this.prisma.client.findUnique({ where: { id: data.clientId } });
+        if (!client)
+            throw new Error('Client not found');
+        const totalAmount = data.items.reduce((sum, i) => sum + i.quantity * i.price, 0);
+        return this.prisma.deliveryOrder.create({
+            data: {
+                clientId: data.clientId,
+                clientName: client.name,
+                clientPhone: client.phone || '',
+                address: client.route || '',
+                totalAmount,
+                status: 'PENDING',
+                isBaked: false,
+                items: {
+                    create: data.items
+                }
+            },
+            include: { items: { include: { product: true } }, client: true }
         });
     }
     async assignDriver(id, driverId) {

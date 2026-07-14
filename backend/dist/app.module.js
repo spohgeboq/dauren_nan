@@ -31,6 +31,7 @@ const baker_module_1 = require("./baker/baker.module");
 const cashier_module_1 = require("./cashier/cashier.module");
 const courier_module_1 = require("./courier/courier.module");
 const client_workspace_module_1 = require("./client-workspace/client-workspace.module");
+const client_requests_module_1 = require("./client-requests/client-requests.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -59,6 +60,7 @@ exports.AppModule = AppModule = __decorate([
             cashier_module_1.CashierModule,
             courier_module_1.CourierModule,
             client_workspace_module_1.ClientWorkspaceModule,
+            client_requests_module_1.ClientRequestsModule,
             events_module_1.EventsModule,
         ],
     })

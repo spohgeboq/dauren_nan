@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Calendar as CalendarIcon, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp, ShoppingBag, Receipt, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Calendar as CalendarIcon, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp, ShoppingBag, Receipt, AlertCircle, Plus } from 'lucide-react';
 import styles from './OrdersModule.module.css';
 import { api } from '../utils/api';
+import CreateDeliveryOrderModal from './CreateDeliveryOrderModal';
 
 type OrderStatus = string;
 
@@ -40,11 +41,12 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({ onBack }) => {
   const [selectedDate, setSelectedDate] = useState('Завтра');
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const fetchOrdersAndDrivers = async () => {
     try {
       setIsLoading(true);
-      const ordersData = await api.get('/orders/deliveries');
+      const ordersData = await api.get(`/orders/deliveries?date=${encodeURIComponent(selectedDate)}`);
       const driversData = await api.get('/users?role=DRIVER');
       
       const mappedOrders = ordersData.map((order: any) => ({
@@ -73,7 +75,7 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({ onBack }) => {
 
   useEffect(() => {
     fetchOrdersAndDrivers();
-  }, []);
+  }, [selectedDate]);
 
   // Stats
   const totalOrders = orders.length;
@@ -143,9 +145,18 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({ onBack }) => {
           <h1 className={styles.title}>Заказы клиентов</h1>
         </div>
         
-        {/* Date Navigation */}
-        <div className={styles.dateNav}>
-          <div className={styles.datePills}>
+        <div className={styles.headerRight} style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <button 
+            className={styles.createBtn} 
+            onClick={() => setIsCreateModalOpen(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#3b82f6', color: 'white', padding: '0.5rem 1rem', borderRadius: '0.5rem', border: 'none', fontWeight: 600, cursor: 'pointer' }}
+          >
+            <Plus size={18} />
+            Создать заказ
+          </button>
+          {/* Date Navigation */}
+          <div className={styles.dateNav}>
+            <div className={styles.datePills}>
             {DATES.map(d => (
               <button 
                 key={d}
@@ -158,8 +169,13 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({ onBack }) => {
           </div>
           <div className={styles.calendarInputWrapper}>
             <CalendarIcon size={18} className={styles.calendarIcon} />
-            <input type="date" className={styles.calendarInput} />
+            <input 
+              type="date" 
+              className={styles.calendarInput} 
+              onChange={(e) => setSelectedDate(e.target.value)}
+            />
           </div>
+        </div>
         </div>
       </header>
 
@@ -291,6 +307,15 @@ const OrdersModule: React.FC<OrdersModuleProps> = ({ onBack }) => {
           )}
         </div>
       </main>
+
+      <CreateDeliveryOrderModal 
+        isOpen={isCreateModalOpen} 
+        onClose={() => setIsCreateModalOpen(false)} 
+        onSuccess={() => {
+          setIsCreateModalOpen(false);
+          fetchOrdersAndDrivers();
+        }} 
+      />
     </div>
   );
 };

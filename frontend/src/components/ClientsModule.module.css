@@ -461,3 +461,17 @@
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
 }
+
+.tabs { display: flex; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0; }
+.tabBtn { background: none; border: none; padding: 0.75rem 1rem; font-size: 1rem; font-weight: 500; color: #64748b; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; }
+.tabBtn:hover { color: #0f172a; }
+.activeTab { color: #0f172a; border-bottom-color: #0f172a; }
+.badge { background-color: #ef4444; color: white; font-size: 0.75rem; font-weight: 700; padding: 0.1rem 0.5rem; border-radius: 999px; }
+.approveBtn { background-color: #10b981; color: white; border: none; padding: 0.4rem 0.75rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.25rem; }
+.approveBtn:hover { background-color: #059669; }
+.rejectBtn { background-color: #fee2e2; color: #ef4444; border: none; padding: 0.4rem; border-radius: 0.5rem; cursor: pointer; display: flex; align-items: center; }
+.rejectBtn:hover { background-color: #fca5a5; color: #b91c1c; }
+.authSection { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0 1rem 1rem 1rem; margin-top: 1.5rem; }
+.authGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.secondaryBtn { background-color: #e2e8f0; border: none; border-radius: 0.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #475569; transition: all 0.2s; }
+.secondaryBtn:hover { background-color: #cbd5e1; color: #0f172a; }

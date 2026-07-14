@@ -14,8 +14,8 @@ export declare class ProductsController {
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
-        categoryId: number;
         sku: string;
+        categoryId: number;
         weight: number;
         cost: number;
         price: number;
@@ -38,8 +38,8 @@ export declare class ProductsController {
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
-        categoryId: number;
         sku: string;
+        categoryId: number;
         weight: number;
         cost: number;
         price: number;
@@ -57,8 +57,8 @@ export declare class ProductsController {
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
-        categoryId: number;
         sku: string;
+        categoryId: number;
         weight: number;
         cost: number;
         price: number;
@@ -76,8 +76,8 @@ export declare class ProductsController {
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
-        categoryId: number;
         sku: string;
+        categoryId: number;
         weight: number;
         cost: number;
         price: number;
@@ -90,8 +90,8 @@ export declare class ProductsController {
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
-        categoryId: number;
         sku: string;
+        categoryId: number;
         weight: number;
         cost: number;
         price: number;

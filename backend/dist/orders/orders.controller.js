@@ -23,19 +23,22 @@ let OrdersController = class OrdersController {
     }
     findAll(date) { return this.service.findAll(date); }
     getStats() { return this.service.getStats(); }
+    findAllDeliveries(date) {
+        return this.service.findAllDeliveries(date);
+    }
+    createDelivery(dto) {
+        return this.service.createDelivery(dto);
+    }
+    assignDriver(id, driverId) {
+        const parsedDriverId = driverId === null ? null : Number(driverId);
+        return this.service.assignDriver(id, parsedDriverId);
+    }
     findOne(id) { return this.service.findOne(id); }
     create(dto) {
         return this.service.create(dto);
     }
     updateStatus(id, status) {
         return this.service.updateStatus(id, status);
-    }
-    findAllDeliveries() {
-        return this.service.findAllDeliveries();
-    }
-    assignDriver(id, driverId) {
-        const parsedDriverId = driverId === null ? null : Number(driverId);
-        return this.service.assignDriver(id, parsedDriverId);
     }
 };
 exports.OrdersController = OrdersController;
@@ -52,6 +55,28 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "getStats", null);
+__decorate([
+    (0, common_1.Get)('deliveries'),
+    __param(0, (0, common_1.Query)('date')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "findAllDeliveries", null);
+__decorate([
+    (0, common_1.Post)('deliveries'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "createDelivery", null);
+__decorate([
+    (0, common_1.Patch)('deliveries/:id/assign-driver'),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Body)('driverId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "assignDriver", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
@@ -74,20 +99,6 @@ __decorate([
     __metadata("design:paramtypes", [Number, String]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "updateStatus", null);
-__decorate([
-    (0, common_1.Get)('deliveries'),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", void 0)
-], OrdersController.prototype, "findAllDeliveries", null);
-__decorate([
-    (0, common_1.Patch)('deliveries/:id/assign-driver'),
-    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
-    __param(1, (0, common_1.Body)('driverId')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Object]),
-    __metadata("design:returntype", void 0)
-], OrdersController.prototype, "assignDriver", null);
 exports.OrdersController = OrdersController = __decorate([
     (0, common_1.Controller)('orders'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),

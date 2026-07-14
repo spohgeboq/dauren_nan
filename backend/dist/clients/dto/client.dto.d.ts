@@ -5,6 +5,8 @@ export declare class CreateClientDto {
     phone?: string;
     email?: string;
     deliveryTime?: string;
+    login?: string;
+    password?: string;
 }
 export declare class UpdateClientDto {
     name?: string;

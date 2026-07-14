@@ -1,101 +1,101 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, Printer, CheckCircle2, XCircle, MapPin, Truck, ChevronRight, Package, Clock, ShieldAlert } from 'lucide-react';
+import { api } from '../utils/api';
+import CreateRouteModal from './CreateRouteModal';
 import styles from './RoutesModule.module.css';
 
-type PointStatus = 'Ожидает' | 'Доставлено' | 'Отмена';
-type RouteStatus = 'Сборка' | 'В пути' | 'Завершен';
+type PointStatus = 'PENDING' | 'DELIVERED' | 'CANCELLED';
+type RouteStatus = 'BUILDING' | 'IN_TRANSIT' | 'COMPLETED';
 
 interface RoutePoint {
-  id: string;
+  id: number;
   storeName: string;
-  time: string;
+  time: string | null;
   totalSum: number;
   status: PointStatus;
 }
 
+const ROUTE_STATUS_MAP: Record<RouteStatus, string> = {
+  BUILDING: 'Сборка',
+  IN_TRANSIT: 'В пути',
+  COMPLETED: 'Завершен'
+};
+
+const POINT_STATUS_MAP: Record<PointStatus, string> = {
+  PENDING: 'Ожидает',
+  DELIVERED: 'Доставлено',
+  CANCELLED: 'Отмена'
+};
+
 interface LoadItem {
-  id: string;
-  name: string;
+  id: number;
+  productId: number;
   quantity: number;
+  product?: {
+    id: number;
+    name: string;
+  };
 }
 
 interface DeliveryRoute {
-  id: string;
+  id: number;
   name: string;
-  driver: string;
+  driverId: number | null;
+  driver?: {
+    id: number;
+    name: string;
+  };
   status: RouteStatus;
   loadItems: LoadItem[];
   points: RoutePoint[];
 }
-
-const MOCK_ROUTES: DeliveryRoute[] = [
-  {
-    id: 'R1',
-    name: 'Маршрут #1 (Левый берег)',
-    driver: 'Серик Ахметов',
-    status: 'В пути',
-    loadItems: [
-      { id: 'i1', name: 'Таба нан', quantity: 150 },
-      { id: 'i2', name: 'Хлеб Пшеничный', quantity: 80 },
-      { id: 'i3', name: 'Багет французский', quantity: 45 },
-      { id: 'i4', name: 'Круассан классический', quantity: 60 }
-    ],
-    points: [
-      { id: 'p1', storeName: 'Супермаркет "Анвар"', time: '07:00 - 08:00', totalSum: 45000, status: 'Доставлено' },
-      { id: 'p2', storeName: 'Магазин "Самал"', time: '08:15 - 08:45', totalSum: 12500, status: 'Доставлено' },
-      { id: 'p3', storeName: 'Кофейня "Зерно"', time: '09:00 - 09:30', totalSum: 8400, status: 'Ожидает' },
-      { id: 'p4', storeName: 'Продуктовый "Айгерим"', time: '09:45 - 10:15', totalSum: 15000, status: 'Ожидает' },
-      { id: 'p5', storeName: 'Минимаркет "24/7"', time: '10:30 - 11:00', totalSum: 9000, status: 'Ожидает' }
-    ]
-  },
-  {
-    id: 'R2',
-    name: 'Маршрут #2 (Юго-Восток)',
-    driver: 'Азамат Нурланов',
-    status: 'Сборка',
-    loadItems: [
-      { id: 'i1', name: 'Хлеб Бородинский', quantity: 100 },
-      { id: 'i2', name: 'Батон нарезной', quantity: 120 },
-      { id: 'i3', name: 'Синнабон', quantity: 30 }
-    ],
-    points: [
-      { id: 'p6', storeName: 'Столовая "Вкусно"', time: '06:30 - 07:30', totalSum: 32000, status: 'Ожидает' },
-      { id: 'p7', storeName: 'Магазин "У дома"', time: '08:00 - 08:30', totalSum: 5500, status: 'Ожидает' },
-      { id: 'p8', storeName: 'Супермаркет "Магнум"', time: '09:00 - 10:00', totalSum: 85000, status: 'Ожидает' }
-    ]
-  }
-];
 
 interface RoutesModuleProps {
   onBack: () => void;
 }
 
 const RoutesModule: React.FC<RoutesModuleProps> = ({ onBack }) => {
-  const [routes, setRoutes] = useState<DeliveryRoute[]>(MOCK_ROUTES);
-  const [activeRouteId, setActiveRouteId] = useState<string>(MOCK_ROUTES[0].id);
+  const [routes, setRoutes] = useState<DeliveryRoute[]>([]);
+  const [activeRouteId, setActiveRouteId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<'load' | 'points'>('points');
   const [selectedDate, setSelectedDate] = useState('Завтра');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  useEffect(() => {
+    fetchRoutes();
+  }, [selectedDate]);
+
+  const fetchRoutes = async () => {
+    try {
+      const data = await api.get(`/routes?date=${encodeURIComponent(selectedDate)}`);
+      setRoutes(data);
+      if (data.length > 0 && !data.find((r: DeliveryRoute) => r.id === activeRouteId)) {
+        setActiveRouteId(data[0].id);
+      } else if (data.length === 0) {
+        setActiveRouteId(null);
+      }
+    } catch (error) {
+      console.error('Failed to fetch routes:', error);
+    }
+  };
 
   const activeRoute = routes.find(r => r.id === activeRouteId);
 
   // Helper to calculate progress
   const getProgress = (route: DeliveryRoute) => {
     const total = route.points.length;
-    const completed = route.points.filter(p => p.status === 'Доставлено').length;
+    const completed = route.points.filter(p => p.status === 'DELIVERED').length;
     const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
     return { total, completed, percentage };
   };
 
-  const updatePointStatus = (routeId: string, pointId: string, newStatus: PointStatus) => {
-    setRoutes(prevRoutes => prevRoutes.map(route => {
-      if (route.id === routeId) {
-        return {
-          ...route,
-          points: route.points.map(p => p.id === pointId ? { ...p, status: newStatus } : p)
-        };
-      }
-      return route;
-    }));
+  const updatePointStatus = async (routeId: number, pointId: number, newStatus: PointStatus) => {
+    try {
+      await api.patch(`/routes/${routeId}/points/${pointId}/status`, { status: newStatus });
+      fetchRoutes(); // Refetch to get updated data
+    } catch (error) {
+      console.error('Failed to update point status:', error);
+    }
   };
 
   const totalCars = routes.length;
@@ -149,7 +149,11 @@ const RoutesModule: React.FC<RoutesModuleProps> = ({ onBack }) => {
         <div className={styles.leftCol}>
           <div className={styles.leftColHeader}>
             <h2>Активные маршруты</h2>
-            <button className={styles.createRouteBtn} title="Создать маршрут">
+            <button 
+              className={styles.createRouteBtn} 
+              title="Создать маршрут"
+              onClick={() => setIsCreateModalOpen(true)}
+            >
               <Plus size={18} />
             </button>
           </div>
@@ -170,13 +174,13 @@ const RoutesModule: React.FC<RoutesModuleProps> = ({ onBack }) => {
                       <Truck size={18} className={isActive ? styles.iconActive : styles.iconMuted} />
                       <h3 className={styles.routeName}>{route.name}</h3>
                     </div>
-                    <span className={`${styles.statusBadge} ${route.status === 'В пути' ? styles.statusInTransit : styles.statusBuilding}`}>
-                      {route.status}
+                    <span className={`${styles.statusBadge} ${route.status === 'IN_TRANSIT' ? styles.statusInTransit : styles.statusBuilding}`}>
+                      {ROUTE_STATUS_MAP[route.status]}
                     </span>
                   </div>
                   
                   <div className={styles.routeDriver}>
-                    Водитель: <strong>{route.driver}</strong>
+                    Водитель: <strong>{route.driver?.name || 'Не назначен'}</strong>
                   </div>
 
                   <div className={styles.progressSection}>
@@ -187,7 +191,7 @@ const RoutesModule: React.FC<RoutesModuleProps> = ({ onBack }) => {
                     <div className={styles.progressBarBg}>
                       <div 
                         className={styles.progressBarFill} 
-                        style={{ width: `${percentage}%`, backgroundColor: route.status === 'В пути' ? '#10b981' : '#3b82f6' }}
+                        style={{ width: `${percentage}%`, backgroundColor: route.status === 'IN_TRANSIT' ? '#10b981' : '#3b82f6' }}
                       />
                     </div>
                   </div>
@@ -205,7 +209,7 @@ const RoutesModule: React.FC<RoutesModuleProps> = ({ onBack }) => {
               <div className={styles.detailsHeader}>
                 <div>
                   <h2 className={styles.detailsTitle}>{activeRoute.name}</h2>
-                  <p className={styles.detailsDriver}>Водитель: {activeRoute.driver}</p>
+                  <p className={styles.detailsDriver}>Водитель: {activeRoute.driver?.name || 'Не назначен'}</p>
                 </div>
                 <button className={styles.printBtn}>
                   <Printer size={18} />
@@ -247,7 +251,7 @@ const RoutesModule: React.FC<RoutesModuleProps> = ({ onBack }) => {
                       <tbody>
                         {activeRoute.loadItems.map(item => (
                           <tr key={item.id}>
-                            <td className={styles.loadItemName}>{item.name}</td>
+                            <td className={styles.loadItemName}>{item.product?.name || `Товар #${item.productId}`}</td>
                             <td className={styles.loadItemQty}>{item.quantity}</td>
                           </tr>
                         ))}
@@ -268,8 +272,8 @@ const RoutesModule: React.FC<RoutesModuleProps> = ({ onBack }) => {
                           {!isLast && <div className={styles.timelineLine}></div>}
                           
                           {/* Timeline Dot */}
-                          <div className={`${styles.timelineDot} ${point.status === 'Доставлено' ? styles.dotCompleted : point.status === 'Отмена' ? styles.dotCanceled : styles.dotPending}`}>
-                            {point.status === 'Доставлено' ? <CheckCircle2 size={14} /> : point.status === 'Отмена' ? <XCircle size={14} /> : <div className={styles.innerDot} />}
+                          <div className={`${styles.timelineDot} ${point.status === 'DELIVERED' ? styles.dotCompleted : point.status === 'CANCELLED' ? styles.dotCanceled : styles.dotPending}`}>
+                            {point.status === 'DELIVERED' ? <CheckCircle2 size={14} /> : point.status === 'CANCELLED' ? <XCircle size={14} /> : <div className={styles.innerDot} />}
                           </div>
 
                           {/* Node Content */}
@@ -288,24 +292,24 @@ const RoutesModule: React.FC<RoutesModuleProps> = ({ onBack }) => {
                             </div>
                             
                             <div className={styles.pointActions}>
-                              {point.status === 'Ожидает' ? (
+                              {point.status === 'PENDING' ? (
                                 <>
                                   <button 
                                     className={styles.actionBtnSuccess}
-                                    onClick={() => updatePointStatus(activeRoute.id, point.id, 'Доставлено')}
+                                    onClick={() => updatePointStatus(activeRoute.id, point.id, 'DELIVERED')}
                                   >
                                     Доставлено
                                   </button>
                                   <button 
                                     className={styles.actionBtnDanger}
-                                    onClick={() => updatePointStatus(activeRoute.id, point.id, 'Отмена')}
+                                    onClick={() => updatePointStatus(activeRoute.id, point.id, 'CANCELLED')}
                                   >
                                     Отмена
                                   </button>
                                 </>
                               ) : (
-                                <span className={`${styles.pointStatusBadge} ${point.status === 'Доставлено' ? styles.badgeSuccess : styles.badgeDanger}`}>
-                                  {point.status}
+                                <span className={`${styles.pointStatusBadge} ${point.status === 'DELIVERED' ? styles.badgeSuccess : styles.badgeDanger}`}>
+                                  {POINT_STATUS_MAP[point.status]}
                                 </span>
                               )}
                             </div>
@@ -326,6 +330,13 @@ const RoutesModule: React.FC<RoutesModuleProps> = ({ onBack }) => {
           )}
         </div>
       </main>
+
+      <CreateRouteModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={fetchRoutes}
+        selectedDate={selectedDate}
+      />
     </div>
   );
 };

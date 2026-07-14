@@ -2,7 +2,7 @@ import { RoutesService } from './routes.service';
 export declare class RoutesController {
     private service;
     constructor(service: RoutesService);
-    findAll(): Promise<({
+    findAll(date?: string): Promise<({
         loadItems: ({
             product: {
                 id: number;
@@ -45,8 +45,8 @@ export declare class RoutesController {
                 createdAt: Date;
                 updatedAt: Date;
                 isActive: boolean;
-                categoryId: number;
                 sku: string;
+                categoryId: number;
                 weight: number;
                 cost: number;
                 price: number;
@@ -93,7 +93,12 @@ export declare class RoutesController {
         driverId: number | null;
         date: Date;
     }) | null>;
-    create(dto: any): Promise<{
+    create(dto: {
+        name: string;
+        driverId: number;
+        date: string;
+        clientIds: number[];
+    }): Promise<{
         loadItems: ({
             product: {
                 id: number;
@@ -101,8 +106,8 @@ export declare class RoutesController {
                 createdAt: Date;
                 updatedAt: Date;
                 isActive: boolean;
-                categoryId: number;
                 sku: string;
+                categoryId: number;
                 weight: number;
                 cost: number;
                 price: number;

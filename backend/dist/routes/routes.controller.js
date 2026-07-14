@@ -21,9 +21,11 @@ let RoutesController = class RoutesController {
     constructor(service) {
         this.service = service;
     }
-    findAll() { return this.service.findAll(); }
+    findAll(date) { return this.service.findAll(date); }
     findOne(id) { return this.service.findOne(id); }
-    create(dto) { return this.service.create(dto); }
+    create(dto) {
+        return this.service.createWithAutoLoad(dto);
+    }
     updateRouteStatus(id, status) {
         return this.service.updateRouteStatus(id, status);
     }
@@ -34,8 +36,9 @@ let RoutesController = class RoutesController {
 exports.RoutesController = RoutesController;
 __decorate([
     (0, common_1.Get)(),
+    __param(0, (0, common_1.Query)('date')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], RoutesController.prototype, "findAll", null);
 __decorate([

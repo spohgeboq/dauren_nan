@@ -22,6 +22,7 @@ import { BakerModule } from './baker/baker.module';
 import { CashierModule } from './cashier/cashier.module';
 import { CourierModule } from './courier/courier.module';
 import { ClientWorkspaceModule } from './client-workspace/client-workspace.module';
+import { ClientRequestsModule } from './client-requests/client-requests.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { ClientWorkspaceModule } from './client-workspace/client-workspace.modul
     CashierModule,
     CourierModule,
     ClientWorkspaceModule,
+    ClientRequestsModule,
     EventsModule,
   ],
 })

@@ -71,6 +71,29 @@ let CourierService = class CourierService {
                     });
                 }
             }
+            if (order.clientId) {
+                const activeRoutePoint = await tx.routePoint.findFirst({
+                    where: {
+                        clientId: order.clientId,
+                        route: {
+                            driverId: order.driverId,
+                            status: { not: 'COMPLETED' }
+                        }
+                    },
+                    orderBy: { id: 'desc' }
+                });
+                if (activeRoutePoint) {
+                    let pointStatus = 'PENDING';
+                    if (mappedStatus === 'DELIVERED')
+                        pointStatus = 'DELIVERED';
+                    if (mappedStatus === 'CANCELLED')
+                        pointStatus = 'CANCELLED';
+                    await tx.routePoint.update({
+                        where: { id: activeRoutePoint.id },
+                        data: { status: pointStatus }
+                    });
+                }
+            }
             this.eventsGateway.broadcastOrderStatusUpdate(orderId, mappedStatus);
             return { success: true };
         });
