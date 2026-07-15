@@ -46,15 +46,27 @@ let RecipesService = class RecipesService {
             if (data.ingredients && data.ingredients.length > 0) {
                 for (const ing of data.ingredients) {
                     const material = await tx.rawMaterial.findUnique({ where: { id: ing.rawMaterialId } });
-                    if (material)
-                        totalCostOnBatch += Number(material.costPerUnit) * ing.amount;
+                    let actualAmount = ing.amount;
+                    if (material) {
+                        const matUnit = (material.unit || '').toLowerCase();
+                        const ingUnit = (ing.unit || matUnit).toLowerCase();
+                        if (matUnit === 'кг' && ingUnit === 'г')
+                            actualAmount /= 1000;
+                        if (matUnit === 'л' && ingUnit === 'мл')
+                            actualAmount /= 1000;
+                        if (matUnit === 'г' && ingUnit === 'кг')
+                            actualAmount *= 1000;
+                        if (matUnit === 'мл' && ingUnit === 'л')
+                            actualAmount *= 1000;
+                        totalCostOnBatch += Number(material.costPerUnit) * actualAmount;
+                    }
                     await tx.recipeIngredient.create({
                         data: {
                             recipeId: recipe.id,
                             rawMaterialId: ing.rawMaterialId,
                             amount: ing.amount,
                             unit: ing.unit || null,
-                            quantity: recipe.yield > 0 ? ing.amount / recipe.yield : 0,
+                            quantity: recipe.yield > 0 ? actualAmount / recipe.yield : 0,
                         },
                     });
                 }
@@ -92,8 +104,19 @@ let RecipesService = class RecipesService {
             if (data.ingredients && data.ingredients.length > 0) {
                 for (const ing of data.ingredients) {
                     const material = await tx.rawMaterial.findUnique({ where: { id: ing.rawMaterialId } });
+                    let actualAmount = ing.amount;
                     if (material) {
-                        totalCostOnBatch += Number(material.costPerUnit) * ing.amount;
+                        const matUnit = (material.unit || '').toLowerCase();
+                        const ingUnit = (ing.unit || matUnit).toLowerCase();
+                        if (matUnit === 'кг' && ingUnit === 'г')
+                            actualAmount /= 1000;
+                        if (matUnit === 'л' && ingUnit === 'мл')
+                            actualAmount /= 1000;
+                        if (matUnit === 'г' && ingUnit === 'кг')
+                            actualAmount *= 1000;
+                        if (matUnit === 'мл' && ingUnit === 'л')
+                            actualAmount *= 1000;
+                        totalCostOnBatch += Number(material.costPerUnit) * actualAmount;
                     }
                     await tx.recipeIngredient.create({
                         data: {
@@ -101,7 +124,7 @@ let RecipesService = class RecipesService {
                             rawMaterialId: ing.rawMaterialId,
                             amount: ing.amount,
                             unit: ing.unit || null,
-                            quantity: data.yield > 0 ? ing.amount / data.yield : 0,
+                            quantity: data.yield > 0 ? actualAmount / data.yield : 0,
                         },
                     });
                 }

@@ -390,12 +390,15 @@ const RecipesModule: React.FC<RecipesModuleProps> = ({ onBack, isReadOnly = fals
                       <label>Выход на замес (шт):</label>
                       <input 
                         type="number" 
-                        className={styles.yieldInput}
+                        className={`${styles.yieldInput} ${styles.noPrint}`}
                         value={activeRecipe.yield}
                         onChange={(e) => handleYieldChange(e.target.value)}
                         min="1"
                         disabled={isReadOnly}
                       />
+                      <span className={`${styles.printOnly} ${styles.yieldPrintVal}`}>
+                        {activeRecipe.yield}
+                      </span>
                     </div>
 
                     <div className={styles.totalCostCard}>
@@ -411,13 +414,16 @@ const RecipesModule: React.FC<RecipesModuleProps> = ({ onBack, isReadOnly = fals
                   <div className={styles.instructionsWrapper}>
                     <label className={styles.instructionsLabel}>Инструкция по приготовлению (Тех. процесс):</label>
                     <textarea 
-                      className={styles.instructionsInput}
+                      className={`${styles.instructionsInput} ${styles.noPrint}`}
                       value={activeRecipe.instructions}
                       onChange={(e) => handleInstructionsChange(e.target.value)}
                       placeholder="Например: 1. Замесить тесто (мука, вода, дрожжи) и оставить на 30 мин... 2. Разделить на порции по 300г... 3. Выпекать при 220°C 15 минут..."
                       rows={5}
                       readOnly={isReadOnly}
                     />
+                    <div className={`${styles.printOnly} ${styles.instructionsPrintVal}`}>
+                      {activeRecipe.instructions || 'Инструкция не добавлена.'}
+                    </div>
                   </div>
 
                   {/* Ingredients Table */}
@@ -430,7 +436,7 @@ const RecipesModule: React.FC<RecipesModuleProps> = ({ onBack, isReadOnly = fals
                           <th className={styles.colAmount}>Расход на 1 шт</th>
                           <th className={styles.colUnit}>Ед. изм.</th>
                           <th className={styles.colSum}>Сумма на замес</th>
-                          {!isReadOnly && <th className={styles.colAction}></th>}
+                          {!isReadOnly && <th className={`${styles.colAction} ${styles.noPrint}`}></th>}
                         </tr>
                       </thead>
                       <tbody>
@@ -442,7 +448,7 @@ const RecipesModule: React.FC<RecipesModuleProps> = ({ onBack, isReadOnly = fals
                             <tr key={ing.id} className={styles.tableRow}>
                               <td>
                                 <select 
-                                  className={styles.cleanSelect}
+                                  className={`${styles.cleanSelect} ${styles.noPrint}`}
                                   value={ing.rawMaterialId}
                                   onChange={(e) => handleMaterialChange(ing.id, e.target.value)}
                                   disabled={isReadOnly}
@@ -451,11 +457,14 @@ const RecipesModule: React.FC<RecipesModuleProps> = ({ onBack, isReadOnly = fals
                                     <option key={m.id} value={m.id}>{m.name}</option>
                                   ))}
                                 </select>
+                                <span className={styles.printOnly}>
+                                  {material?.name || '-'}
+                                </span>
                               </td>
                               <td>
                                 <input 
                                   type="number" 
-                                  className={styles.cleanInput}
+                                  className={`${styles.cleanInput} ${styles.noPrint}`}
                                   value={ing.amount}
                                   onChange={(e) => handleAmountChange(ing.id, e.target.value)}
                                   placeholder="0"
@@ -463,6 +472,9 @@ const RecipesModule: React.FC<RecipesModuleProps> = ({ onBack, isReadOnly = fals
                                   step="any"
                                   disabled={isReadOnly}
                                 />
+                                <span className={styles.printOnly}>
+                                  {ing.amount}
+                                </span>
                               </td>
                               <td className={styles.textCenter} style={{ color: '#64748b', fontSize: '14px' }}>
                                 {activeRecipe.yield > 0 && typeof ing.amount === 'number' 
@@ -471,7 +483,7 @@ const RecipesModule: React.FC<RecipesModuleProps> = ({ onBack, isReadOnly = fals
                               </td>
                               <td>
                                 <select 
-                                  className={styles.cleanSelect} 
+                                  className={`${styles.cleanSelect} ${styles.noPrint}`} 
                                   value={ing.unit || material?.unit || ''}
                                   onChange={(e) => handleUnitChange(ing.id, e.target.value)}
                                   disabled={isReadOnly}
@@ -482,6 +494,9 @@ const RecipesModule: React.FC<RecipesModuleProps> = ({ onBack, isReadOnly = fals
                                   <option value="мл">мл</option>
                                   <option value="шт">шт</option>
                                 </select>
+                                <span className={styles.printOnly}>
+                                  {ing.unit || material?.unit || '-'}
+                                </span>
                               </td>
                               <td>
                                 <span className={styles.rowSum}>
@@ -489,7 +504,7 @@ const RecipesModule: React.FC<RecipesModuleProps> = ({ onBack, isReadOnly = fals
                                 </span>
                               </td>
                               {!isReadOnly && (
-                                <td className={styles.textCenter}>
+                                <td className={`${styles.textCenter} ${styles.noPrint}`}>
                                   <button 
                                     className={styles.deleteBtn} 
                                     onClick={() => handleRemoveIngredient(ing.id)}
@@ -506,7 +521,7 @@ const RecipesModule: React.FC<RecipesModuleProps> = ({ onBack, isReadOnly = fals
                     </table>
                     
                     {!isReadOnly && (
-                      <div className={styles.tableFooter}>
+                      <div className={`${styles.tableFooter} ${styles.noPrint}`}>
                         <button className={styles.addIngBtn} onClick={handleAddIngredient}>
                           <Plus size={16} />
                           Добавить ингредиент

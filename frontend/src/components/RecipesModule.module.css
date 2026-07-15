@@ -772,3 +772,99 @@
   cursor: not-allowed;
 }
 
+/* Print Styles */
+.printOnly {
+  display: none;
+}
+
+@media print {
+  .noPrint, .sidebar, .header, .tableFooter {
+    display: none !important;
+  }
+  
+  .printOnly {
+    display: inline-block !important;
+    font-weight: 600;
+    color: #000000 !important;
+    font-family: var(--font-body) !important;
+  }
+  
+  .yieldPrintVal {
+    margin-left: 0.5rem;
+    font-size: 1.1rem;
+  }
+  
+  .instructionsPrintVal {
+    display: block !important;
+    margin-top: 0.5rem;
+    padding: 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    white-space: pre-wrap;
+    font-weight: 400;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .cleanInput {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    color: #000000 !important;
+  }
+
+  .cleanSelect {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    color: #000000 !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+  }
+
+  .moduleContainer, .main, .workspace, .detailsArea, .recipeContent {
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    background: #fff !important;
+  }
+
+  .tableWrapper {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin-top: 2rem !important;
+  }
+  
+  .table th, .table td {
+    padding: 0.5rem !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    font-size: 12px !important;
+  }
+
+  .instructionsInput {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    height: auto !important;
+    color: #000 !important;
+  }
+  
+  .totalCostCard {
+    box-shadow: none !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
