@@ -11,18 +11,18 @@ export class AnalyticsService {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    // Sales today
-    const todaySales = await this.prisma.sale.findMany({
-      where: { createdAt: { gte: today, lt: tomorrow } },
+    // Incomes today
+    const todayIncomes = await this.prisma.income.findMany({
+      where: { date: { gte: today, lt: tomorrow } },
     });
-    const totalSalesToday = todaySales.reduce((sum, s) => sum + s.total, 0);
-    const salesCount = todaySales.length;
+    const totalSalesToday = todayIncomes.reduce((sum, s) => sum + Number(s.amount), 0);
+    const salesCount = todayIncomes.filter(i => i.source === 'POS').length; // roughly
 
     // Expenses today
     const todayExpenses = await this.prisma.expense.findMany({
       where: { date: { gte: today, lt: tomorrow } },
     });
-    const totalExpensesToday = todayExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const totalExpensesToday = todayExpenses.reduce((sum, e) => sum + Number(e.amount), 0);
 
     // Active clients
     const clientsCount = await this.prisma.client.count();
@@ -42,8 +42,8 @@ export class AnalyticsService {
     const totalCompleted = tasks.reduce((sum, t) => sum + t.completed, 0);
 
     // Inventory critical
-    const allInventory = await this.prisma.inventoryItem.findMany();
-    const criticalItems = allInventory.filter(i => i.currentStock < i.minLimit).length;
+    const allInventory = await this.prisma.rawMaterial.findMany();
+    const criticalItems = allInventory.filter(i => Number(i.stock) < Number(i.minLimit)).length;
 
     return {
       sales: { total: totalSalesToday, count: salesCount },
@@ -84,60 +84,40 @@ export class AnalyticsService {
     }
 
     // 1. Revenue
-    const salesInPeriod = await this.prisma.sale.findMany({
-      where: { createdAt: { gte: startDate, lt: endDate } }
+    const incomesInPeriod = await this.prisma.income.findMany({
+      where: { date: { gte: startDate, lt: endDate } }
     });
-    const totalSalesRevenue = salesInPeriod.reduce((sum, s) => sum + s.total, 0);
-
-    const b2bInPeriod = await this.prisma.deliveryOrder.findMany({
-      where: {
-        createdAt: { gte: startDate, lt: endDate },
-        status: 'DELIVERED'
-      }
-    });
-    const totalB2bRevenue = b2bInPeriod.reduce((sum, o) => sum + o.totalAmount, 0);
-    const totalRevenue = totalSalesRevenue + totalB2bRevenue;
+    const totalRevenue = incomesInPeriod.reduce((sum, i) => sum + Number(i.amount), 0);
 
     // 2. Expenses
     const expensesInPeriod = await this.prisma.expense.findMany({
       where: { date: { gte: startDate, lt: endDate } }
     });
-    const totalDirectExpenses = expensesInPeriod.reduce((sum, e) => sum + e.amount, 0);
+    const totalDirectExpenses = expensesInPeriod.reduce((sum, e) => sum + Number(e.amount), 0);
 
-    const completedBatches = await this.prisma.productionBatch.findMany({
-      where: {
-        status: 'COMPLETED',
-        endTime: { gte: startDate, lt: endDate }
-      },
-      include: {
-        product: {
-          include: {
-            recipe: {
-              include: {
-                ingredients: {
-                  include: {
-                    rawMaterial: true
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+    const totalExpenses = totalDirectExpenses; // Inventory losses are already in expenses if logged properly.
+    const netProfit = totalRevenue - totalExpenses;
+
+    // Calculate Cashbox
+    const allIncomes = await this.prisma.income.findMany();
+    const allExpenses = await this.prisma.expense.findMany();
+
+    let cashIncome = 0; let kaspiIncome = 0;
+    allIncomes.forEach(i => {
+      if (i.paymentMethod === 'CASH') cashIncome += Number(i.amount);
+      if (i.paymentMethod === 'KASPI') kaspiIncome += Number(i.amount);
     });
 
-    let rawMaterialsCost = 0;
-    for (const batch of completedBatches) {
-      if (batch.product.recipe) {
-        for (const ing of batch.product.recipe.ingredients) {
-          const qtyUsed = (ing.quantity || ing.amount || 0) * batch.quantity;
-          rawMaterialsCost += qtyUsed * (ing.rawMaterial.costPerUnit || 0);
-        }
-      }
-    }
+    let cashExpense = 0; let kaspiExpense = 0;
+    allExpenses.forEach(e => {
+      if (e.paymentMethod === 'CASH') cashExpense += Number(e.amount);
+      if (e.paymentMethod === 'KASPI') kaspiExpense += Number(e.amount);
+    });
 
-    const totalExpenses = totalDirectExpenses + rawMaterialsCost;
-    const netProfit = totalRevenue - totalExpenses;
+    const cashbox = {
+      cash: cashIncome - cashExpense,
+      kaspi: kaspiIncome - kaspiExpense,
+    };
 
     // 3. Debtors
     const debtorsList = await this.prisma.client.findMany({
@@ -166,58 +146,17 @@ export class AnalyticsService {
       const dayEnd = new Date(dayStart);
       dayEnd.setHours(23, 59, 59, 999);
 
-      const daySales = await this.prisma.sale.findMany({
-        where: { createdAt: { gte: dayStart, lt: dayEnd } }
+      const dayIncomes = await this.prisma.income.findMany({
+        where: { date: { gte: dayStart, lt: dayEnd } }
       });
-      const daySalesSum = daySales.reduce((sum, s) => sum + s.total, 0);
-
-      const dayB2b = await this.prisma.deliveryOrder.findMany({
-        where: {
-          createdAt: { gte: dayStart, lt: dayEnd },
-          status: 'DELIVERED'
-        }
-      });
-      const dayB2bSum = dayB2b.reduce((sum, o) => sum + o.totalAmount, 0);
-      const dayRevenue = daySalesSum + dayB2bSum;
+      const dayRevenue = dayIncomes.reduce((sum, s) => sum + Number(s.amount), 0);
 
       const dayDirectExpenses = await this.prisma.expense.findMany({
         where: { date: { gte: dayStart, lt: dayEnd } }
       });
-      const dayDirectExpensesSum = dayDirectExpenses.reduce((sum, e) => sum + e.amount, 0);
+      const dayDirectExpensesSum = dayDirectExpenses.reduce((sum, e) => sum + Number(e.amount), 0);
 
-      const dayBatches = await this.prisma.productionBatch.findMany({
-        where: {
-          status: 'COMPLETED',
-          endTime: { gte: dayStart, lt: dayEnd }
-        },
-        include: {
-          product: {
-            include: {
-              recipe: {
-                include: {
-                  ingredients: {
-                    include: {
-                      rawMaterial: true
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      });
-
-      let dayRawMaterialsCost = 0;
-      for (const batch of dayBatches) {
-        if (batch.product.recipe) {
-          for (const ing of batch.product.recipe.ingredients) {
-            const qtyUsed = (ing.quantity || ing.amount || 0) * batch.quantity;
-            dayRawMaterialsCost += qtyUsed * (ing.rawMaterial.costPerUnit || 0);
-          }
-        }
-      }
-
-      const dayExpenses = dayDirectExpensesSum + dayRawMaterialsCost;
+      const dayExpenses = dayDirectExpensesSum;
 
       barData.push({
         day: daysName[dayStart.getDay()],
@@ -256,7 +195,7 @@ export class AnalyticsService {
     const totalProductSalesSum = sortedProducts.reduce((acc, p) => acc + p.sum, 0);
 
     const colors = ['#0f172a', '#3b82f6', '#f59e0b', '#10b981', '#6366f1'];
-    let pieData = [];
+    let pieData: { name: string; percent: number; color: string }[] = [];
     if (totalProductSalesSum > 0) {
       let percentSum = 0;
       pieData = sortedProducts.slice(0, 4).map((p, idx) => {
@@ -277,12 +216,7 @@ export class AnalyticsService {
         });
       }
     } else {
-      pieData = [
-        { name: 'Таба нан', percent: 45, color: '#0f172a' },
-        { name: 'Тандырная лепешка', percent: 30, color: '#3b82f6' },
-        { name: 'Батон нарезной', percent: 15, color: '#f59e0b' },
-        { name: 'Круассаны', percent: 10, color: '#10b981' }
-      ];
+      pieData = [];
     }
 
     // 6. Drivers
@@ -317,6 +251,7 @@ export class AnalyticsService {
       profit: netProfit,
       debt: totalDebt,
       debtors,
+      cashbox,
       barData,
       pieData,
       drivers

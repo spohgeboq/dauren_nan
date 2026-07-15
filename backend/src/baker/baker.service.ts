@@ -69,7 +69,7 @@ export class BakerService {
       // Decrement raw materials stock if recipe exists
       if (product.recipe) {
         for (const ing of product.recipe.ingredients) {
-          const totalNeeded = (ing.quantity || ing.amount || 0) * quantity;
+          const totalNeeded = Number(ing.quantity || ing.amount || 0) * quantity;
           await tx.rawMaterial.update({
             where: { id: ing.rawMaterialId },
             data: { stock: { decrement: totalNeeded } },
@@ -139,10 +139,59 @@ export class BakerService {
   }
 
   async recordDefect(productId: number, quantity: number, reason: string, bakerId: number) {
-    const defect = await this.prisma.defectLog.create({
-      data: { productId, quantity, reason, bakerId },
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      include: { recipe: { include: { ingredients: true } } },
     });
-    return { success: true, defect };
+
+    if (!product) throw new NotFoundException('Продукт не найден');
+
+    return this.prisma.$transaction(async (tx) => {
+      // 1. Списываем сырье
+      if (product.recipe) {
+        for (const ing of product.recipe.ingredients) {
+          const totalNeeded = Number(ing.quantity || ing.amount || 0) * quantity;
+          await tx.rawMaterial.update({
+            where: { id: ing.rawMaterialId },
+            data: { stock: { decrement: totalNeeded } },
+          });
+        }
+      }
+
+      // 2. Логируем в DefectLog
+      const defect = await tx.defectLog.create({
+        data: { productId, quantity, reason, bakerId },
+      });
+
+      // 3. Обновляем задачу и BatchLog (если задача есть, иначе создаем)
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date();
+      todayEnd.setHours(23, 59, 59, 999);
+
+      let task = await tx.productionTask.findFirst({
+        where: { productId, date: { gte: todayStart, lte: todayEnd } }
+      });
+
+      if (!task) {
+        task = await tx.productionTask.create({
+          data: { productId, planned: 0, completed: 0, date: todayStart }
+        });
+      }
+
+      const timeStr = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+      await tx.batchLog.create({
+        data: {
+          taskId: task.id,
+          time: timeStr,
+          productName: product.name,
+          quantity,
+          type: 'DEFECT'
+        }
+      });
+
+      return { success: true, defect };
+    });
   }
 
   // Завершение B2B заказа
@@ -158,7 +207,7 @@ export class BakerService {
       for (const item of order.items) {
         if (item.product.recipe) {
           for (const ing of item.product.recipe.ingredients) {
-            const totalNeeded = (ing.quantity || ing.amount || 0) * item.quantity;
+            const totalNeeded = Number(ing.quantity || ing.amount || 0) * item.quantity;
             await tx.rawMaterial.update({
               where: { id: ing.rawMaterialId },
               data: { stock: { decrement: totalNeeded } },
@@ -184,7 +233,7 @@ export class BakerService {
     return { success: true, message: 'Заказ отмечен как готовый и сырье списано' };
   }
 
-  // Фиксация выпечки для витрины (Конец дня)
+  // Фиксация выпечки для витрины (Единая транзакция)
   async logShowcaseBatch(productId: number, quantity: number, bakerId: number) {
     const product = await this.prisma.product.findUnique({
       where: { id: productId },
@@ -194,22 +243,57 @@ export class BakerService {
     if (!product) throw new NotFoundException('Продукт не найден');
 
     return this.prisma.$transaction(async (tx) => {
-      // Добавляем на витрину
+      // 1. Пополнение витрины
       await tx.product.update({
         where: { id: productId },
         data: { stock: { increment: quantity } },
       });
 
-      // Списываем сырье
+      // 2. Списываем сырье по техкарте
       if (product.recipe) {
         for (const ing of product.recipe.ingredients) {
-          const totalNeeded = (ing.quantity || ing.amount || 0) * quantity;
+          const totalNeeded = Number(ing.quantity || ing.amount || 0) * quantity;
           await tx.rawMaterial.update({
             where: { id: ing.rawMaterialId },
             data: { stock: { decrement: totalNeeded } },
           });
         }
       }
+
+      // 3. Обновляем задачу на производство (ProductionTask), если она есть на сегодня
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date();
+      todayEnd.setHours(23, 59, 59, 999);
+
+      let task = await tx.productionTask.findFirst({
+        where: { productId, date: { gte: todayStart, lte: todayEnd } }
+      });
+
+      // Если задачи нет, создадим её "по факту"
+      if (!task) {
+        task = await tx.productionTask.create({
+          data: { productId, planned: 0, completed: 0, date: todayStart }
+        });
+      }
+
+      await tx.productionTask.update({
+        where: { id: task.id },
+        data: { completed: { increment: quantity } }
+      });
+
+      // 4. Логируем в BatchLog
+      const timeStr = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+      await tx.batchLog.create({
+        data: {
+          taskId: task.id,
+          time: timeStr,
+          productName: product.name,
+          quantity,
+          type: 'READY'
+        }
+      });
+
       return { success: true };
     });
   }

@@ -9,8 +9,8 @@ export declare class BakerService {
             recipe: ({
                 ingredients: {
                     id: number;
-                    quantity: number;
-                    amount: number;
+                    amount: import("@prisma/client/runtime/library").Decimal;
+                    quantity: import("@prisma/client/runtime/library").Decimal;
                     rawMaterialId: number;
                     recipeId: number;
                 }[];
@@ -26,8 +26,8 @@ export declare class BakerService {
             createdAt: Date;
             updatedAt: Date;
             isActive: boolean;
-            sku: string;
             categoryId: number;
+            sku: string;
             weight: number;
             cost: number;
             price: number;
@@ -37,9 +37,12 @@ export declare class BakerService {
         rawMaterials: {
             id: number;
             name: string;
-            stock: number;
-            costPerUnit: number;
+            createdAt: Date;
+            updatedAt: Date;
+            stock: import("@prisma/client/runtime/library").Decimal;
             unit: string;
+            costPerUnit: import("@prisma/client/runtime/library").Decimal;
+            minLimit: import("@prisma/client/runtime/library").Decimal;
         }[];
         activeBatches: ({
             product: {
@@ -48,8 +51,8 @@ export declare class BakerService {
                 createdAt: Date;
                 updatedAt: Date;
                 isActive: boolean;
-                sku: string;
                 categoryId: number;
+                sku: string;
                 weight: number;
                 cost: number;
                 price: number;
@@ -73,8 +76,8 @@ export declare class BakerService {
                     createdAt: Date;
                     updatedAt: Date;
                     isActive: boolean;
-                    sku: string;
                     categoryId: number;
+                    sku: string;
                     weight: number;
                     cost: number;
                     price: number;
@@ -93,13 +96,13 @@ export declare class BakerService {
             status: import(".prisma/client").$Enums.DeliveryOrderStatus;
             createdAt: Date;
             clientId: number | null;
+            paymentMethod: string | null;
             clientName: string;
             clientPhone: string;
             address: string;
             totalAmount: number;
             isPaid: boolean;
             isBaked: boolean;
-            paymentMethod: string | null;
             driverId: number | null;
         })[];
     }>;
@@ -126,8 +129,8 @@ export declare class BakerService {
             createdAt: Date;
             quantity: number;
             productId: number;
-            bakerId: number;
             reason: string | null;
+            bakerId: number;
         };
     }>;
     markB2bOrderReady(orderId: number): Promise<{

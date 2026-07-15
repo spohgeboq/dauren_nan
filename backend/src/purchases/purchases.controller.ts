@@ -20,4 +20,15 @@ export class PurchasesController {
 
   @Patch(':id/receive')
   receive(@Param('id', ParseIntPipe) id: number) { return this.service.receive(id); }
+
+  @Get('suppliers')
+  getSuppliers() { return this.service.getSuppliers(); }
+
+  @Post('suppliers')
+  createSupplier(@Body() dto: any) { return this.service.createSupplier(dto); }
+
+  @Post('suppliers/:id/pay')
+  paySupplier(@Param('id', ParseIntPipe) id: number, @Body() dto: { amount: number; paymentMethod?: string }) { 
+    return this.service.paySupplier(id, dto.amount, dto.paymentMethod); 
+  }
 }

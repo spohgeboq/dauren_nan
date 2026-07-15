@@ -33,15 +33,30 @@ export class PosService {
   async createSale(data: { shiftId: number; userId: number; paymentMethod: string; items: { productId: number; quantity: number; price: number }[] }) {
     const total = data.items.reduce((sum, i) => sum + i.quantity * i.price, 0);
 
-    return this.prisma.sale.create({
-      data: {
-        shiftId: data.shiftId,
-        userId: data.userId,
-        total,
-        paymentMethod: data.paymentMethod as PaymentMethod,
-        items: { create: data.items },
-      },
-      include: { items: { include: { product: { select: { id: true, name: true } } } } },
+    return this.prisma.$transaction(async (tx) => {
+      const sale = await tx.sale.create({
+        data: {
+          shiftId: data.shiftId,
+          userId: data.userId,
+          total,
+          paymentMethod: data.paymentMethod as PaymentMethod,
+          items: { create: data.items },
+        },
+        include: { items: { include: { product: { select: { id: true, name: true } } } } },
+      });
+
+      await tx.income.create({
+        data: {
+          amount: total,
+          paymentMethod: data.paymentMethod as PaymentMethod,
+          source: 'POS',
+          description: `Продажа на точке (Чек #${sale.id})`,
+          isAuto: true,
+          userId: data.userId,
+        },
+      });
+
+      return sale;
     });
   }
 

@@ -11,8 +11,8 @@ export declare class ProductionController {
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        productId: number;
         date: Date;
+        productId: number;
         planned: number;
         completed: number;
     })[]>;
@@ -40,8 +40,8 @@ export declare class ProductionController {
             createdAt: Date;
             updatedAt: Date;
             isActive: boolean;
-            sku: string;
             categoryId: number;
+            sku: string;
             weight: number;
             cost: number;
             price: number;
@@ -52,8 +52,26 @@ export declare class ProductionController {
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        productId: number;
         date: Date;
+        productId: number;
+        planned: number;
+        completed: number;
+    }>;
+    updateTask(id: string, planned: number): Promise<{
+        id: number;
+        createdAt: Date;
+        updatedAt: Date;
+        date: Date;
+        productId: number;
+        planned: number;
+        completed: number;
+    }>;
+    deleteTask(id: string): Promise<{
+        id: number;
+        createdAt: Date;
+        updatedAt: Date;
+        date: Date;
+        productId: number;
         planned: number;
         completed: number;
     }>;
@@ -69,5 +87,9 @@ export declare class ProductionController {
         time: string;
         taskId: number;
         productName: string;
-    } | null>;
+    }>;
+    autoPlan(date: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
 }

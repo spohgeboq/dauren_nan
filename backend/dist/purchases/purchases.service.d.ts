@@ -3,12 +3,21 @@ export declare class PurchasesService {
     private prisma;
     constructor(prisma: PrismaService);
     findAll(): Promise<({
+        supplier: {
+            id: number;
+            name: string;
+            phone: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            balance: import("@prisma/client/runtime/library").Decimal;
+        } | null;
         items: {
             id: number;
             name: string;
-            orderedQty: number;
+            price: import("@prisma/client/runtime/library").Decimal;
             unit: string;
-            inventoryItemId: number | null;
+            rawMaterialId: number;
+            orderedQty: import("@prisma/client/runtime/library").Decimal;
             purchaseId: number;
         }[];
     } & {
@@ -17,25 +26,40 @@ export declare class PurchasesService {
         createdAt: Date;
         updatedAt: Date;
         date: Date;
-        totalSum: number;
-        supplier: string | null;
+        totalSum: import("@prisma/client/runtime/library").Decimal;
+        supplierId: number | null;
+        invoiceNumber: string | null;
+        paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
     })[]>;
     create(data: {
-        supplier?: string;
+        date?: string;
+        supplierName?: string;
         totalSum?: number;
         items: {
             name: string;
             orderedQty: number;
             unit: string;
-            inventoryItemId?: number;
+            rawMaterialId: number;
+            price?: number;
         }[];
+        isPaidRightNow?: boolean;
+        paymentMethod?: string;
     }): Promise<{
+        supplier: {
+            id: number;
+            name: string;
+            phone: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            balance: import("@prisma/client/runtime/library").Decimal;
+        } | null;
         items: {
             id: number;
             name: string;
-            orderedQty: number;
+            price: import("@prisma/client/runtime/library").Decimal;
             unit: string;
-            inventoryItemId: number | null;
+            rawMaterialId: number;
+            orderedQty: import("@prisma/client/runtime/library").Decimal;
             purchaseId: number;
         }[];
     } & {
@@ -44,8 +68,10 @@ export declare class PurchasesService {
         createdAt: Date;
         updatedAt: Date;
         date: Date;
-        totalSum: number;
-        supplier: string | null;
+        totalSum: import("@prisma/client/runtime/library").Decimal;
+        supplierId: number | null;
+        invoiceNumber: string | null;
+        paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
     }>;
     receive(id: number): Promise<{
         id: number;
@@ -53,14 +79,43 @@ export declare class PurchasesService {
         createdAt: Date;
         updatedAt: Date;
         date: Date;
-        totalSum: number;
-        supplier: string | null;
+        totalSum: import("@prisma/client/runtime/library").Decimal;
+        supplierId: number | null;
+        invoiceNumber: string | null;
+        paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
     } | null>;
+    getSuppliers(): Promise<{
+        id: number;
+        name: string;
+        phone: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        balance: import("@prisma/client/runtime/library").Decimal;
+    }[]>;
+    createSupplier(data: {
+        name: string;
+        phone?: string;
+    }): Promise<{
+        id: number;
+        name: string;
+        phone: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        balance: import("@prisma/client/runtime/library").Decimal;
+    }>;
+    paySupplier(supplierId: number, amount: number, paymentMethod?: string): Promise<{
+        id: number;
+        name: string;
+        phone: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        balance: import("@prisma/client/runtime/library").Decimal;
+    }>;
     getNeeds(): Promise<{
         id: number;
         name: string;
-        currentStock: number;
-        minLimit: number;
+        currentStock: import("@prisma/client/runtime/library").Decimal;
+        minLimit: import("@prisma/client/runtime/library").Decimal;
         recommendedQty: number;
         unit: string;
     }[]>;

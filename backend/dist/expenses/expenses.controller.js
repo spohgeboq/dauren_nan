@@ -23,6 +23,8 @@ let ExpensesController = class ExpensesController {
     findAll(category, month) { return this.service.findAll(category, month); }
     getStats(month) { return this.service.getStats(month); }
     create(dto) { return this.service.create(dto); }
+    paySalaries() { return this.service.paySalaries(); }
+    delete(id) { return this.service.delete(parseInt(id, 10)); }
 };
 exports.ExpensesController = ExpensesController;
 __decorate([
@@ -47,6 +49,19 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], ExpensesController.prototype, "create", null);
+__decorate([
+    (0, common_1.Post)('pay-salaries'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], ExpensesController.prototype, "paySalaries", null);
+__decorate([
+    (0, common_1.Delete)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], ExpensesController.prototype, "delete", null);
 exports.ExpensesController = ExpensesController = __decorate([
     (0, common_1.Controller)('expenses'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

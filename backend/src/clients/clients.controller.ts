@@ -22,6 +22,11 @@ export class ClientsController {
   @Post()
   create(@Body() dto: CreateClientDto) { return this.service.create(dto); }
 
+  @Post(':id/pay')
+  payDebt(@Param('id', ParseIntPipe) id: number, @Body() data: { amount: number; paymentMethod: string }) {
+    return this.service.payDebt(id, data);
+  }
+
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateClientDto) { return this.service.update(id, dto); }
 

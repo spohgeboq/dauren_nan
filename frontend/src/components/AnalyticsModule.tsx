@@ -172,6 +172,30 @@ const AnalyticsModule: React.FC<AnalyticsModuleProps> = ({ onBack }) => {
                   </div>
                 </div>
               </div>
+
+              {/* Cashbox */}
+              <div className={styles.summaryCard}>
+                <div className={styles.cardHeader}>
+                  <span className={styles.cardTitle}>Баланс Кассы</span>
+                  <div className={`${styles.cardIconBox} ${styles.iconBlue}`}>
+                    <Wallet size={20} />
+                  </div>
+                </div>
+                <div className={styles.cardBody}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <span style={{ fontSize: '1.25rem', fontWeight: 700, color: '#166534' }}>
+                      Наличные: {formatCurrency(stats?.cashbox?.cash || 0)}
+                    </span>
+                    <span style={{ fontSize: '1.25rem', fontWeight: 700, color: '#be185d' }}>
+                      Kaspi: {formatCurrency(stats?.cashbox?.kaspi || 0)}
+                    </span>
+                  </div>
+                  <div className={`${styles.trendBox} ${styles.trendUp}`} style={{ marginTop: '0.5rem' }}>
+                    <TrendingUp size={14} />
+                    <span>Ожидаемый остаток</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Charts Row */}

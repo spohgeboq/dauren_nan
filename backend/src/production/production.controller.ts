@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, UseGuards, Put, Param, Delete } from '@nestjs/common';
 import { ProductionService } from './production.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard, CheckPermissions } from '../auth/guards/permissions.guard';
@@ -21,6 +21,19 @@ export class ProductionController {
   @Post('tasks')
   createTask(@Body() dto: { productId: number; planned: number }) { return this.service.createTask(dto); }
 
+  @Put('tasks/:id')
+  updateTask(@Param('id') id: string, @Body('planned') planned: number) {
+    return this.service.updateTask(parseInt(id), planned);
+  }
+
+  @Delete('tasks/:id')
+  deleteTask(@Param('id') id: string) {
+    return this.service.deleteTask(parseInt(id));
+  }
+
   @Post('batch')
   addBatch(@Body() dto: { taskId: number; quantity: number; type: string }) { return this.service.addBatch(dto); }
+
+  @Post('auto-plan')
+  autoPlan(@Body('date') date: string) { return this.service.autoPlan(date); }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, UseGuards, Delete, Param } from '@nestjs/common';
 import { ExpensesService } from './expenses.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
@@ -15,4 +15,10 @@ export class ExpensesController {
 
   @Post()
   create(@Body() dto: any) { return this.service.create(dto); }
+
+  @Post('pay-salaries')
+  paySalaries() { return this.service.paySalaries(); }
+
+  @Delete(':id')
+  delete(@Param('id') id: string) { return this.service.delete(parseInt(id, 10)); }
 }

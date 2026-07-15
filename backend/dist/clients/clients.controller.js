@@ -27,6 +27,9 @@ let ClientsController = class ClientsController {
     getStats() { return this.service.getStats(); }
     findOne(id) { return this.service.findOne(id); }
     create(dto) { return this.service.create(dto); }
+    payDebt(id, data) {
+        return this.service.payDebt(id, data);
+    }
     update(id, dto) { return this.service.update(id, dto); }
     remove(id) { return this.service.remove(id); }
 };
@@ -59,6 +62,14 @@ __decorate([
     __metadata("design:paramtypes", [client_dto_1.CreateClientDto]),
     __metadata("design:returntype", void 0)
 ], ClientsController.prototype, "create", null);
+__decorate([
+    (0, common_1.Post)(':id/pay'),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", void 0)
+], ClientsController.prototype, "payDebt", null);
 __decorate([
     (0, common_1.Patch)(':id'),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),

@@ -57,6 +57,12 @@ export declare class ClientsController {
         route: string | null;
         balance: number;
     }>;
+    payDebt(id: number, data: {
+        amount: number;
+        paymentMethod: string;
+    }): Promise<{
+        success: boolean;
+    }>;
     update(id: number, dto: UpdateClientDto): Promise<{
         email: string | null;
         id: number;

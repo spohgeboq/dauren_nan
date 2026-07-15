@@ -14,6 +14,7 @@ interface Employee {
   login: string;
   status: EmployeeStatus;
   isOnShift: boolean;
+  fixedSalary: number;
 }
 
 const ROLE_MAP_TO_BACKEND: Record<EmployeeRole, string> = {
@@ -59,6 +60,15 @@ const EmployeesModule: React.FC<EmployeesModuleProps> = ({ onBack }) => {
   const [newEmpLogin, setNewEmpLogin] = useState('');
   const [newEmpPassword, setNewEmpPassword] = useState('');
   const [newEmpPin, setNewEmpPin] = useState('');
+  const [newEmpSalary, setNewEmpSalary] = useState('');
+
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [editEmpName, setEditEmpName] = useState('');
+  const [editEmpPhone, setEditEmpPhone] = useState('');
+  const [editEmpRole, setEditEmpRole] = useState<EmployeeRole>('Водитель');
+  const [editEmpLogin, setEditEmpLogin] = useState('');
+  const [editEmpPassword, setEditEmpPassword] = useState('');
+  const [editEmpSalary, setEditEmpSalary] = useState('');
 
   const fetchEmployees = async () => {
     try {
@@ -71,6 +81,7 @@ const EmployeesModule: React.FC<EmployeesModuleProps> = ({ onBack }) => {
         login: emp.login || '',
         status: STATUS_MAP_FROM_BACKEND[emp.status] || 'Активен',
         isOnShift: emp.isOnShift || false,
+        fixedSalary: Number(emp.fixedSalary) || 0,
       }));
       setEmployees(mapped);
     } catch (err) {
@@ -112,6 +123,7 @@ const EmployeesModule: React.FC<EmployeesModuleProps> = ({ onBack }) => {
         login: loginVal,
         pin: newEmpPin || undefined,
         role: ROLE_MAP_TO_BACKEND[newEmpRole],
+        fixedSalary: Number(newEmpSalary) || 0,
       });
 
       const mapped: Employee = {
@@ -122,6 +134,7 @@ const EmployeesModule: React.FC<EmployeesModuleProps> = ({ onBack }) => {
         login: saved.login || '',
         status: STATUS_MAP_FROM_BACKEND[saved.status] || 'Активен',
         isOnShift: saved.isOnShift || false,
+        fixedSalary: Number(saved.fixedSalary) || 0,
       };
 
       setEmployees([mapped, ...employees]);
@@ -134,8 +147,70 @@ const EmployeesModule: React.FC<EmployeesModuleProps> = ({ onBack }) => {
       setNewEmpLogin('');
       setNewEmpPassword('');
       setNewEmpPin('');
+      setNewEmpSalary('');
     } catch (err) {
       console.error('Error adding employee:', err);
+    }
+  };
+
+  const handleOpenEdit = (emp: Employee) => {
+    setSelectedEmployee(emp);
+    setEditEmpName(emp.fullName);
+    setEditEmpPhone(emp.phone);
+    setEditEmpRole(emp.role);
+    setEditEmpLogin(emp.login);
+    setEditEmpPassword(''); // don't show old password
+    setEditEmpSalary(emp.fixedSalary ? String(emp.fixedSalary) : '');
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedEmployee) return;
+
+    try {
+      const payload: any = {
+        name: editEmpName,
+        phone: editEmpPhone,
+        role: ROLE_MAP_TO_BACKEND[editEmpRole],
+        login: editEmpLogin,
+        fixedSalary: Number(editEmpSalary) || 0,
+      };
+      if (editEmpPassword.trim() !== '') {
+        payload.password = editEmpPassword;
+      }
+
+      await api.patch(`/users/${selectedEmployee.id}`, payload);
+      await fetchEmployees();
+      setSelectedEmployee(null);
+    } catch (err) {
+      console.error('Error updating employee:', err);
+    }
+  };
+
+  const handleDeleteEmployee = async () => {
+    if (!selectedEmployee) return;
+
+    try {
+      const currentUserStr = localStorage.getItem('user');
+      if (currentUserStr) {
+        const currentUser = JSON.parse(currentUserStr);
+        if (currentUser.id === selectedEmployee.id) {
+          alert('Вы не можете удалить свою собственную учетную запись! Если вы удалите себя, вы потеряете доступ к системе.');
+          return;
+        }
+      }
+    } catch (e) {
+      console.error('Error checking current user', e);
+    }
+
+    if (window.confirm('Вы уверены, что хотите удалить этого сотрудника? Это действие необратимо!')) {
+      try {
+        await api.delete(`/users/${selectedEmployee.id}`);
+        await fetchEmployees();
+        setSelectedEmployee(null);
+      } catch (err) {
+        console.error('Error deleting employee:', err);
+      }
     }
   };
 
@@ -233,6 +308,7 @@ const EmployeesModule: React.FC<EmployeesModuleProps> = ({ onBack }) => {
                   <th>Роль</th>
                   <th>Телефон</th>
                   <th>Логин (Система)</th>
+                  <th className={styles.textRight}>Зарплата</th>
                   <th className={styles.textRight}>Статус</th>
                 </tr>
               </thead>
@@ -240,7 +316,12 @@ const EmployeesModule: React.FC<EmployeesModuleProps> = ({ onBack }) => {
                 {filteredEmployees.map(emp => {
                   const isFired = emp.status === 'Уволен';
                   return (
-                    <tr key={emp.id} className={`${styles.tableRow} ${isFired ? styles.rowFired : ''}`}>
+                    <tr 
+                      key={emp.id} 
+                      className={`${styles.tableRow} ${isFired ? styles.rowFired : ''}`}
+                      onClick={() => handleOpenEdit(emp)}
+                      style={{ cursor: 'pointer' }}
+                    >
                       <td>
                         <div className={styles.empName}>{emp.fullName}</div>
                       </td>
@@ -254,6 +335,9 @@ const EmployeesModule: React.FC<EmployeesModuleProps> = ({ onBack }) => {
                       </td>
                       <td>
                         <span className={styles.empLogin}>{emp.login || '—'}</span>
+                      </td>
+                      <td className={styles.textRight}>
+                        {emp.fixedSalary > 0 ? `${emp.fixedSalary.toLocaleString('ru-RU')} ₸` : 'Не указана'}
                       </td>
                       <td className={styles.textRight}>
                         {isFired ? (
@@ -281,6 +365,119 @@ const EmployeesModule: React.FC<EmployeesModuleProps> = ({ onBack }) => {
           </div>
         </div>
       </main>
+
+      {/* Edit Employee Modal */}
+      {selectedEmployee && (
+        <div className={styles.modalOverlay} onClick={() => setSelectedEmployee(null)}>
+          <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+            
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>Редактировать сотрудника</h2>
+              <button className={styles.closeBtn} onClick={() => setSelectedEmployee(null)}>
+                <X size={24} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className={styles.modalForm}>
+              <div className={styles.formSection}>
+                <h3 className={styles.sectionSubtitle}>Основная информация</h3>
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>ФИО</label>
+                    <input 
+                      type="text" 
+                      className={styles.formInput} 
+                      value={editEmpName}
+                      onChange={(e) => setEditEmpName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Телефон</label>
+                    <input 
+                      type="text" 
+                      className={styles.formInput} 
+                      value={editEmpPhone}
+                      onChange={(e) => setEditEmpPhone(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Роль</label>
+                    <select 
+                      className={styles.formSelect}
+                      value={editEmpRole}
+                      onChange={(e) => setEditEmpRole(e.target.value as EmployeeRole)}
+                    >
+                      <option value="Администратор">Администратор</option>
+                      <option value="Кассир">Кассир</option>
+                      <option value="Пекарь">Пекарь</option>
+                      <option value="Водитель">Водитель</option>
+                    </select>
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Фиксированная ЗП (₸/мес)</label>
+                    <input 
+                      type="number" 
+                      className={styles.formInput} 
+                      value={editEmpSalary}
+                      onChange={(e) => setEditEmpSalary(e.target.value)}
+                      placeholder="Например: 150000"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.formSection}>
+                <h3 className={styles.sectionSubtitle}>Доступ к системе</h3>
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Логин</label>
+                    <input 
+                      type="text" 
+                      className={styles.formInput} 
+                      value={editEmpLogin}
+                      onChange={(e) => setEditEmpLogin(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Новый пароль (оставьте пустым, чтобы не менять)</label>
+                    <input 
+                      type="text" 
+                      className={styles.formInput} 
+                      placeholder="Новый пароль"
+                      value={editEmpPassword}
+                      onChange={(e) => setEditEmpPassword(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.modalActions} style={{ justifyContent: 'space-between', display: 'flex', alignItems: 'center' }}>
+                <button 
+                  type="button" 
+                  className={styles.cancelBtn} 
+                  style={{ color: '#ef4444', backgroundColor: '#fee2e2' }}
+                  onClick={handleDeleteEmployee}
+                >
+                  Удалить
+                </button>
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button type="button" className={styles.cancelBtn} onClick={() => setSelectedEmployee(null)}>
+                    Отмена
+                  </button>
+                  <button type="submit" className={styles.submitBtn}>
+                    Сохранить
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Add Employee Modal */}
       {isModalOpen && (
@@ -335,6 +532,16 @@ const EmployeesModule: React.FC<EmployeesModuleProps> = ({ onBack }) => {
                       <option value="Пекарь">Пекарь</option>
                       <option value="Администратор">Администратор</option>
                     </select>
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Фиксированная ЗП (₸/мес)</label>
+                    <input 
+                      type="number" 
+                      className={styles.formInput} 
+                      value={newEmpSalary}
+                      onChange={(e) => setNewEmpSalary(e.target.value)}
+                      placeholder="Например: 150000"
+                    />
                   </div>
                 </div>
               </div>

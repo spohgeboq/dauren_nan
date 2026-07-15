@@ -34,8 +34,8 @@ export declare class RoutesController {
         status: import(".prisma/client").$Enums.RouteStatus;
         createdAt: Date;
         updatedAt: Date;
-        driverId: number | null;
         date: Date;
+        driverId: number | null;
     })[]>;
     findOne(id: number): Promise<({
         loadItems: ({
@@ -45,8 +45,8 @@ export declare class RoutesController {
                 createdAt: Date;
                 updatedAt: Date;
                 isActive: boolean;
-                sku: string;
                 categoryId: number;
+                sku: string;
                 weight: number;
                 cost: number;
                 price: number;
@@ -70,6 +70,7 @@ export declare class RoutesController {
             role: import(".prisma/client").$Enums.Role;
             status: import(".prisma/client").$Enums.EmployeeStatus;
             isOnShift: boolean;
+            fixedSalary: import("@prisma/client/runtime/library").Decimal;
             createdAt: Date;
             updatedAt: Date;
             clientId: number | null;
@@ -90,8 +91,8 @@ export declare class RoutesController {
         status: import(".prisma/client").$Enums.RouteStatus;
         createdAt: Date;
         updatedAt: Date;
-        driverId: number | null;
         date: Date;
+        driverId: number | null;
     }) | null>;
     create(dto: {
         name: string;
@@ -106,8 +107,8 @@ export declare class RoutesController {
                 createdAt: Date;
                 updatedAt: Date;
                 isActive: boolean;
-                sku: string;
                 categoryId: number;
+                sku: string;
                 weight: number;
                 cost: number;
                 price: number;
@@ -131,6 +132,7 @@ export declare class RoutesController {
             role: import(".prisma/client").$Enums.Role;
             status: import(".prisma/client").$Enums.EmployeeStatus;
             isOnShift: boolean;
+            fixedSalary: import("@prisma/client/runtime/library").Decimal;
             createdAt: Date;
             updatedAt: Date;
             clientId: number | null;
@@ -151,8 +153,8 @@ export declare class RoutesController {
         status: import(".prisma/client").$Enums.RouteStatus;
         createdAt: Date;
         updatedAt: Date;
-        driverId: number | null;
         date: Date;
+        driverId: number | null;
     }>;
     updateRouteStatus(id: number, status: string): Promise<{
         id: number;
@@ -160,8 +162,8 @@ export declare class RoutesController {
         status: import(".prisma/client").$Enums.RouteStatus;
         createdAt: Date;
         updatedAt: Date;
-        driverId: number | null;
         date: Date;
+        driverId: number | null;
     }>;
     updatePointStatus(routeId: number, pointId: number, status: string): Promise<{
         id: number;

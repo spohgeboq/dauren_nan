@@ -17,38 +17,133 @@ let PurchasesService = class PurchasesService {
         this.prisma = prisma;
     }
     async findAll() {
-        return this.prisma.purchase.findMany({ include: { items: true }, orderBy: { date: 'desc' } });
-    }
-    async create(data) {
-        return this.prisma.purchase.create({
-            data: { supplier: data.supplier, totalSum: data.totalSum || 0, items: { create: data.items } },
-            include: { items: true },
+        return this.prisma.purchase.findMany({
+            include: { items: true, supplier: true },
+            orderBy: { date: 'desc' }
         });
     }
+    async create(data) {
+        const formattedItems = data.items.map(item => ({
+            name: item.name,
+            orderedQty: item.orderedQty,
+            unit: item.unit,
+            price: item.price || 0,
+            rawMaterial: { connect: { id: item.rawMaterialId } }
+        }));
+        let supplierId = null;
+        if (data.supplierName && data.supplierName.trim()) {
+            const supplierName = data.supplierName.trim();
+            const supplier = await this.prisma.supplier.upsert({
+                where: { name: supplierName },
+                update: {},
+                create: { name: supplierName },
+            });
+            supplierId = supplier.id;
+        }
+        const purchase = await this.prisma.purchase.create({
+            data: {
+                date: data.date ? new Date(data.date) : new Date(),
+                supplierId,
+                totalSum: data.totalSum || 0,
+                items: { create: formattedItems }
+            },
+            include: { items: true, supplier: true },
+        });
+        if (data.isPaidRightNow && data.totalSum) {
+            if (supplierId) {
+                await this.receive(purchase.id);
+                await this.paySupplier(supplierId, data.totalSum, data.paymentMethod);
+            }
+            else {
+                await this.prisma.expense.create({
+                    data: {
+                        category: 'INGREDIENTS',
+                        description: `Прямая закупка сырья (без поставщика)`,
+                        amount: data.totalSum,
+                        paymentMethod: (data.paymentMethod || 'CASH'),
+                        isAuto: true
+                    }
+                });
+                await this.receive(purchase.id);
+            }
+        }
+        return purchase;
+    }
     async receive(id) {
-        const purchase = await this.prisma.purchase.findUnique({ where: { id }, include: { items: true } });
+        const purchase = await this.prisma.purchase.findUnique({ where: { id }, include: { items: true, supplier: true } });
         if (!purchase)
             return null;
         for (const item of purchase.items) {
-            if (item.inventoryItemId) {
-                const inv = await this.prisma.inventoryItem.findUnique({ where: { id: item.inventoryItemId } });
-                if (inv) {
-                    await this.prisma.inventoryItem.update({
-                        where: { id: item.inventoryItemId },
-                        data: { currentStock: inv.currentStock + item.orderedQty * inv.conversionRatio },
+            if (item.rawMaterialId) {
+                const rm = await this.prisma.rawMaterial.findUnique({ where: { id: item.rawMaterialId } });
+                if (rm) {
+                    const oldStock = Number(rm.stock);
+                    const oldCost = Number(rm.costPerUnit);
+                    const addedStock = Number(item.orderedQty);
+                    const totalItemPrice = Number(item.price || 0);
+                    const costPerNewUnit = addedStock > 0 ? totalItemPrice / addedStock : 0;
+                    let newCost = oldCost;
+                    if (oldStock + addedStock > 0 && totalItemPrice > 0) {
+                        newCost = ((oldStock * oldCost) + totalItemPrice) / (oldStock + addedStock);
+                    }
+                    else if (totalItemPrice > 0) {
+                        newCost = costPerNewUnit;
+                    }
+                    await this.prisma.rawMaterial.update({
+                        where: { id: item.rawMaterialId },
+                        data: {
+                            stock: { increment: addedStock },
+                            costPerUnit: newCost
+                        },
                     });
                 }
             }
         }
+        if (purchase.supplierId && purchase.totalSum) {
+            await this.prisma.supplier.update({
+                where: { id: purchase.supplierId },
+                data: { balance: { increment: purchase.totalSum } }
+            });
+        }
         return this.prisma.purchase.update({ where: { id }, data: { status: 'DELIVERED' } });
     }
+    async getSuppliers() {
+        return this.prisma.supplier.findMany({ orderBy: { name: 'asc' } });
+    }
+    async createSupplier(data) {
+        return this.prisma.supplier.create({ data });
+    }
+    async paySupplier(supplierId, amount, paymentMethod = 'CASH') {
+        return this.prisma.$transaction(async (tx) => {
+            const supplier = await tx.supplier.update({
+                where: { id: supplierId },
+                data: { balance: { decrement: amount } }
+            });
+            const expense = await tx.expense.create({
+                data: {
+                    category: 'INGREDIENTS',
+                    description: `Оплата поставщику: ${supplier.name}`,
+                    amount: amount,
+                    paymentMethod: paymentMethod,
+                    isAuto: true
+                }
+            });
+            await tx.supplierPayment.create({
+                data: {
+                    supplierId,
+                    amount,
+                    expenseId: expense.id
+                }
+            });
+            return supplier;
+        });
+    }
     async getNeeds() {
-        const items = await this.prisma.inventoryItem.findMany({ where: { currentStock: { lt: this.prisma.inventoryItem.fields?.minLimit } } });
-        const all = await this.prisma.inventoryItem.findMany();
-        return all.filter(i => i.currentStock < i.minLimit).map(i => ({
-            id: i.id, name: i.name, currentStock: i.currentStock, minLimit: i.minLimit,
-            recommendedQty: Math.ceil((i.minLimit - i.currentStock) / (i.conversionRatio || 1)),
-            unit: i.purchaseUnit,
+        const all = await this.prisma.rawMaterial.findMany();
+        return all.filter(i => Number(i.stock) < Number(i.minLimit)).map(i => ({
+            id: i.id, name: i.name, currentStock: i.stock, minLimit: i.minLimit,
+            recommendedQty: Number(i.minLimit) - Number(i.stock),
+            unit: i.unit,
         }));
     }
 };

@@ -60,13 +60,13 @@ export declare class OrdersController {
         status: import(".prisma/client").$Enums.DeliveryOrderStatus;
         createdAt: Date;
         clientId: number | null;
+        paymentMethod: string | null;
         clientName: string;
         clientPhone: string;
         address: string;
         totalAmount: number;
         isPaid: boolean;
         isBaked: boolean;
-        paymentMethod: string | null;
         driverId: number | null;
     })[]>;
     createDelivery(dto: {
@@ -97,8 +97,8 @@ export declare class OrdersController {
                 createdAt: Date;
                 updatedAt: Date;
                 isActive: boolean;
-                sku: string;
                 categoryId: number;
+                sku: string;
                 weight: number;
                 cost: number;
                 price: number;
@@ -117,13 +117,13 @@ export declare class OrdersController {
         status: import(".prisma/client").$Enums.DeliveryOrderStatus;
         createdAt: Date;
         clientId: number | null;
+        paymentMethod: string | null;
         clientName: string;
         clientPhone: string;
         address: string;
         totalAmount: number;
         isPaid: boolean;
         isBaked: boolean;
-        paymentMethod: string | null;
         driverId: number | null;
     }>;
     assignDriver(id: number, driverId: number | null): Promise<{
@@ -136,13 +136,13 @@ export declare class OrdersController {
         status: import(".prisma/client").$Enums.DeliveryOrderStatus;
         createdAt: Date;
         clientId: number | null;
+        paymentMethod: string | null;
         clientName: string;
         clientPhone: string;
         address: string;
         totalAmount: number;
         isPaid: boolean;
         isBaked: boolean;
-        paymentMethod: string | null;
         driverId: number | null;
     }>;
     findOne(id: number): Promise<({
@@ -166,8 +166,8 @@ export declare class OrdersController {
                 createdAt: Date;
                 updatedAt: Date;
                 isActive: boolean;
-                sku: string;
                 categoryId: number;
+                sku: string;
                 weight: number;
                 cost: number;
                 price: number;
@@ -220,8 +220,8 @@ export declare class OrdersController {
                 createdAt: Date;
                 updatedAt: Date;
                 isActive: boolean;
-                sku: string;
                 categoryId: number;
+                sku: string;
                 weight: number;
                 cost: number;
                 price: number;

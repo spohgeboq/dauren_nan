@@ -12,27 +12,70 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.InventoryService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const library_1 = require("@prisma/client/runtime/library");
 let InventoryService = class InventoryService {
     constructor(prisma) {
         this.prisma = prisma;
     }
     async findAll() {
-        return this.prisma.inventoryItem.findMany({ orderBy: { name: 'asc' } });
+        return this.prisma.rawMaterial.findMany({ orderBy: { name: 'asc' } });
     }
     async findOne(id) {
-        return this.prisma.inventoryItem.findUnique({ where: { id } });
+        return this.prisma.rawMaterial.findUnique({ where: { id } });
     }
     async create(data) {
-        return this.prisma.inventoryItem.create({ data });
+        return this.prisma.rawMaterial.create({ data });
     }
     async update(id, data) {
-        return this.prisma.inventoryItem.update({ where: { id }, data });
+        return this.prisma.rawMaterial.update({ where: { id }, data });
+    }
+    async remove(id) {
+        return this.prisma.$transaction(async (tx) => {
+            await tx.inventoryAdjustment.deleteMany({ where: { rawMaterialId: id } });
+            await tx.purchaseItem.deleteMany({ where: { rawMaterialId: id } });
+            await tx.recipeIngredient.deleteMany({ where: { rawMaterialId: id } });
+            return tx.rawMaterial.delete({ where: { id } });
+        });
+    }
+    async adjust(data) {
+        return this.prisma.$transaction(async (tx) => {
+            const rm = await tx.rawMaterial.findUnique({ where: { id: data.rawMaterialId } });
+            if (!rm)
+                throw new common_1.BadRequestException('Сырье не найдено');
+            const amountDecimal = new library_1.Decimal(data.amount);
+            const costPerUnit = Number(rm.costPerUnit);
+            const totalLoss = Math.abs(data.amount) * costPerUnit;
+            const expense = await tx.expense.create({
+                data: {
+                    category: 'INVENTORY_LOSS',
+                    description: `Списание/Инвентаризация: ${rm.name}. Причина: ${data.reason || 'Не указана'}`,
+                    amount: totalLoss,
+                    isAuto: true
+                }
+            });
+            const adjustment = await tx.inventoryAdjustment.create({
+                data: {
+                    rawMaterialId: data.rawMaterialId,
+                    type: data.type,
+                    amount: amountDecimal,
+                    reason: data.reason,
+                    expenseId: expense.id
+                }
+            });
+            const updatedRm = await tx.rawMaterial.update({
+                where: { id: data.rawMaterialId },
+                data: {
+                    stock: { increment: amountDecimal }
+                }
+            });
+            return { adjustment, newStock: updatedRm.stock };
+        });
     }
     async getStats() {
-        const items = await this.prisma.inventoryItem.findMany();
+        const items = await this.prisma.rawMaterial.findMany();
         const total = items.length;
-        const critical = items.filter(i => i.currentStock < i.minLimit).length;
-        const totalValue = items.reduce((sum, i) => sum + i.currentStock * i.costPerUnit, 0);
+        const critical = items.filter(i => Number(i.stock) < Number(i.minLimit)).length;
+        const totalValue = items.reduce((sum, i) => sum + Number(i.stock) * Number(i.costPerUnit), 0);
         return { totalItems: total, criticalItems: critical, totalValue };
     }
 };

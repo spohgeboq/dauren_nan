@@ -46,6 +46,12 @@ enum PurchaseStatus {
   CANCELLED
 }
 
+enum PaymentStatus {
+  UNPAID
+  PARTIAL
+  PAID
+}
+
 enum VehicleStatus {
   ACTIVE
   REPAIR
@@ -62,12 +68,26 @@ enum PaymentMethod {
 }
 
 enum ExpenseCategory {
-  RENT
   SALARY
   FUEL
-  REPAIR
-  RAW_MATERIAL
+  RENT
+  UTILITIES
+  MAINTENANCE
+  INGREDIENTS
+  INVENTORY_LOSS
   OTHER
+}
+
+enum AdjustmentType {
+  AUDIT
+  WRITE_OFF
+}
+
+enum IncomeSource {
+  POS
+  DELIVERY
+  DEBT_PAYMENT
+  MANUAL
 }
 
 enum BatchStatus {
@@ -101,6 +121,7 @@ model User {
   role         Role            @default(CLIENT)
   status       EmployeeStatus  @default(ACTIVE)
   isOnShift    Boolean         @default(false)
+  fixedSalary  Decimal         @default(0)
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
 
@@ -118,6 +139,10 @@ model User {
   // Client workspace relation
   clientId     Int?            @unique
   client       Client?         @relation(fields: [clientId], references: [id])
+
+  // Expenses & Incomes relation
+  expenses     Expense[]
+  incomes      Income[]
 }
 
 // ─── Categories ─────────────────────────────────────────
@@ -183,6 +208,7 @@ model Client {
   routePoints  RoutePoint[]
   user         User?
   deliveryOrders DeliveryOrder[]
+  payments     ClientPayment[]
 }
 
 // ─── Client Requests ────────────────────────────────────
@@ -268,33 +294,36 @@ model LoadItem {
   product   Product       @relation(fields: [productId], references: [id])
 }
 
-// ─── Inventory (Raw Materials Stock) ────────────────────
-
-model InventoryItem {
-  id              Int      @id @default(autoincrement())
-  name            String
-  currentStock    Float    @default(0)
-  minLimit        Float    @default(0)
-  costPerUnit     Float    @default(0)
-  baseUnit        String   @default("кг")
-  purchaseUnit    String   @default("Мешок")
-  conversionRatio Float    @default(1)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  purchaseItems   PurchaseItem[]
-}
-
-// ─── Raw Materials for Recipes ──────────────────────────
+// ─── Raw Materials Stock & Recipes ─────────────────────────
 
 model RawMaterial {
-  id          Int     @id @default(autoincrement())
-  name        String  @unique
-  unit        String  @default("г")
-  costPerUnit Float   @default(0)
-  stock       Float   @default(0) // Raw material stock (Единый склад)
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  unit        String   @default("г") // Base unit, always stored in this unit (e.g., grams)
+  costPerUnit Decimal  @default(0)   // Cost per 1 base unit
+  stock       Decimal  @default(0)   // Current stock in base units
+  minLimit    Decimal  @default(0)   // Minimum required stock before alert
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
 
-  recipeIngredients RecipeIngredient[]
+  recipeIngredients  RecipeIngredient[]
+  purchaseItems      PurchaseItem[]
+  adjustments        InventoryAdjustment[]
+}
+
+// ─── Inventory Adjustments (Сверка/Порча) ───────────────
+
+model InventoryAdjustment {
+  id            Int            @id @default(autoincrement())
+  rawMaterialId Int
+  type          AdjustmentType @default(AUDIT)
+  amount        Decimal        // The difference (e.g. -5000 grams)
+  reason        String?
+  expenseId     Int?
+  createdAt     DateTime       @default(now())
+
+  rawMaterial   RawMaterial    @relation(fields: [rawMaterialId], references: [id])
+  expense       Expense?       @relation(fields: [expenseId], references: [id])
 }
 
 // ─── Recipes ────────────────────────────────────────────
@@ -313,8 +342,8 @@ model RecipeIngredient {
   id            Int         @id @default(autoincrement())
   recipeId      Int
   rawMaterialId Int
-  amount        Float       @default(0)
-  quantity      Float       @default(0) // Quantity of raw material for 1 item (for baker)
+  amount        Decimal     @default(0)
+  quantity      Decimal     @default(0) // Quantity of raw material for 1 item (for baker)
 
   recipe        Recipe      @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   rawMaterial   RawMaterial @relation(fields: [rawMaterialId], references: [id])
@@ -322,28 +351,55 @@ model RecipeIngredient {
 
 // ─── Purchases ──────────────────────────────────────────
 
-model Purchase {
-  id        Int             @id @default(autoincrement())
-  date      DateTime        @default(now())
-  supplier  String?
-  totalSum  Float           @default(0)
-  status    PurchaseStatus  @default(IN_TRANSIT)
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+model Supplier {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  phone     String?
+  balance   Decimal   @default(0) // Debt to supplier
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
-  items     PurchaseItem[]
+  purchases Purchase[]
+  payments  SupplierPayment[]
+}
+
+model SupplierPayment {
+  id         Int      @id @default(autoincrement())
+  supplierId Int
+  amount     Decimal
+  date       DateTime @default(now())
+  expenseId  Int?
+
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  expense    Expense? @relation(fields: [expenseId], references: [id])
+}
+
+model Purchase {
+  id            Int             @id @default(autoincrement())
+  date          DateTime        @default(now())
+  supplierId    Int?
+  invoiceNumber String?
+  totalSum      Decimal         @default(0)
+  status        PurchaseStatus  @default(IN_TRANSIT)
+  paymentStatus PaymentStatus   @default(UNPAID)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  supplier      Supplier?       @relation(fields: [supplierId], references: [id])
+  items         PurchaseItem[]
 }
 
 model PurchaseItem {
   id              Int           @id @default(autoincrement())
   purchaseId      Int
-  inventoryItemId Int?
+  rawMaterialId   Int
   name            String
-  orderedQty      Float         @default(0)
-  unit            String        @default("шт")
+  orderedQty      Decimal       @default(0) // Quantity in base unit (grams)
+  unit            String        @default("г")
+  price           Decimal       @default(0) // Price for this item
 
   purchase        Purchase      @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
-  inventoryItem   InventoryItem? @relation(fields: [inventoryItemId], references: [id])
+  rawMaterial     RawMaterial   @relation(fields: [rawMaterialId], references: [id])
 }
 
 // ─── Expenses ───────────────────────────────────────────
@@ -354,10 +410,49 @@ model Expense {
   category      ExpenseCategory  @default(OTHER)
   description   String?
   paymentMethod PaymentMethod    @default(CASH)
-  amount        Float            @default(0)
+  amount        Decimal          @default(0)
+  isAuto        Boolean          @default(false)
+  vehicleId     Int?
+  userId        Int?
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
+
+  adjustments   InventoryAdjustment[]
+  supplierPayments SupplierPayment[]
+  vehicle       Vehicle?         @relation(fields: [vehicleId], references: [id])
+  user          User?            @relation(fields: [userId], references: [id])
 }
+
+// ─── Incomes & Client Payments ──────────────────────────
+
+model ClientPayment {
+  id            Int           @id @default(autoincrement())
+  clientId      Int
+  amount        Decimal
+  date          DateTime      @default(now())
+  paymentMethod PaymentMethod @default(KASPI)
+  incomeId      Int?          @unique
+
+  client        Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  income        Income?       @relation(fields: [incomeId], references: [id])
+}
+
+model Income {
+  id            Int             @id @default(autoincrement())
+  date          DateTime        @default(now())
+  source        IncomeSource    @default(MANUAL)
+  description   String?
+  paymentMethod PaymentMethod   @default(CASH)
+  amount        Decimal         @default(0)
+  isAuto        Boolean         @default(false)
+  userId        Int?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  user          User?           @relation(fields: [userId], references: [id])
+  clientPayment ClientPayment?
+}
+
 
 // ─── Vehicles (Fleet) ───────────────────────────────────
 
@@ -373,6 +468,7 @@ model Vehicle {
   updatedAt       DateTime       @updatedAt
 
   driver          User?          @relation("DriverVehicle", fields: [driverId], references: [id])
+  expenses        Expense[]
 }
 
 // ─── Roles & Permissions ────────────────────────────────

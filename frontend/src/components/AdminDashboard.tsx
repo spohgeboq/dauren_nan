@@ -26,8 +26,9 @@ import ProductionModule from './ProductionModule';
 import InventoryModule from './InventoryModule';
 import PurchasesModule from './PurchasesModule';
 import EmployeesModule from './EmployeesModule';
-import RolesModule from './RolesModule';
+
 import ExpensesModule from './ExpensesModule';
+import IncomesModule from './IncomesModule';
 import AnalyticsModule from './AnalyticsModule';
 import ProductsModule from './ProductsModule';
 import RecipesModule from './RecipesModule';
@@ -35,7 +36,7 @@ import CategoriesModule from './CategoriesModule';
 import FleetModule from './FleetModule';
 
 const AdminDashboard: React.FC = () => {
-  const [activeModule, setActiveModule] = React.useState<'main' | 'pos' | 'clients' | 'orders' | 'routes' | 'production' | 'inventory' | 'purchases' | 'employees' | 'roles' | 'expenses' | 'analytics' | 'products' | 'recipes' | 'categories' | 'fleet'>('main');
+  const [activeModule, setActiveModule] = React.useState<'main' | 'pos' | 'clients' | 'orders' | 'routes' | 'production' | 'inventory' | 'purchases' | 'employees' | 'roles' | 'expenses' | 'incomes' | 'analytics' | 'products' | 'recipes' | 'categories' | 'fleet'>('main');
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -98,8 +99,8 @@ const AdminDashboard: React.FC = () => {
           icon: <UserCog size={24} className={styles.iconDark} />
         },
         {
-          title: 'Роли и доступы',
-          description: 'Конструктор ролей. Гибкая настройка прав галочками.',
+          title: 'Доходы',
+          description: 'Поступления с продаж, доставок и оплата долгов от магазинов.',
           icon: <ShieldCheck size={24} className={styles.iconGold} />
         },
         {
@@ -173,12 +174,14 @@ const AdminDashboard: React.FC = () => {
     return <EmployeesModule onBack={() => setActiveModule('main')} />;
   }
 
-  if (activeModule === 'roles') {
-    return <RolesModule onBack={() => setActiveModule('main')} />;
-  }
+
 
   if (activeModule === 'expenses') {
     return <ExpensesModule onBack={() => setActiveModule('main')} />;
+  }
+
+  if (activeModule === 'incomes') {
+    return <IncomesModule onBack={() => setActiveModule('main')} />;
   }
 
   if (activeModule === 'analytics') {
@@ -254,6 +257,8 @@ const AdminDashboard: React.FC = () => {
                         setActiveModule('employees');
                       } else if (mod.title === 'Роли и доступы') {
                         setActiveModule('roles');
+                      } else if (mod.title === 'Доходы') {
+                        setActiveModule('incomes');
                       } else if (mod.title === 'Расходы') {
                         setActiveModule('expenses');
                       } else if (mod.title === 'Аналитика и отчеты') {

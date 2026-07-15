@@ -3,20 +3,6 @@ export declare class RoutesService {
     private prisma;
     constructor(prisma: PrismaService);
     findAll(date?: string): Promise<({
-        driver: {
-            id: number;
-            name: string | null;
-        } | null;
-        points: {
-            id: number;
-            status: import(".prisma/client").$Enums.PointStatus;
-            clientId: number | null;
-            sortOrder: number;
-            routeId: number;
-            storeName: string;
-            time: string | null;
-            totalSum: number;
-        }[];
         loadItems: ({
             product: {
                 id: number;
@@ -24,74 +10,89 @@ export declare class RoutesService {
             };
         } & {
             id: number;
-            routeId: number;
-            productId: number;
             quantity: number;
+            productId: number;
+            routeId: number;
         })[];
-    } & {
-        id: number;
-        name: string;
-        driverId: number | null;
-        status: import(".prisma/client").$Enums.RouteStatus;
-        date: Date;
-        createdAt: Date;
-        updatedAt: Date;
-    })[]>;
-    findOne(id: number): Promise<({
         driver: {
             id: number;
             name: string | null;
-            status: import(".prisma/client").$Enums.EmployeeStatus;
-            createdAt: Date;
-            updatedAt: Date;
-            email: string;
-            passwordHash: string;
-            phone: string | null;
-            login: string | null;
-            pin: string | null;
-            role: import(".prisma/client").$Enums.Role;
-            isOnShift: boolean;
-            clientId: number | null;
         } | null;
         points: {
             id: number;
             status: import(".prisma/client").$Enums.PointStatus;
             clientId: number | null;
             sortOrder: number;
-            routeId: number;
             storeName: string;
             time: string | null;
             totalSum: number;
+            routeId: number;
         }[];
+    } & {
+        id: number;
+        name: string;
+        status: import(".prisma/client").$Enums.RouteStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        date: Date;
+        driverId: number | null;
+    })[]>;
+    findOne(id: number): Promise<({
         loadItems: ({
             product: {
                 id: number;
                 name: string;
                 createdAt: Date;
                 updatedAt: Date;
-                sku: string;
+                isActive: boolean;
                 categoryId: number;
+                sku: string;
                 weight: number;
                 cost: number;
                 price: number;
-                isActive: boolean;
                 imageUrl: string | null;
                 stock: number;
             };
         } & {
             id: number;
-            routeId: number;
-            productId: number;
             quantity: number;
+            productId: number;
+            routeId: number;
         })[];
+        driver: {
+            email: string;
+            id: number;
+            passwordHash: string;
+            name: string | null;
+            phone: string | null;
+            login: string | null;
+            pin: string | null;
+            role: import(".prisma/client").$Enums.Role;
+            status: import(".prisma/client").$Enums.EmployeeStatus;
+            isOnShift: boolean;
+            fixedSalary: import("@prisma/client/runtime/library").Decimal;
+            createdAt: Date;
+            updatedAt: Date;
+            clientId: number | null;
+        } | null;
+        points: {
+            id: number;
+            status: import(".prisma/client").$Enums.PointStatus;
+            clientId: number | null;
+            sortOrder: number;
+            storeName: string;
+            time: string | null;
+            totalSum: number;
+            routeId: number;
+        }[];
     } & {
         id: number;
         name: string;
-        driverId: number | null;
         status: import(".prisma/client").$Enums.RouteStatus;
-        date: Date;
         createdAt: Date;
         updatedAt: Date;
+        date: Date;
+        driverId: number | null;
     }) | null>;
     createWithAutoLoad(data: {
         name: string;
@@ -99,19 +100,41 @@ export declare class RoutesService {
         date: string;
         clientIds: number[];
     }): Promise<{
-        driver: {
+        loadItems: ({
+            product: {
+                id: number;
+                name: string;
+                createdAt: Date;
+                updatedAt: Date;
+                isActive: boolean;
+                categoryId: number;
+                sku: string;
+                weight: number;
+                cost: number;
+                price: number;
+                imageUrl: string | null;
+                stock: number;
+            };
+        } & {
             id: number;
-            name: string | null;
-            status: import(".prisma/client").$Enums.EmployeeStatus;
-            createdAt: Date;
-            updatedAt: Date;
+            quantity: number;
+            productId: number;
+            routeId: number;
+        })[];
+        driver: {
             email: string;
+            id: number;
             passwordHash: string;
+            name: string | null;
             phone: string | null;
             login: string | null;
             pin: string | null;
             role: import(".prisma/client").$Enums.Role;
+            status: import(".prisma/client").$Enums.EmployeeStatus;
             isOnShift: boolean;
+            fixedSalary: import("@prisma/client/runtime/library").Decimal;
+            createdAt: Date;
+            updatedAt: Date;
             clientId: number | null;
         } | null;
         points: {
@@ -119,58 +142,37 @@ export declare class RoutesService {
             status: import(".prisma/client").$Enums.PointStatus;
             clientId: number | null;
             sortOrder: number;
-            routeId: number;
             storeName: string;
             time: string | null;
             totalSum: number;
-        }[];
-        loadItems: ({
-            product: {
-                id: number;
-                name: string;
-                createdAt: Date;
-                updatedAt: Date;
-                sku: string;
-                categoryId: number;
-                weight: number;
-                cost: number;
-                price: number;
-                isActive: boolean;
-                imageUrl: string | null;
-                stock: number;
-            };
-        } & {
-            id: number;
             routeId: number;
-            productId: number;
-            quantity: number;
-        })[];
+        }[];
     } & {
         id: number;
         name: string;
-        driverId: number | null;
         status: import(".prisma/client").$Enums.RouteStatus;
-        date: Date;
         createdAt: Date;
         updatedAt: Date;
+        date: Date;
+        driverId: number | null;
     }>;
     updatePointStatus(routeId: number, pointId: number, status: string): Promise<{
         id: number;
         status: import(".prisma/client").$Enums.PointStatus;
         clientId: number | null;
         sortOrder: number;
-        routeId: number;
         storeName: string;
         time: string | null;
         totalSum: number;
+        routeId: number;
     }>;
     updateRouteStatus(id: number, status: string): Promise<{
         id: number;
         name: string;
-        driverId: number | null;
         status: import(".prisma/client").$Enums.RouteStatus;
-        date: Date;
         createdAt: Date;
         updatedAt: Date;
+        date: Date;
+        driverId: number | null;
     }>;
 }

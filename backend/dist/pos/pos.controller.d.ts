@@ -40,10 +40,10 @@ export declare class PosController {
         } & {
             id: number;
             createdAt: Date;
-            total: number;
             paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
-            shiftId: number;
             userId: number;
+            total: number;
+            shiftId: number;
         })[];
     } & {
         id: number;
@@ -85,9 +85,9 @@ export declare class PosController {
     } & {
         id: number;
         createdAt: Date;
-        total: number;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
-        shiftId: number;
         userId: number;
+        total: number;
+        shiftId: number;
     }>;
 }

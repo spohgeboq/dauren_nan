@@ -66,7 +66,7 @@ let BakerService = class BakerService {
             });
             if (product.recipe) {
                 for (const ing of product.recipe.ingredients) {
-                    const totalNeeded = (ing.quantity || ing.amount || 0) * quantity;
+                    const totalNeeded = Number(ing.quantity || ing.amount || 0) * quantity;
                     await tx.rawMaterial.update({
                         where: { id: ing.rawMaterialId },
                         data: { stock: { decrement: totalNeeded } },
@@ -124,10 +124,49 @@ let BakerService = class BakerService {
         });
     }
     async recordDefect(productId, quantity, reason, bakerId) {
-        const defect = await this.prisma.defectLog.create({
-            data: { productId, quantity, reason, bakerId },
+        const product = await this.prisma.product.findUnique({
+            where: { id: productId },
+            include: { recipe: { include: { ingredients: true } } },
         });
-        return { success: true, defect };
+        if (!product)
+            throw new common_1.NotFoundException('Продукт не найден');
+        return this.prisma.$transaction(async (tx) => {
+            if (product.recipe) {
+                for (const ing of product.recipe.ingredients) {
+                    const totalNeeded = Number(ing.quantity || ing.amount || 0) * quantity;
+                    await tx.rawMaterial.update({
+                        where: { id: ing.rawMaterialId },
+                        data: { stock: { decrement: totalNeeded } },
+                    });
+                }
+            }
+            const defect = await tx.defectLog.create({
+                data: { productId, quantity, reason, bakerId },
+            });
+            const todayStart = new Date();
+            todayStart.setHours(0, 0, 0, 0);
+            const todayEnd = new Date();
+            todayEnd.setHours(23, 59, 59, 999);
+            let task = await tx.productionTask.findFirst({
+                where: { productId, date: { gte: todayStart, lte: todayEnd } }
+            });
+            if (!task) {
+                task = await tx.productionTask.create({
+                    data: { productId, planned: 0, completed: 0, date: todayStart }
+                });
+            }
+            const timeStr = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+            await tx.batchLog.create({
+                data: {
+                    taskId: task.id,
+                    time: timeStr,
+                    productName: product.name,
+                    quantity,
+                    type: 'DEFECT'
+                }
+            });
+            return { success: true, defect };
+        });
     }
     async markB2bOrderReady(orderId) {
         const order = await this.prisma.deliveryOrder.findUnique({
@@ -140,7 +179,7 @@ let BakerService = class BakerService {
             for (const item of order.items) {
                 if (item.product.recipe) {
                     for (const ing of item.product.recipe.ingredients) {
-                        const totalNeeded = (ing.quantity || ing.amount || 0) * item.quantity;
+                        const totalNeeded = Number(ing.quantity || ing.amount || 0) * item.quantity;
                         await tx.rawMaterial.update({
                             where: { id: ing.rawMaterialId },
                             data: { stock: { decrement: totalNeeded } },
@@ -174,13 +213,39 @@ let BakerService = class BakerService {
             });
             if (product.recipe) {
                 for (const ing of product.recipe.ingredients) {
-                    const totalNeeded = (ing.quantity || ing.amount || 0) * quantity;
+                    const totalNeeded = Number(ing.quantity || ing.amount || 0) * quantity;
                     await tx.rawMaterial.update({
                         where: { id: ing.rawMaterialId },
                         data: { stock: { decrement: totalNeeded } },
                     });
                 }
             }
+            const todayStart = new Date();
+            todayStart.setHours(0, 0, 0, 0);
+            const todayEnd = new Date();
+            todayEnd.setHours(23, 59, 59, 999);
+            let task = await tx.productionTask.findFirst({
+                where: { productId, date: { gte: todayStart, lte: todayEnd } }
+            });
+            if (!task) {
+                task = await tx.productionTask.create({
+                    data: { productId, planned: 0, completed: 0, date: todayStart }
+                });
+            }
+            await tx.productionTask.update({
+                where: { id: task.id },
+                data: { completed: { increment: quantity } }
+            });
+            const timeStr = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+            await tx.batchLog.create({
+                data: {
+                    taskId: task.id,
+                    time: timeStr,
+                    productName: product.name,
+                    quantity,
+                    type: 'READY'
+                }
+            });
             return { success: true };
         });
     }

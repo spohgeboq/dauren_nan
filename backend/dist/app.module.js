@@ -32,6 +32,7 @@ const cashier_module_1 = require("./cashier/cashier.module");
 const courier_module_1 = require("./courier/courier.module");
 const client_workspace_module_1 = require("./client-workspace/client-workspace.module");
 const client_requests_module_1 = require("./client-requests/client-requests.module");
+const incomes_module_1 = require("./incomes/incomes.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -62,6 +63,7 @@ exports.AppModule = AppModule = __decorate([
             client_workspace_module_1.ClientWorkspaceModule,
             client_requests_module_1.ClientRequestsModule,
             events_module_1.EventsModule,
+            incomes_module_1.IncomesModule,
         ],
     })
 ], AppModule);

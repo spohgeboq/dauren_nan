@@ -50,10 +50,10 @@ export declare class PosService {
     } & {
         id: number;
         createdAt: Date;
-        total: number;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
-        shiftId: number;
         userId: number;
+        total: number;
+        shiftId: number;
     }>;
     getActiveShift(userId: number): Promise<({
         sales: ({
@@ -67,10 +67,10 @@ export declare class PosService {
         } & {
             id: number;
             createdAt: Date;
-            total: number;
             paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
-            shiftId: number;
             userId: number;
+            total: number;
+            shiftId: number;
         })[];
     } & {
         id: number;

@@ -83,4 +83,10 @@ export declare class ClientsService {
         activeCount: number;
         totalDebt: number;
     }>;
+    payDebt(id: number, data: {
+        amount: number;
+        paymentMethod: string;
+    }): Promise<{
+        success: boolean;
+    }>;
 }

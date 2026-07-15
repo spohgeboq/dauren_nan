@@ -3,12 +3,21 @@ export declare class PurchasesController {
     private service;
     constructor(service: PurchasesService);
     findAll(): Promise<({
+        supplier: {
+            id: number;
+            name: string;
+            phone: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            balance: import("@prisma/client/runtime/library").Decimal;
+        } | null;
         items: {
             id: number;
             name: string;
-            orderedQty: number;
+            price: import("@prisma/client/runtime/library").Decimal;
             unit: string;
-            inventoryItemId: number | null;
+            rawMaterialId: number;
+            orderedQty: import("@prisma/client/runtime/library").Decimal;
             purchaseId: number;
         }[];
     } & {
@@ -17,24 +26,35 @@ export declare class PurchasesController {
         createdAt: Date;
         updatedAt: Date;
         date: Date;
-        totalSum: number;
-        supplier: string | null;
+        totalSum: import("@prisma/client/runtime/library").Decimal;
+        supplierId: number | null;
+        invoiceNumber: string | null;
+        paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
     })[]>;
     getNeeds(): Promise<{
         id: number;
         name: string;
-        currentStock: number;
-        minLimit: number;
+        currentStock: import("@prisma/client/runtime/library").Decimal;
+        minLimit: import("@prisma/client/runtime/library").Decimal;
         recommendedQty: number;
         unit: string;
     }[]>;
     create(dto: any): Promise<{
+        supplier: {
+            id: number;
+            name: string;
+            phone: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            balance: import("@prisma/client/runtime/library").Decimal;
+        } | null;
         items: {
             id: number;
             name: string;
-            orderedQty: number;
+            price: import("@prisma/client/runtime/library").Decimal;
             unit: string;
-            inventoryItemId: number | null;
+            rawMaterialId: number;
+            orderedQty: import("@prisma/client/runtime/library").Decimal;
             purchaseId: number;
         }[];
     } & {
@@ -43,8 +63,10 @@ export declare class PurchasesController {
         createdAt: Date;
         updatedAt: Date;
         date: Date;
-        totalSum: number;
-        supplier: string | null;
+        totalSum: import("@prisma/client/runtime/library").Decimal;
+        supplierId: number | null;
+        invoiceNumber: string | null;
+        paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
     }>;
     receive(id: number): Promise<{
         id: number;
@@ -52,7 +74,36 @@ export declare class PurchasesController {
         createdAt: Date;
         updatedAt: Date;
         date: Date;
-        totalSum: number;
-        supplier: string | null;
+        totalSum: import("@prisma/client/runtime/library").Decimal;
+        supplierId: number | null;
+        invoiceNumber: string | null;
+        paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
     } | null>;
+    getSuppliers(): Promise<{
+        id: number;
+        name: string;
+        phone: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        balance: import("@prisma/client/runtime/library").Decimal;
+    }[]>;
+    createSupplier(dto: any): Promise<{
+        id: number;
+        name: string;
+        phone: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        balance: import("@prisma/client/runtime/library").Decimal;
+    }>;
+    paySupplier(id: number, dto: {
+        amount: number;
+        paymentMethod?: string;
+    }): Promise<{
+        id: number;
+        name: string;
+        phone: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        balance: import("@prisma/client/runtime/library").Decimal;
+    }>;
 }

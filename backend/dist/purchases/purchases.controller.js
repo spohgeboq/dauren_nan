@@ -25,6 +25,11 @@ let PurchasesController = class PurchasesController {
     getNeeds() { return this.service.getNeeds(); }
     create(dto) { return this.service.create(dto); }
     receive(id) { return this.service.receive(id); }
+    getSuppliers() { return this.service.getSuppliers(); }
+    createSupplier(dto) { return this.service.createSupplier(dto); }
+    paySupplier(id, dto) {
+        return this.service.paySupplier(id, dto.amount, dto.paymentMethod);
+    }
 };
 exports.PurchasesController = PurchasesController;
 __decorate([
@@ -53,6 +58,27 @@ __decorate([
     __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", void 0)
 ], PurchasesController.prototype, "receive", null);
+__decorate([
+    (0, common_1.Get)('suppliers'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], PurchasesController.prototype, "getSuppliers", null);
+__decorate([
+    (0, common_1.Post)('suppliers'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], PurchasesController.prototype, "createSupplier", null);
+__decorate([
+    (0, common_1.Post)('suppliers/:id/pay'),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", void 0)
+], PurchasesController.prototype, "paySupplier", null);
 exports.PurchasesController = PurchasesController = __decorate([
     (0, common_1.Controller)('purchases'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),

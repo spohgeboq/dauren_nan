@@ -24,8 +24,8 @@ export declare class ClientWorkspaceController {
                 createdAt: Date;
                 updatedAt: Date;
                 isActive: boolean;
-                sku: string;
                 categoryId: number;
+                sku: string;
                 weight: number;
                 cost: number;
                 price: number;
@@ -48,13 +48,13 @@ export declare class ClientWorkspaceController {
         status: import(".prisma/client").$Enums.DeliveryOrderStatus;
         createdAt: Date;
         clientId: number | null;
+        paymentMethod: string | null;
         clientName: string;
         clientPhone: string;
         address: string;
         totalAmount: number;
         isPaid: boolean;
         isBaked: boolean;
-        paymentMethod: string | null;
         driverId: number | null;
     }) | null>;
     getOrderHistory(req: any): Promise<({
@@ -65,8 +65,8 @@ export declare class ClientWorkspaceController {
                 createdAt: Date;
                 updatedAt: Date;
                 isActive: boolean;
-                sku: string;
                 categoryId: number;
+                sku: string;
                 weight: number;
                 cost: number;
                 price: number;
@@ -85,13 +85,13 @@ export declare class ClientWorkspaceController {
         status: import(".prisma/client").$Enums.DeliveryOrderStatus;
         createdAt: Date;
         clientId: number | null;
+        paymentMethod: string | null;
         clientName: string;
         clientPhone: string;
         address: string;
         totalAmount: number;
         isPaid: boolean;
         isBaked: boolean;
-        paymentMethod: string | null;
         driverId: number | null;
     })[]>;
     getLastOrder(req: any): Promise<({
@@ -107,13 +107,13 @@ export declare class ClientWorkspaceController {
         status: import(".prisma/client").$Enums.DeliveryOrderStatus;
         createdAt: Date;
         clientId: number | null;
+        paymentMethod: string | null;
         clientName: string;
         clientPhone: string;
         address: string;
         totalAmount: number;
         isPaid: boolean;
         isBaked: boolean;
-        paymentMethod: string | null;
         driverId: number | null;
     }) | null>;
     createOrder(req: any, body: any): Promise<{
@@ -121,13 +121,13 @@ export declare class ClientWorkspaceController {
         status: import(".prisma/client").$Enums.DeliveryOrderStatus;
         createdAt: Date;
         clientId: number | null;
+        paymentMethod: string | null;
         clientName: string;
         clientPhone: string;
         address: string;
         totalAmount: number;
         isPaid: boolean;
         isBaked: boolean;
-        paymentMethod: string | null;
         driverId: number | null;
     }>;
 }

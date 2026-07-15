@@ -25,7 +25,11 @@ let InventoryController = class InventoryController {
     getStats() { return this.service.getStats(); }
     findOne(id) { return this.service.findOne(id); }
     create(dto) { return this.service.create(dto); }
+    adjust(dto) {
+        return this.service.adjust(dto);
+    }
     update(id, dto) { return this.service.update(id, dto); }
+    remove(id) { return this.service.remove(id); }
 };
 exports.InventoryController = InventoryController;
 __decorate([
@@ -55,6 +59,13 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], InventoryController.prototype, "create", null);
 __decorate([
+    (0, common_1.Post)('adjust'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], InventoryController.prototype, "adjust", null);
+__decorate([
     (0, common_1.Patch)(':id'),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
     __param(1, (0, common_1.Body)()),
@@ -62,6 +73,13 @@ __decorate([
     __metadata("design:paramtypes", [Number, Object]),
     __metadata("design:returntype", void 0)
 ], InventoryController.prototype, "update", null);
+__decorate([
+    (0, common_1.Delete)(':id'),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", void 0)
+], InventoryController.prototype, "remove", null);
 exports.InventoryController = InventoryController = __decorate([
     (0, common_1.Controller)('inventory'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),

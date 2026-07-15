@@ -33,6 +33,7 @@ let UsersService = class UsersService {
                 role: true,
                 status: true,
                 isOnShift: true,
+                fixedSalary: true,
                 createdAt: true,
             },
             orderBy: { createdAt: 'desc' },
@@ -50,6 +51,7 @@ let UsersService = class UsersService {
                 role: true,
                 status: true,
                 isOnShift: true,
+                fixedSalary: true,
                 createdAt: true,
             },
         });
@@ -66,6 +68,7 @@ let UsersService = class UsersService {
                 login: dto.login,
                 pin: dto.pin,
                 role: dto.role,
+                fixedSalary: dto.fixedSalary || 0,
             },
             select: {
                 id: true,
@@ -76,6 +79,7 @@ let UsersService = class UsersService {
                 role: true,
                 status: true,
                 isOnShift: true,
+                fixedSalary: true,
             },
         });
     }
@@ -89,6 +93,14 @@ let UsersService = class UsersService {
             data.role = dto.role;
         if (dto.status !== undefined)
             data.status = dto.status;
+        if (dto.login !== undefined)
+            data.login = dto.login;
+        if (dto.fixedSalary !== undefined)
+            data.fixedSalary = dto.fixedSalary;
+        if (dto.password) {
+            const salt = await bcrypt.genSalt(10);
+            data.passwordHash = await bcrypt.hash(dto.password, salt);
+        }
         return this.prisma.user.update({
             where: { id },
             data,
@@ -101,6 +113,7 @@ let UsersService = class UsersService {
                 role: true,
                 status: true,
                 isOnShift: true,
+                fixedSalary: true,
             },
         });
     }

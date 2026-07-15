@@ -71,6 +71,21 @@ let CourierService = class CourierService {
                     });
                 }
             }
+            const wasDeliveredAndPaid = order.status === client_1.DeliveryOrderStatus.DELIVERED && order.paymentMethod !== 'DEBT';
+            const isDeliveredAndPaid = mappedStatus === client_1.DeliveryOrderStatus.DELIVERED && newPaymentMethod !== 'DEBT';
+            if (!wasDeliveredAndPaid && isDeliveredAndPaid) {
+                const mappedIncomeMethod = newPaymentMethod === 'CASH' ? 'CASH' : 'KASPI';
+                await tx.income.create({
+                    data: {
+                        amount: order.totalAmount,
+                        paymentMethod: mappedIncomeMethod,
+                        source: 'DELIVERY',
+                        description: `Оплата за доставку (Заказ #${order.id}, ${order.clientName})`,
+                        isAuto: true,
+                        userId: order.driverId,
+                    }
+                });
+            }
             if (order.clientId) {
                 const activeRoutePoint = await tx.routePoint.findFirst({
                     where: {

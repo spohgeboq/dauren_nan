@@ -13,6 +13,7 @@ interface Expense {
   description: string;
   paymentMethod: PaymentMethod;
   amount: number;
+  isAuto: boolean;
 }
 
 const CATEGORY_MAP_TO_BACKEND: Record<ExpenseCategory, string> = {
@@ -99,6 +100,7 @@ const ExpensesModule: React.FC<ExpensesModuleProps> = ({ onBack }) => {
           description: exp.description || '',
           paymentMethod: PAYMENT_MAP_FROM_BACKEND[exp.paymentMethod] || 'Kaspi',
           amount: exp.amount,
+          isAuto: exp.isAuto || false,
         }));
         setExpenses(mapped);
       } catch (err) {
@@ -127,6 +129,35 @@ const ExpensesModule: React.FC<ExpensesModuleProps> = ({ onBack }) => {
 
   const topCategory = expensesByCategory.length > 0 ? expensesByCategory[0] : null;
 
+  const handlePaySalaries = async () => {
+    if (window.confirm('Вы уверены, что хотите начислить зарплату всем сотрудникам с фиксированной ставкой?')) {
+      try {
+        const res = await api.post('/expenses/pay-salaries', {});
+        alert(`Зарплата начислена ${res.paidCount} сотрудникам.`);
+        // Reload page to fetch new
+        window.location.reload();
+      } catch (err) {
+        console.error('Error paying salaries:', err);
+        alert('Ошибка при начислении зарплат');
+      }
+    }
+  };
+
+  const handleDeleteExpense = async (exp: Expense) => {
+    if (exp.isAuto) {
+      if (!window.confirm('ВНИМАНИЕ! Этот расход сгенерирован автоматически системой (например, оплата закупа). Вы уверены, что хотите удалить его вручную?')) return;
+    } else {
+      if (!window.confirm('Удалить этот расход?')) return;
+    }
+
+    try {
+      await api.delete(`/expenses/${exp.id}`);
+      setExpenses(expenses.filter(e => e.id !== exp.id));
+    } catch (err) {
+      console.error('Error deleting expense:', err);
+    }
+  };
+
   const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
     const amountNum = parseInt(newAmount, 10);
@@ -148,6 +179,7 @@ const ExpensesModule: React.FC<ExpensesModuleProps> = ({ onBack }) => {
         description: saved.description || '',
         paymentMethod: PAYMENT_MAP_FROM_BACKEND[saved.paymentMethod] || 'Kaspi',
         amount: saved.amount,
+        isAuto: saved.isAuto || false,
       };
 
       setExpenses([mapped, ...expenses]);
@@ -181,6 +213,10 @@ const ExpensesModule: React.FC<ExpensesModuleProps> = ({ onBack }) => {
           <h1 className={styles.title}>Расходы</h1>
         </div>
         <div className={styles.headerRight}>
+          <button className={styles.secondaryBtn} onClick={handlePaySalaries}>
+            <Users size={18} />
+            Выплатить ЗП
+          </button>
           <button className={styles.primaryBtn} onClick={() => setIsModalOpen(true)}>
             <Plus size={18} />
             Добавить расход
@@ -296,6 +332,7 @@ const ExpensesModule: React.FC<ExpensesModuleProps> = ({ onBack }) => {
                   <th>Описание</th>
                   <th>Оплата</th>
                   <th className={styles.textRight}>Сумма</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -326,6 +363,12 @@ const ExpensesModule: React.FC<ExpensesModuleProps> = ({ onBack }) => {
                     </td>
                     <td className={styles.textRight}>
                       <span className={styles.cellAmount}>- {formatPrice(exp.amount)}</span>
+                      {exp.isAuto && <span className={styles.autoBadge}>Авто</span>}
+                    </td>
+                    <td>
+                      <button className={styles.deleteBtn} onClick={() => handleDeleteExpense(exp)}>
+                        <X size={16} />
+                      </button>
                     </td>
                   </tr>
                 ))}

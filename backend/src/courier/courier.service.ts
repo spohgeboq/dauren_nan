@@ -68,6 +68,27 @@ export class CourierService {
         }
       }
 
+      // Handle Automatic Income if DELIVERED and NOT DEBT
+      const wasDeliveredAndPaid = order.status === DeliveryOrderStatus.DELIVERED && order.paymentMethod !== 'DEBT';
+      const isDeliveredAndPaid = mappedStatus === DeliveryOrderStatus.DELIVERED && newPaymentMethod !== 'DEBT';
+
+      if (!wasDeliveredAndPaid && isDeliveredAndPaid) {
+        // Decide mapped PaymentMethod for Income
+        // Delivery uses "CASH", "CARD", "QR", "DEBT"
+        const mappedIncomeMethod = newPaymentMethod === 'CASH' ? 'CASH' : 'KASPI';
+        
+        await tx.income.create({
+          data: {
+            amount: order.totalAmount,
+            paymentMethod: mappedIncomeMethod,
+            source: 'DELIVERY',
+            description: `Оплата за доставку (Заказ #${order.id}, ${order.clientName})`,
+            isAuto: true,
+            userId: order.driverId,
+          }
+        });
+      }
+
       // Sync with RoutePoint if exists
       if (order.clientId) {
         // Find the active route point for this client

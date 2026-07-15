@@ -23,6 +23,7 @@ import { CashierModule } from './cashier/cashier.module';
 import { CourierModule } from './courier/courier.module';
 import { ClientWorkspaceModule } from './client-workspace/client-workspace.module';
 import { ClientRequestsModule } from './client-requests/client-requests.module';
+import { IncomesModule } from './incomes/incomes.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { ClientRequestsModule } from './client-requests/client-requests.module';
     ClientWorkspaceModule,
     ClientRequestsModule,
     EventsModule,
+    IncomesModule,
   ],
 })
 export class AppModule {}

@@ -13,4 +13,6 @@ export declare class UpdateUserDto {
     phone?: string;
     role?: Role;
     status?: string;
+    login?: string;
+    password?: string;
 }

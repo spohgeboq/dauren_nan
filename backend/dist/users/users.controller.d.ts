@@ -12,6 +12,7 @@ export declare class UsersController {
         role: import(".prisma/client").$Enums.Role;
         status: import(".prisma/client").$Enums.EmployeeStatus;
         isOnShift: boolean;
+        fixedSalary: import("@prisma/client/runtime/library").Decimal;
         createdAt: Date;
     }[]>;
     findOne(id: number): Promise<{
@@ -23,6 +24,7 @@ export declare class UsersController {
         role: import(".prisma/client").$Enums.Role;
         status: import(".prisma/client").$Enums.EmployeeStatus;
         isOnShift: boolean;
+        fixedSalary: import("@prisma/client/runtime/library").Decimal;
         createdAt: Date;
     } | null>;
     create(dto: CreateUserDto): Promise<{
@@ -34,6 +36,7 @@ export declare class UsersController {
         role: import(".prisma/client").$Enums.Role;
         status: import(".prisma/client").$Enums.EmployeeStatus;
         isOnShift: boolean;
+        fixedSalary: import("@prisma/client/runtime/library").Decimal;
     }>;
     update(id: number, dto: UpdateUserDto): Promise<{
         email: string;
@@ -44,8 +47,9 @@ export declare class UsersController {
         role: import(".prisma/client").$Enums.Role;
         status: import(".prisma/client").$Enums.EmployeeStatus;
         isOnShift: boolean;
+        fixedSalary: import("@prisma/client/runtime/library").Decimal;
     }>;
-    remove(id: number): Promise<{
+    remove(id: number, req: any): Promise<{
         email: string;
         id: number;
         passwordHash: string;
@@ -56,6 +60,7 @@ export declare class UsersController {
         role: import(".prisma/client").$Enums.Role;
         status: import(".prisma/client").$Enums.EmployeeStatus;
         isOnShift: boolean;
+        fixedSalary: import("@prisma/client/runtime/library").Decimal;
         createdAt: Date;
         updatedAt: Date;
         clientId: number | null;

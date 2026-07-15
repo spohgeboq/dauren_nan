@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, CheckCircle2, AlertTriangle, Plus, Minus, Factory, Clock, PackageCheck, Scale, X } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, AlertTriangle, Plus, Minus, Factory, Clock, PackageCheck, Scale, X, Trash2, Pencil } from 'lucide-react';
 import styles from './ProductionModule.module.css';
 import { api } from '../utils/api';
+import { notify } from './ClientWorkspace/Toast';
 
 interface ProductionTask {
   id: string | number;
@@ -30,8 +31,11 @@ const ProductionModule: React.FC<ProductionModuleProps> = ({ onBack }) => {
 
   // New plan form state
   const [isPlanFormOpen, setIsPlanFormOpen] = useState(false);
-  const [newPlanProductId, setNewPlanProductId] = useState('');
-  const [newPlanQty, setNewPlanQty] = useState('');
+  const [newPlanProductId, setNewPlanProductId] = useState<string>('');
+  const [newPlanQty, setNewPlanQty] = useState<string>('');
+
+  const [editingTaskId, setEditingTaskId] = useState<number | string | null>(null);
+  const [editPlanQty, setEditPlanQty] = useState<string>('');
 
   // Modal State for Enter Fact
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -142,6 +146,58 @@ const ProductionModule: React.FC<ProductionModuleProps> = ({ onBack }) => {
     }
   };
 
+  const handleAutoPlan = async () => {
+    try {
+      setIsLoading(true);
+      // Для пекарни расчет плана обычно делается на завтра:
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const dateStr = tomorrow.toISOString().split('T')[0];
+
+      const res = await api.post('/production/auto-plan', { date: dateStr });
+      notify(res.message || 'Авто-расчет завершен успешно!', 'success');
+      fetchData();
+    } catch (err) {
+      console.error('Failed to auto-plan', err);
+      notify('Ошибка при авто-расчете плана', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteTask = async (taskId: number | string) => {
+    if (!window.confirm('Вы уверены, что хотите удалить эту задачу?')) return;
+    try {
+      await api.delete(`/production/tasks/${taskId}`);
+      notify('Задача удалена', 'success');
+      fetchData();
+    } catch (err) {
+      console.error('Failed to delete task', err);
+      notify('Ошибка при удалении задачи', 'error');
+    }
+  };
+
+  const handleStartEdit = (task: ProductionTask) => {
+    setEditingTaskId(task.id);
+    setEditPlanQty(task.planned.toString());
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingTaskId) return;
+    const qty = parseInt(editPlanQty, 10);
+    if (isNaN(qty) || qty <= 0) return;
+
+    try {
+      await api.put(`/production/tasks/${editingTaskId}`, { planned: qty });
+      notify('План обновлен', 'success');
+      setEditingTaskId(null);
+      fetchData();
+    } catch (err) {
+      console.error('Failed to update task', err);
+      notify('Ошибка при обновлении задачи', 'error');
+    }
+  };
+
   const selectedTask = tasks.find(t => t.id === selectedTaskId);
 
   return (
@@ -204,13 +260,23 @@ const ProductionModule: React.FC<ProductionModuleProps> = ({ onBack }) => {
           <div className={styles.tasksCol}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <h2 className={styles.sectionTitle} style={{ margin: 0 }}>Задание на производство</h2>
-              <button 
-                className={styles.actionBtn} 
-                style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
-                onClick={() => setIsPlanFormOpen(!isPlanFormOpen)}
-              >
-                {isPlanFormOpen ? 'Закрыть' : 'Создать план'}
-              </button>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button 
+                  className={styles.actionBtn} 
+                  style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', backgroundColor: '#3b82f6', color: 'white', border: 'none' }}
+                  onClick={handleAutoPlan}
+                  disabled={isLoading}
+                >
+                  Авто-расчет (из заказов)
+                </button>
+                <button 
+                  className={styles.actionBtn} 
+                  style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
+                  onClick={() => setIsPlanFormOpen(!isPlanFormOpen)}
+                >
+                  {isPlanFormOpen ? 'Закрыть' : 'Создать план'}
+                </button>
+              </div>
             </div>
 
             {/* Inline Plan Form */}
@@ -264,9 +330,22 @@ const ProductionModule: React.FC<ProductionModuleProps> = ({ onBack }) => {
                   return (
                     <div key={task.id} className={`${styles.taskCard} ${isDone ? styles.taskCardDone : ''}`}>
                       <div className={styles.taskInfo}>
-                        <h3 className={styles.taskName}>{task.name}</h3>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <h3 className={styles.taskName}>{task.name}</h3>
+                          <button onClick={() => handleStartEdit(task)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: '2px' }} title="Изменить план"><Pencil size={14} /></button>
+                          <button onClick={() => handleDeleteTask(task.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '2px' }} title="Удалить задачу"><Trash2 size={14} /></button>
+                        </div>
                         <div className={styles.taskMeta}>
-                          План: {task.planned} • Испечено: {task.completed}
+                          {editingTaskId === task.id ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+                              План: <input type="number" value={editPlanQty} onChange={e => setEditPlanQty(e.target.value)} style={{ width: '60px', padding: '0.1rem 0.25rem' }} autoFocus />
+                              <button onClick={handleSaveEdit} style={{ background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', padding: '0.1rem 0.5rem', cursor: 'pointer' }}>OK</button>
+                              <button onClick={() => setEditingTaskId(null)} style={{ background: '#e2e8f0', color: '#475569', border: 'none', borderRadius: '4px', padding: '0.1rem 0.5rem', cursor: 'pointer' }}>Отмена</button>
+                              • Испечено: {task.completed}
+                            </div>
+                          ) : (
+                            <>План: {task.planned} • Испечено: {task.completed}</>
+                          )}
                         </div>
                         <div className={styles.taskProgressBg}>
                           <div className={`${styles.taskProgressFill} ${isDone ? styles.fillDone : ''}`} style={{ width: `${progress}%` }}></div>

@@ -58,4 +58,45 @@ export class ClientsService {
     const totalDebt = debtors.reduce((acc, c) => acc + Math.abs(c.balance), 0);
     return { activeCount: total, totalDebt };
   }
+
+  async payDebt(id: number, data: { amount: number; paymentMethod: string }) {
+    return this.prisma.$transaction(async (tx) => {
+      const client = await tx.client.findUnique({ where: { id } });
+      if (!client) throw new Error('Client not found');
+
+      // Create ClientPayment
+      const payment = await tx.clientPayment.create({
+        data: {
+          clientId: id,
+          amount: data.amount,
+          paymentMethod: data.paymentMethod === 'CASH' ? 'CASH' : 'KASPI',
+        }
+      });
+
+      // Create Income
+      const income = await tx.income.create({
+        data: {
+          amount: data.amount,
+          paymentMethod: data.paymentMethod === 'CASH' ? 'CASH' : 'KASPI',
+          source: 'DEBT_PAYMENT',
+          description: `Оплата долга от клиента: ${client.name}`,
+          isAuto: true,
+        }
+      });
+
+      // Link payment to income
+      await tx.clientPayment.update({
+        where: { id: payment.id },
+        data: { incomeId: income.id },
+      });
+
+      // Increase balance
+      await tx.client.update({
+        where: { id },
+        data: { balance: { increment: data.amount } },
+      });
+
+      return { success: true };
+    });
+  }
 }

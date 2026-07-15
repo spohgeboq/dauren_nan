@@ -34,7 +34,10 @@ let UsersController = class UsersController {
     update(id, dto) {
         return this.usersService.update(id, dto);
     }
-    remove(id) {
+    remove(id, req) {
+        if (req.user && req.user.userId === id) {
+            throw new common_1.BadRequestException('Cannot delete your own account.');
+        }
         return this.usersService.remove(id);
     }
 };
@@ -71,8 +74,9 @@ __decorate([
 __decorate([
     (0, common_1.Delete)(':id'),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number]),
+    __metadata("design:paramtypes", [Number, Object]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "remove", null);
 exports.UsersController = UsersController = __decorate([

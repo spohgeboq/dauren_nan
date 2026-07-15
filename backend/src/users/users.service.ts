@@ -24,6 +24,7 @@ export class UsersService {
         role: true,
         status: true,
         isOnShift: true,
+        fixedSalary: true,
         createdAt: true,
       },
       orderBy: { createdAt: 'desc' },
@@ -42,6 +43,7 @@ export class UsersService {
         role: true,
         status: true,
         isOnShift: true,
+        fixedSalary: true,
         createdAt: true,
       },
     });
@@ -60,6 +62,8 @@ export class UsersService {
         login: dto.login,
         pin: dto.pin,
         role: dto.role,
+        // @ts-ignore
+        fixedSalary: dto.fixedSalary || 0,
       },
       select: {
         id: true,
@@ -70,6 +74,7 @@ export class UsersService {
         role: true,
         status: true,
         isOnShift: true,
+        fixedSalary: true,
       },
     });
   }
@@ -80,6 +85,13 @@ export class UsersService {
     if (dto.phone !== undefined) data.phone = dto.phone;
     if (dto.role !== undefined) data.role = dto.role;
     if (dto.status !== undefined) data.status = dto.status as EmployeeStatus;
+    if (dto.login !== undefined) data.login = dto.login;
+    // @ts-ignore
+    if (dto.fixedSalary !== undefined) data.fixedSalary = dto.fixedSalary;
+    if (dto.password) {
+      const salt = await bcrypt.genSalt(10);
+      data.passwordHash = await bcrypt.hash(dto.password, salt);
+    }
 
     return this.prisma.user.update({
       where: { id },
@@ -93,6 +105,7 @@ export class UsersService {
         role: true,
         status: true,
         isOnShift: true,
+        fixedSalary: true,
       },
     });
   }

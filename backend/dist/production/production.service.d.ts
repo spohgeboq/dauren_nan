@@ -11,8 +11,8 @@ export declare class ProductionService {
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        productId: number;
         date: Date;
+        productId: number;
         planned: number;
         completed: number;
     })[]>;
@@ -35,8 +35,8 @@ export declare class ProductionService {
             createdAt: Date;
             updatedAt: Date;
             isActive: boolean;
-            sku: string;
             categoryId: number;
+            sku: string;
             weight: number;
             cost: number;
             price: number;
@@ -47,8 +47,26 @@ export declare class ProductionService {
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        productId: number;
         date: Date;
+        productId: number;
+        planned: number;
+        completed: number;
+    }>;
+    updateTask(id: number, planned: number): Promise<{
+        id: number;
+        createdAt: Date;
+        updatedAt: Date;
+        date: Date;
+        productId: number;
+        planned: number;
+        completed: number;
+    }>;
+    deleteTask(id: number): Promise<{
+        id: number;
+        createdAt: Date;
+        updatedAt: Date;
+        date: Date;
+        productId: number;
         planned: number;
         completed: number;
     }>;
@@ -64,7 +82,11 @@ export declare class ProductionService {
         time: string;
         taskId: number;
         productName: string;
-    } | null>;
+    }>;
+    autoPlan(targetDate: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
     getStats(): Promise<{
         totalPlanned: number;
         totalCompleted: number;

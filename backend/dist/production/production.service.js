@@ -33,22 +33,137 @@ let ProductionService = class ProductionService {
     async createTask(data) {
         return this.prisma.productionTask.create({ data, include: { product: true } });
     }
-    async addBatch(data) {
-        const task = await this.prisma.productionTask.findUnique({ where: { id: data.taskId }, include: { product: true } });
-        if (!task)
-            return null;
-        const batchType = data.type === 'Готово' || data.type === 'READY' ? 'READY' : 'DEFECT';
-        const time = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-        const log = await this.prisma.batchLog.create({
-            data: { taskId: data.taskId, time, productName: task.product.name, quantity: data.quantity, type: batchType },
+    async updateTask(id, planned) {
+        return this.prisma.productionTask.update({
+            where: { id },
+            data: { planned }
         });
-        if (batchType === 'READY') {
-            await this.prisma.productionTask.update({
+    }
+    async deleteTask(id) {
+        return this.prisma.productionTask.delete({
+            where: { id }
+        });
+    }
+    async addBatch(data) {
+        return this.prisma.$transaction(async (tx) => {
+            const task = await tx.productionTask.findUnique({
                 where: { id: data.taskId },
-                data: { completed: task.completed + data.quantity },
+                include: { product: true }
             });
+            if (!task)
+                throw new Error('Task not found');
+            const batchType = data.type === 'Готово' || data.type === 'READY' ? 'READY' : 'DEFECT';
+            const time = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+            const log = await tx.batchLog.create({
+                data: {
+                    taskId: data.taskId,
+                    time,
+                    productName: task.product.name,
+                    quantity: data.quantity,
+                    type: batchType
+                },
+            });
+            const recipe = await tx.recipe.findUnique({
+                where: { productId: task.productId },
+                include: { ingredients: true }
+            });
+            if (recipe) {
+                for (const ingredient of recipe.ingredients) {
+                    const totalRawMaterialNeeded = Number(ingredient.quantity || 0) * data.quantity;
+                    await tx.rawMaterial.update({
+                        where: { id: ingredient.rawMaterialId },
+                        data: { stock: { decrement: totalRawMaterialNeeded } }
+                    });
+                }
+            }
+            else {
+                console.warn(`No recipe found for product ID ${task.productId}. Raw materials not deducted.`);
+            }
+            if (batchType === 'READY') {
+                await tx.productionTask.update({
+                    where: { id: data.taskId },
+                    data: { completed: task.completed + data.quantity },
+                });
+                await tx.product.update({
+                    where: { id: task.productId },
+                    data: { stock: { increment: data.quantity } }
+                });
+            }
+            return log;
+        });
+    }
+    async autoPlan(targetDate) {
+        const d = new Date(targetDate);
+        const dateStart = new Date(d.setHours(0, 0, 0, 0));
+        const dateEnd = new Date(d.setHours(23, 59, 59, 999));
+        const orders = await this.prisma.deliveryOrder.findMany({
+            where: {
+                createdAt: { gte: dateStart, lt: dateEnd },
+                status: { in: ['PENDING', 'IN_TRANSIT', 'DELIVERED'] }
+            },
+            include: { items: true }
+        });
+        const productCounts = {};
+        for (const order of orders) {
+            for (const item of order.items) {
+                productCounts[item.productId] = (productCounts[item.productId] || 0) + item.quantity;
+            }
         }
-        return log;
+        const targetDayOfWeek = dateStart.getDay();
+        const weeksToLookBack = 4;
+        const historyStart = new Date(dateStart);
+        historyStart.setDate(historyStart.getDate() - weeksToLookBack * 7);
+        const pastSales = await this.prisma.saleItem.findMany({
+            where: {
+                sale: {
+                    createdAt: { gte: historyStart, lt: dateStart }
+                }
+            },
+            include: { sale: true }
+        });
+        const retailSums = {};
+        let matchedDaysCount = weeksToLookBack;
+        for (const item of pastSales) {
+            const saleDate = new Date(item.sale.createdAt);
+            if (saleDate.getDay() === targetDayOfWeek) {
+                retailSums[item.productId] = (retailSums[item.productId] || 0) + item.quantity;
+            }
+        }
+        for (const [productIdStr, totalSold] of Object.entries(retailSums)) {
+            const productId = Number(productIdStr);
+            const averageSold = totalSold / matchedDaysCount;
+            const forecastWithBuffer = Math.ceil(averageSold * 1.05);
+            productCounts[productId] = (productCounts[productId] || 0) + forecastWithBuffer;
+        }
+        const results = [];
+        for (const [productIdStr, qty] of Object.entries(productCounts)) {
+            const productId = Number(productIdStr);
+            const existingTask = await this.prisma.productionTask.findFirst({
+                where: {
+                    productId,
+                    date: { gte: dateStart, lt: dateEnd }
+                }
+            });
+            if (existingTask) {
+                const finalQty = Math.max(qty, existingTask.completed);
+                const updated = await this.prisma.productionTask.update({
+                    where: { id: existingTask.id },
+                    data: { planned: finalQty }
+                });
+                results.push(updated);
+            }
+            else {
+                const newTask = await this.prisma.productionTask.create({
+                    data: {
+                        productId,
+                        planned: qty,
+                        date: dateStart
+                    }
+                });
+                results.push(newTask);
+            }
+        }
+        return { success: true, message: `План успешно рассчитан!` };
     }
     async getStats() {
         const tasks = await this.prisma.productionTask.findMany();

@@ -26,7 +26,15 @@ let ExpensesService = class ExpensesService {
             const end = new Date(parseInt(y), parseInt(m), 0, 23, 59, 59);
             where.date = { gte: start, lte: end };
         }
-        return this.prisma.expense.findMany({ where, orderBy: { date: 'desc' } });
+        return this.prisma.expense.findMany({
+            where,
+            orderBy: { date: 'desc' },
+            include: {
+                vehicle: true,
+                user: true,
+                supplierPayments: { include: { supplier: true } },
+            }
+        });
     }
     async create(data) {
         return this.prisma.expense.create({
@@ -36,16 +44,40 @@ let ExpensesService = class ExpensesService {
                 description: data.description,
                 paymentMethod: data.paymentMethod,
                 amount: data.amount,
+                isAuto: data.isAuto || false,
+                vehicleId: data.vehicleId || null,
+                userId: data.userId || null,
             },
         });
     }
     async getStats(month) {
         const expenses = await this.findAll(undefined, month);
-        const total = expenses.reduce((sum, e) => sum + e.amount, 0);
+        const total = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
         const byCategory = {};
-        expenses.forEach(e => { byCategory[e.category] = (byCategory[e.category] || 0) + e.amount; });
+        expenses.forEach(e => { byCategory[e.category] = (byCategory[e.category] || 0) + Number(e.amount); });
         const sorted = Object.entries(byCategory).sort(([, a], [, b]) => b - a);
         return { total, byCategory: sorted.map(([name, amount]) => ({ name, amount })), topCategory: sorted[0] ? { name: sorted[0][0], amount: sorted[0][1] } : null };
+    }
+    async delete(id) {
+        return this.prisma.expense.delete({ where: { id } });
+    }
+    async paySalaries() {
+        const users = await this.prisma.user.findMany({ where: { fixedSalary: { gt: 0 }, status: 'ACTIVE' } });
+        const expenses = [];
+        for (const user of users) {
+            const expense = await this.prisma.expense.create({
+                data: {
+                    category: 'SALARY',
+                    description: `Зарплата сотруднику: ${user.name || user.login}`,
+                    amount: user.fixedSalary,
+                    paymentMethod: 'CASH',
+                    isAuto: true,
+                    userId: user.id
+                }
+            });
+            expenses.push(expense);
+        }
+        return { success: true, paidCount: expenses.length, expenses };
     }
 };
 exports.ExpensesService = ExpensesService;

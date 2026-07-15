@@ -11,8 +11,8 @@ export declare class CourierController {
                     createdAt: Date;
                     updatedAt: Date;
                     isActive: boolean;
-                    sku: string;
                     categoryId: number;
+                    sku: string;
                     weight: number;
                     cost: number;
                     price: number;
@@ -31,13 +31,13 @@ export declare class CourierController {
             status: import(".prisma/client").$Enums.DeliveryOrderStatus;
             createdAt: Date;
             clientId: number | null;
+            paymentMethod: string | null;
             clientName: string;
             clientPhone: string;
             address: string;
             totalAmount: number;
             isPaid: boolean;
             isBaked: boolean;
-            paymentMethod: string | null;
             driverId: number | null;
         })[];
     }>;

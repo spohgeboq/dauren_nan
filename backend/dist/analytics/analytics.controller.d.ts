@@ -38,6 +38,10 @@ export declare class AnalyticsController {
             amount: number;
             daysOverdue: number;
         }[];
+        cashbox: {
+            cash: number;
+            kaspi: number;
+        };
         barData: {
             day: string;
             revenue: number;

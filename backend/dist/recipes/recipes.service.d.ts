@@ -11,14 +11,17 @@ export declare class RecipesService {
             rawMaterial: {
                 id: number;
                 name: string;
-                stock: number;
-                costPerUnit: number;
+                createdAt: Date;
+                updatedAt: Date;
+                stock: import("@prisma/client/runtime/library").Decimal;
                 unit: string;
+                costPerUnit: import("@prisma/client/runtime/library").Decimal;
+                minLimit: import("@prisma/client/runtime/library").Decimal;
             };
         } & {
             id: number;
-            quantity: number;
-            amount: number;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            quantity: import("@prisma/client/runtime/library").Decimal;
             rawMaterialId: number;
             recipeId: number;
         })[];
@@ -35,8 +38,8 @@ export declare class RecipesService {
             createdAt: Date;
             updatedAt: Date;
             isActive: boolean;
-            sku: string;
             categoryId: number;
+            sku: string;
             weight: number;
             cost: number;
             price: number;
@@ -47,14 +50,17 @@ export declare class RecipesService {
             rawMaterial: {
                 id: number;
                 name: string;
-                stock: number;
-                costPerUnit: number;
+                createdAt: Date;
+                updatedAt: Date;
+                stock: import("@prisma/client/runtime/library").Decimal;
                 unit: string;
+                costPerUnit: import("@prisma/client/runtime/library").Decimal;
+                minLimit: import("@prisma/client/runtime/library").Decimal;
             };
         } & {
             id: number;
-            quantity: number;
-            amount: number;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            quantity: import("@prisma/client/runtime/library").Decimal;
             rawMaterialId: number;
             recipeId: number;
         })[];
@@ -71,8 +77,8 @@ export declare class RecipesService {
             createdAt: Date;
             updatedAt: Date;
             isActive: boolean;
-            sku: string;
             categoryId: number;
+            sku: string;
             weight: number;
             cost: number;
             price: number;
@@ -83,14 +89,17 @@ export declare class RecipesService {
             rawMaterial: {
                 id: number;
                 name: string;
-                stock: number;
-                costPerUnit: number;
+                createdAt: Date;
+                updatedAt: Date;
+                stock: import("@prisma/client/runtime/library").Decimal;
                 unit: string;
+                costPerUnit: import("@prisma/client/runtime/library").Decimal;
+                minLimit: import("@prisma/client/runtime/library").Decimal;
             };
         } & {
             id: number;
-            quantity: number;
-            amount: number;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            quantity: import("@prisma/client/runtime/library").Decimal;
             rawMaterialId: number;
             recipeId: number;
         })[];
@@ -113,8 +122,8 @@ export declare class RecipesService {
             createdAt: Date;
             updatedAt: Date;
             isActive: boolean;
-            sku: string;
             categoryId: number;
+            sku: string;
             weight: number;
             cost: number;
             price: number;
@@ -125,14 +134,17 @@ export declare class RecipesService {
             rawMaterial: {
                 id: number;
                 name: string;
-                stock: number;
-                costPerUnit: number;
+                createdAt: Date;
+                updatedAt: Date;
+                stock: import("@prisma/client/runtime/library").Decimal;
                 unit: string;
+                costPerUnit: import("@prisma/client/runtime/library").Decimal;
+                minLimit: import("@prisma/client/runtime/library").Decimal;
             };
         } & {
             id: number;
-            quantity: number;
-            amount: number;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            quantity: import("@prisma/client/runtime/library").Decimal;
             rawMaterialId: number;
             recipeId: number;
         })[];
@@ -149,14 +161,17 @@ export declare class RecipesService {
         rawMaterial: {
             id: number;
             name: string;
-            stock: number;
-            costPerUnit: number;
+            createdAt: Date;
+            updatedAt: Date;
+            stock: import("@prisma/client/runtime/library").Decimal;
             unit: string;
+            costPerUnit: import("@prisma/client/runtime/library").Decimal;
+            minLimit: import("@prisma/client/runtime/library").Decimal;
         };
     } & {
         id: number;
-        quantity: number;
-        amount: number;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        quantity: import("@prisma/client/runtime/library").Decimal;
         rawMaterialId: number;
         recipeId: number;
     }>;
@@ -167,30 +182,36 @@ export declare class RecipesService {
         rawMaterial: {
             id: number;
             name: string;
-            stock: number;
-            costPerUnit: number;
+            createdAt: Date;
+            updatedAt: Date;
+            stock: import("@prisma/client/runtime/library").Decimal;
             unit: string;
+            costPerUnit: import("@prisma/client/runtime/library").Decimal;
+            minLimit: import("@prisma/client/runtime/library").Decimal;
         };
     } & {
         id: number;
-        quantity: number;
-        amount: number;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        quantity: import("@prisma/client/runtime/library").Decimal;
         rawMaterialId: number;
         recipeId: number;
     }>;
     removeIngredient(ingredientId: number): Promise<{
         id: number;
-        quantity: number;
-        amount: number;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        quantity: import("@prisma/client/runtime/library").Decimal;
         rawMaterialId: number;
         recipeId: number;
     }>;
     getRawMaterials(): Promise<{
         id: number;
         name: string;
-        stock: number;
-        costPerUnit: number;
+        createdAt: Date;
+        updatedAt: Date;
+        stock: import("@prisma/client/runtime/library").Decimal;
         unit: string;
+        costPerUnit: import("@prisma/client/runtime/library").Decimal;
+        minLimit: import("@prisma/client/runtime/library").Decimal;
     }[]>;
     createRawMaterial(data: {
         name: string;
@@ -199,8 +220,11 @@ export declare class RecipesService {
     }): Promise<{
         id: number;
         name: string;
-        stock: number;
-        costPerUnit: number;
+        createdAt: Date;
+        updatedAt: Date;
+        stock: import("@prisma/client/runtime/library").Decimal;
         unit: string;
+        costPerUnit: import("@prisma/client/runtime/library").Decimal;
+        minLimit: import("@prisma/client/runtime/library").Decimal;
     }>;
 }

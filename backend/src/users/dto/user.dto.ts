@@ -45,4 +45,12 @@ export class UpdateUserDto {
   @IsString()
   @IsOptional()
   status?: string;
+
+  @IsString()
+  @IsOptional()
+  login?: string;
+
+  @IsString()
+  @IsOptional()
+  password?: string;
 }

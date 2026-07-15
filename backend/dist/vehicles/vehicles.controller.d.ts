@@ -35,6 +35,7 @@ export declare class VehiclesController {
             role: import(".prisma/client").$Enums.Role;
             status: import(".prisma/client").$Enums.EmployeeStatus;
             isOnShift: boolean;
+            fixedSalary: import("@prisma/client/runtime/library").Decimal;
             createdAt: Date;
             updatedAt: Date;
             clientId: number | null;
