@@ -1,17 +1,38 @@
-import React from 'react';
-import { Wheat } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Wheat, ShoppingCart } from 'lucide-react';
 import styles from './Products.module.css';
 
-const products = [
-  { id: 1, name: 'Таба нан' },
-  { id: 2, name: 'Патыр нан' },
-  { id: 3, name: 'Үй наны' },
-  { id: 4, name: 'Классический батон' },
-  { id: 5, name: 'Лепешка с кунжутом' },
-  { id: 6, name: 'Ржаной хлеб' },
-];
+interface Product {
+  id: number | string;
+  name: string;
+  price: number;
+  imageUrl?: string;
+  isHit?: boolean;
+  category?: { name: string };
+}
 
 const Products: React.FC = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/products')
+      .then(res => res.json())
+      .then(data => {
+        // Оставляем только активные товары
+        const activeProducts = data.filter((p: any) => p.isActive !== false);
+        setProducts(activeProducts);
+      })
+      .catch(err => console.error('Error fetching products:', err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const formatPrice = (num: number) => num.toLocaleString('ru-RU') + ' ₸';
+
+  const handleAddToCart = (product: Product) => {
+    // В будущем здесь будет вызов корзины или модалки заказа
+    alert(`Товар "${product.name}" добавлен в корзину!`);
+  };
   return (
     <section className={styles.section} id="products">
       <div className={styles.container}>
@@ -24,17 +45,39 @@ const Products: React.FC = () => {
         </div>
 
         <div className={styles.grid}>
-          {products.map((product) => (
-            <div key={product.id} className={styles.card}>
-              <div className={styles.imagePlaceholder}>
-                <Wheat size={48} className={styles.icon} strokeWidth={1.5} />
+          {loading ? (
+            <div className={styles.emptyState}>Загрузка ассортимента...</div>
+          ) : products.length === 0 ? (
+            <div className={styles.emptyState}>Ассортимент обновляется. Скоро здесь появятся свежие товары!</div>
+          ) : (
+            products.map((product) => (
+              <div key={product.id} className={styles.card}>
+                <div className={styles.imageWrapper}>
+                  {product.isHit && <div className={styles.hitBadge}>Хит продаж</div>}
+                  {product.imageUrl ? (
+                    <img 
+                      src={product.imageUrl} 
+                      alt={product.name} 
+                      className={styles.productImage} 
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className={styles.imagePlaceholder} style={{ width: '100%', height: '100%' }}>
+                      <Wheat size={48} className={styles.icon} strokeWidth={1.5} />
+                    </div>
+                  )}
+                </div>
+                <div className={styles.content}>
+                  <h3 className={styles.title}>{product.name}</h3>
+                  <p className={styles.subtitle}>{product.category?.name || 'Свежая выпечка'}</p>
+                  <div className={styles.price}>{formatPrice(product.price)}</div>
+                  <button className={styles.addToCartBtn} onClick={() => handleAddToCart(product)}>
+                    В корзину
+                  </button>
+                </div>
               </div>
-              <div className={styles.content}>
-                <h3 className={styles.title}>{product.name}</h3>
-                <p className={styles.subtitle}>Свежая выпечка</p>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </section>

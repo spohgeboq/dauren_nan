@@ -62,7 +62,6 @@ export class UsersService {
         login: dto.login,
         pin: dto.pin,
         role: dto.role,
-        // @ts-ignore
         fixedSalary: dto.fixedSalary || 0,
       },
       select: {
@@ -86,7 +85,6 @@ export class UsersService {
     if (dto.role !== undefined) data.role = dto.role;
     if (dto.status !== undefined) data.status = dto.status as EmployeeStatus;
     if (dto.login !== undefined) data.login = dto.login;
-    // @ts-ignore
     if (dto.fixedSalary !== undefined) data.fixedSalary = dto.fixedSalary;
     if (dto.password) {
       const salt = await bcrypt.genSalt(10);

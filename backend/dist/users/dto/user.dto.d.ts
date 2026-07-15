@@ -7,6 +7,7 @@ export declare class CreateUserDto {
     login?: string;
     pin?: string;
     role?: Role;
+    fixedSalary?: number;
 }
 export declare class UpdateUserDto {
     name?: string;
@@ -15,4 +16,5 @@ export declare class UpdateUserDto {
     status?: string;
     login?: string;
     password?: string;
+    fixedSalary?: number;
 }

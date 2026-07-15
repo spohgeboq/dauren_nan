@@ -19,6 +19,8 @@ interface Product {
   price: number;
   isActive: boolean;
   imageUrl?: string;
+  isHit?: boolean;
+  recipe?: { id: number };
 }
 
 interface ProductsModuleProps {
@@ -38,6 +40,10 @@ const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
   const [newWeight, setNewWeight] = useState('');
   const [newCost, setNewCost] = useState('');
   const [newPrice, setNewPrice] = useState('');
+  const [newImageUrl, setNewImageUrl] = useState('');
+  const [newIsHit, setNewIsHit] = useState(false);
+  const [editingProductId, setEditingProductId] = useState<string | number | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -77,29 +83,89 @@ const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
     }
   };
 
-  const handleAddProduct = async (e: React.FormEvent) => {
+  const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName.trim() || !newCategoryId) return;
 
+    const payload = {
+      name: newName,
+      categoryId: newCategoryId,
+      weight: parseInt(newWeight) || 0,
+      cost: parseInt(newCost) || 0,
+      price: parseInt(newPrice) || 0,
+      imageUrl: newImageUrl,
+      isHit: newIsHit,
+    };
+
     try {
-      const added = await api.post('/products', {
-        name: newName,
-        categoryId: newCategoryId,
-        weight: parseInt(newWeight) || 0,
-        cost: parseInt(newCost) || 0,
-        price: parseInt(newPrice) || 0,
-        isActive: true
-      });
-      setProducts([added, ...products]);
+      if (editingProductId) {
+        const updated = await api.patch(`/products/${editingProductId}`, payload);
+        setProducts(prev => prev.map(p => p.id === editingProductId ? updated : p));
+      } else {
+        const added = await api.post('/products', { ...payload, isActive: true });
+        setProducts([added, ...products]);
+      }
       setIsDrawerOpen(false);
-      
-      // Reset
-      setNewName('');
-      setNewWeight('');
-      setNewCost('');
-      setNewPrice('');
+      resetForm();
     } catch (err) {
-      console.error('Error adding product:', err);
+      console.error('Error saving product:', err);
+    }
+  };
+
+  const openEditDrawer = (product: Product) => {
+    setEditingProductId(product.id);
+    setNewName(product.name);
+    setNewCategoryId(product.categoryId);
+    setNewWeight(product.weight.toString());
+    setNewCost(product.cost.toString());
+    setNewPrice(product.price.toString());
+    setNewImageUrl(product.imageUrl || '');
+    setNewIsHit(product.isHit || false);
+    setIsDrawerOpen(true);
+  };
+
+  const openAddDrawer = () => {
+    resetForm();
+    setIsDrawerOpen(true);
+  };
+
+  const resetForm = () => {
+    setEditingProductId(null);
+    setNewName('');
+    setNewWeight('');
+    setNewCost('');
+    setNewPrice('');
+    setNewImageUrl('');
+    setNewIsHit(false);
+    if (categories.length > 0) setNewCategoryId(categories[0].id);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    setIsUploading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/products/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData,
+      });
+      const data = await response.json();
+      if (data.imageUrl) {
+        // Backend returns e.g. /uploads/file-123.jpg
+        setNewImageUrl(`http://localhost:5000${data.imageUrl}`);
+      }
+    } catch (err) {
+      console.error('Error uploading image', err);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -158,7 +224,7 @@ const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
               </div>
             </div>
 
-            <button className={styles.primaryBtn} onClick={() => setIsDrawerOpen(true)}>
+            <button className={styles.primaryBtn} onClick={openAddDrawer}>
               <Plus size={18} />
               Добавить товар
             </button>
@@ -172,11 +238,13 @@ const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
                   <th className={styles.colPhoto}>Фото</th>
                   <th>Товар и Артикул</th>
                   <th>Категория</th>
+                  <th>Рецепт</th>
                   <th>Вес</th>
                   <th className={styles.textRight}>Себестоимость</th>
                   <th className={styles.textRight}>Цена продажи</th>
                   <th className={styles.textRight}>Маржа</th>
                   <th className={styles.textCenter}>Статус</th>
+                  <th className={styles.textCenter}>Действия</th>
                 </tr>
               </thead>
               <tbody>
@@ -205,6 +273,13 @@ const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
                         <span className={styles.categoryBadge}>{product.category?.name || 'Без категории'}</span>
                       </td>
                       <td>
+                        {product.recipe ? (
+                          <span style={{ color: '#16a34a', fontSize: '12px', fontWeight: 500 }}>🟢 Привязан</span>
+                        ) : (
+                          <span style={{ color: '#dc2626', fontSize: '12px', fontWeight: 500 }}>🔴 Нет</span>
+                        )}
+                      </td>
+                      <td>
                         <span className={styles.weightText}>{product.weight} г</span>
                       </td>
                       <td className={styles.textRight}>
@@ -225,6 +300,15 @@ const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
                         >
                           <div className={`${styles.toggleKnob} ${product.isActive ? styles.knobOn : styles.knobOff}`} />
                         </div>
+                      </td>
+                      <td className={styles.textCenter}>
+                        <button 
+                          className={styles.editBtn} 
+                          onClick={() => openEditDrawer(product)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#B38B59' }}
+                        >
+                          Редактировать
+                        </button>
                       </td>
                     </tr>
                   );
@@ -247,20 +331,45 @@ const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
         <div className={styles.drawerOverlay} onClick={() => setIsDrawerOpen(false)}>
           <div className={styles.drawer} onClick={(e) => e.stopPropagation()}>
             <div className={styles.drawerHeader}>
-              <h2 className={styles.drawerTitle}>Новый товар</h2>
+              <h2 className={styles.drawerTitle}>{editingProductId ? 'Редактировать товар' : 'Новый товар'}</h2>
               <button className={styles.closeBtn} onClick={() => setIsDrawerOpen(false)}>
                 <X size={24} />
               </button>
             </div>
 
             <div className={styles.drawerContent}>
-              <form onSubmit={handleAddProduct} className={styles.drawerForm}>
+              <form onSubmit={handleSaveProduct} className={styles.drawerForm}>
                 
                 {/* Image Upload Zone */}
-                <div className={styles.uploadZone}>
-                  <UploadCloud size={32} className={styles.uploadIcon} />
-                  <span className={styles.uploadTitle}>Загрузить фото</span>
-                  <span className={styles.uploadSubtitle}>PNG, JPG до 5MB</span>
+                <div className={styles.uploadZone} style={{ position: 'relative', overflow: 'hidden' }}>
+                  {newImageUrl ? (
+                    <img src={newImageUrl} alt="Product" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }} />
+                  ) : (
+                    <>
+                      <UploadCloud size={32} className={styles.uploadIcon} />
+                      <span className={styles.uploadTitle}>{isUploading ? 'Загрузка...' : 'Загрузить фото'}</span>
+                      <span className={styles.uploadSubtitle}>PNG, JPG до 5MB</span>
+                    </>
+                  )}
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleImageUpload} 
+                    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+                    disabled={isUploading}
+                  />
+                </div>
+
+                <div className={styles.formGroup} style={{ flexDirection: 'row', alignItems: 'center', gap: '8px' }}>
+                  <input 
+                    type="checkbox" 
+                    id="isHitCheckbox"
+                    checked={newIsHit} 
+                    onChange={(e) => setNewIsHit(e.target.checked)} 
+                  />
+                  <label htmlFor="isHitCheckbox" style={{ margin: 0, fontWeight: 500, color: '#f59e0b', cursor: 'pointer' }}>
+                    🌟 Отметить как "Хит продаж"
+                  </label>
                 </div>
 
                 <div className={styles.formGroup}>
@@ -344,8 +453,8 @@ const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
               <button type="button" className={styles.cancelBtn} onClick={() => setIsDrawerOpen(false)}>
                 Отмена
               </button>
-              <button type="button" className={styles.submitBtn} onClick={handleAddProduct} disabled={!newName.trim() || !newPrice}>
-                Сохранить товар
+              <button type="button" className={styles.submitBtn} onClick={handleSaveProduct} disabled={!newName.trim() || !newPrice}>
+                {editingProductId ? 'Сохранить изменения' : 'Сохранить товар'}
               </button>
             </div>
           </div>

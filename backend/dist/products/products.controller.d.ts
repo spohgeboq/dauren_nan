@@ -10,40 +10,40 @@ export declare class ProductsController {
         };
     } & {
         id: number;
-        name: string;
-        createdAt: Date;
-        updatedAt: Date;
-        isActive: boolean;
-        categoryId: number;
         sku: string;
+        name: string;
+        categoryId: number;
         weight: number;
         cost: number;
         price: number;
+        isActive: boolean;
         imageUrl: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         stock: number;
     })[]>;
     findOne(id: number): Promise<({
         category: {
             id: number;
             name: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
             iconName: string;
             sortOrder: number;
-            isActive: boolean;
         };
     } & {
         id: number;
-        name: string;
-        createdAt: Date;
-        updatedAt: Date;
-        isActive: boolean;
-        categoryId: number;
         sku: string;
+        name: string;
+        categoryId: number;
         weight: number;
         cost: number;
         price: number;
+        isActive: boolean;
         imageUrl: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         stock: number;
     }) | null>;
     create(dto: CreateProductDto): Promise<{
@@ -53,16 +53,16 @@ export declare class ProductsController {
         };
     } & {
         id: number;
-        name: string;
-        createdAt: Date;
-        updatedAt: Date;
-        isActive: boolean;
-        categoryId: number;
         sku: string;
+        name: string;
+        categoryId: number;
         weight: number;
         cost: number;
         price: number;
+        isActive: boolean;
         imageUrl: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         stock: number;
     }>;
     update(id: number, dto: UpdateProductDto): Promise<{
@@ -72,30 +72,30 @@ export declare class ProductsController {
         };
     } & {
         id: number;
-        name: string;
-        createdAt: Date;
-        updatedAt: Date;
-        isActive: boolean;
-        categoryId: number;
         sku: string;
+        name: string;
+        categoryId: number;
         weight: number;
         cost: number;
         price: number;
+        isActive: boolean;
         imageUrl: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         stock: number;
     }>;
     remove(id: number): Promise<{
         id: number;
-        name: string;
-        createdAt: Date;
-        updatedAt: Date;
-        isActive: boolean;
-        categoryId: number;
         sku: string;
+        name: string;
+        categoryId: number;
         weight: number;
         cost: number;
         price: number;
+        isActive: boolean;
         imageUrl: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         stock: number;
     }>;
 }

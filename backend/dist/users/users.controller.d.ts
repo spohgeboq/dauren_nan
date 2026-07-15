@@ -4,8 +4,8 @@ export declare class UsersController {
     private usersService;
     constructor(usersService: UsersService);
     findAll(role?: string): Promise<{
-        email: string;
         id: number;
+        email: string;
         name: string | null;
         phone: string | null;
         login: string | null;
@@ -16,8 +16,8 @@ export declare class UsersController {
         createdAt: Date;
     }[]>;
     findOne(id: number): Promise<{
-        email: string;
         id: number;
+        email: string;
         name: string | null;
         phone: string | null;
         login: string | null;
@@ -28,8 +28,8 @@ export declare class UsersController {
         createdAt: Date;
     } | null>;
     create(dto: CreateUserDto): Promise<{
-        email: string;
         id: number;
+        email: string;
         name: string | null;
         phone: string | null;
         login: string | null;
@@ -39,8 +39,8 @@ export declare class UsersController {
         fixedSalary: import("@prisma/client/runtime/library").Decimal;
     }>;
     update(id: number, dto: UpdateUserDto): Promise<{
-        email: string;
         id: number;
+        email: string;
         name: string | null;
         phone: string | null;
         login: string | null;
@@ -50,8 +50,8 @@ export declare class UsersController {
         fixedSalary: import("@prisma/client/runtime/library").Decimal;
     }>;
     remove(id: number, req: any): Promise<{
-        email: string;
         id: number;
+        email: string;
         passwordHash: string;
         name: string | null;
         phone: string | null;

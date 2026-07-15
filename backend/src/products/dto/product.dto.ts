@@ -8,6 +8,7 @@ export class CreateProductDto {
   @IsNumber() @IsOptional() cost?: number;
   @IsNumber() @IsOptional() price?: number;
   @IsString() @IsOptional() imageUrl?: string;
+  @IsBoolean() @IsOptional() isHit?: boolean;
 }
 
 export class UpdateProductDto {
@@ -18,4 +19,5 @@ export class UpdateProductDto {
   @IsNumber() @IsOptional() price?: number;
   @IsBoolean() @IsOptional() isActive?: boolean;
   @IsString() @IsOptional() imageUrl?: string;
+  @IsBoolean() @IsOptional() isHit?: boolean;
 }

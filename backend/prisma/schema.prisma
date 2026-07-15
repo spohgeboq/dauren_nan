@@ -171,6 +171,7 @@ model Product {
   price      Float     @default(0)
   isActive   Boolean   @default(true)
   imageUrl   String?
+  isHit      Boolean   @default(false)
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
