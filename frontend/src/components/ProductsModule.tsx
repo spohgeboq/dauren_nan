@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { ArrowLeft, Search, Filter, Plus, Image as ImageIcon, UploadCloud, X } from 'lucide-react';
+import { ArrowLeft, Search, Filter, Plus, Image as ImageIcon, UploadCloud, X, Edit2, Trash2 } from 'lucide-react';
 import styles from './ProductsModule.module.css';
 import { api } from '../utils/api';
 
@@ -19,6 +19,7 @@ interface Product {
   price: number;
   isActive: boolean;
   imageUrl?: string;
+  description?: string;
   isHit?: boolean;
   recipe?: { id: number };
 }
@@ -41,6 +42,7 @@ const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
   const [newCost, setNewCost] = useState('');
   const [newPrice, setNewPrice] = useState('');
   const [newImageUrl, setNewImageUrl] = useState('');
+  const [newDescription, setNewDescription] = useState('');
   const [newIsHit, setNewIsHit] = useState(false);
   const [editingProductId, setEditingProductId] = useState<string | number | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -83,32 +85,49 @@ const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
     }
   };
 
-  const handleSaveProduct = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newName.trim() || !newCategoryId) return;
+  const handleSaveProduct = async (e?: any) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!newName.trim()) {
+      console.warn('Название товара пустое');
+      return;
+    }
+    if (!newCategoryId && newCategoryId !== 0) {
+      console.warn('Категория не выбрана');
+      return;
+    }
 
-    const payload = {
+    const payload: any = {
       name: newName,
-      categoryId: newCategoryId,
+      categoryId: newCategoryId || (categories.length > 0 ? categories[0].id : 1),
       weight: parseInt(newWeight) || 0,
-      cost: parseInt(newCost) || 0,
-      price: parseInt(newPrice) || 0,
-      imageUrl: newImageUrl,
+      cost: parseFloat(newCost) || 0,
+      price: parseFloat(newPrice) || 0,
       isHit: newIsHit,
     };
+    // Отправляем imageUrl только если он не пустой
+    if (newImageUrl) {
+      payload.imageUrl = newImageUrl;
+    }
+    // Отправляем описание
+    if (newDescription.trim()) {
+      payload.description = newDescription.trim();
+    }
+
+    console.log('Saving product:', payload);
 
     try {
       if (editingProductId) {
         const updated = await api.patch(`/products/${editingProductId}`, payload);
         setProducts(prev => prev.map(p => p.id === editingProductId ? updated : p));
       } else {
-        const added = await api.post('/products', { ...payload, isActive: true });
+        const added = await api.post('/products', payload);
         setProducts([added, ...products]);
       }
       setIsDrawerOpen(false);
       resetForm();
     } catch (err) {
       console.error('Error saving product:', err);
+      alert('Ошибка при сохранении товара. Проверьте консоль.');
     }
   };
 
@@ -120,8 +139,20 @@ const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
     setNewCost(product.cost.toString());
     setNewPrice(product.price.toString());
     setNewImageUrl(product.imageUrl || '');
+    setNewDescription(product.description || '');
     setNewIsHit(product.isHit || false);
     setIsDrawerOpen(true);
+  };
+
+  const handleDeleteProduct = async (id: string | number) => {
+    if (!window.confirm('Вы уверены, что хотите удалить этот товар?')) return;
+    try {
+      await api.delete(`/products/${id}`);
+      setProducts(prev => prev.filter(p => p.id !== id));
+    } catch (err) {
+      console.error('Error deleting product:', err);
+      alert('Ошибка при удалении товара.');
+    }
   };
 
   const openAddDrawer = () => {
@@ -136,6 +167,7 @@ const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
     setNewCost('');
     setNewPrice('');
     setNewImageUrl('');
+    setNewDescription('');
     setNewIsHit(false);
     if (categories.length > 0) setNewCategoryId(categories[0].id);
   };
@@ -205,23 +237,6 @@ const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              
-              <div className={styles.filterBox}>
-                <Filter size={18} className={styles.filterIcon} />
-                <select 
-                  className={styles.filterSelect}
-                  value={filterCategoryId}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setFilterCategoryId(val === 'Все' ? 'Все' : parseInt(val));
-                  }}
-                >
-                  <option value="Все">Все категории</option>
-                  {categories.map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.name}</option>
-                  ))}
-                </select>
-              </div>
             </div>
 
             <button className={styles.primaryBtn} onClick={openAddDrawer}>
@@ -237,7 +252,7 @@ const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
                 <tr>
                   <th className={styles.colPhoto}>Фото</th>
                   <th>Товар и Артикул</th>
-                  <th>Категория</th>
+                  <th>Описание</th>
                   <th>Рецепт</th>
                   <th>Вес</th>
                   <th className={styles.textRight}>Себестоимость</th>
@@ -270,7 +285,7 @@ const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
                         </div>
                       </td>
                       <td>
-                        <span className={styles.categoryBadge}>{product.category?.name || 'Без категории'}</span>
+                        <span className={styles.categoryBadge}>{product.description ? (product.description.length > 20 ? product.description.substring(0, 20) + '...' : product.description) : 'Нет описания'}</span>
                       </td>
                       <td>
                         {product.recipe ? (
@@ -302,13 +317,24 @@ const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
                         </div>
                       </td>
                       <td className={styles.textCenter}>
-                        <button 
-                          className={styles.editBtn} 
-                          onClick={() => openEditDrawer(product)}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#B38B59' }}
-                        >
-                          Редактировать
-                        </button>
+                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                          <button 
+                            className={styles.actionBtn} 
+                            onClick={() => openEditDrawer(product)}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#B38B59' }}
+                            title="Редактировать"
+                          >
+                            <Edit2 size={18} />
+                          </button>
+                          <button 
+                            className={styles.actionBtn} 
+                            onClick={() => handleDeleteProduct(product.id)}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626' }}
+                            title="Удалить"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -386,16 +412,15 @@ const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
 
                 <div className={styles.formGrid}>
                   <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>Категория</label>
-                    <select 
-                      className={styles.formSelect}
-                      value={newCategoryId}
-                      onChange={(e) => setNewCategoryId(parseInt(e.target.value))}
-                    >
-                      {categories.map(cat => (
-                        <option key={cat.id} value={cat.id}>{cat.name}</option>
-                      ))}
-                    </select>
+                    <label className={styles.formLabel}>Описание товара</label>
+                    <textarea 
+                      className={styles.formInput}
+                      value={newDescription}
+                      onChange={(e) => setNewDescription(e.target.value)}
+                      placeholder="Опишите ваш товар..."
+                      rows={3}
+                      style={{ resize: 'vertical', minHeight: '80px' }}
+                    />
                   </div>
                   
                   <div className={styles.formGroup}>
@@ -453,7 +478,7 @@ const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
               <button type="button" className={styles.cancelBtn} onClick={() => setIsDrawerOpen(false)}>
                 Отмена
               </button>
-              <button type="button" className={styles.submitBtn} onClick={handleSaveProduct} disabled={!newName.trim() || !newPrice}>
+              <button type="button" className={styles.submitBtn} onClick={() => handleSaveProduct()} disabled={!newName.trim()}>
                 {editingProductId ? 'Сохранить изменения' : 'Сохранить товар'}
               </button>
             </div>

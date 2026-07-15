@@ -170,8 +170,9 @@ model Product {
   cost       Float     @default(0)
   price      Float     @default(0)
   isActive   Boolean   @default(true)
-  imageUrl   String?
-  isHit      Boolean   @default(false)
+  imageUrl    String?
+  description String?
+  isHit       Boolean   @default(false)
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
@@ -330,13 +331,15 @@ model InventoryAdjustment {
 // ─── Recipes ────────────────────────────────────────────
 
 model Recipe {
-  id        Int                @id @default(autoincrement())
-  productId Int                @unique
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
+  id           Int                @id @default(autoincrement())
+  productId    Int                @unique
+  yield        Int                @default(1) // Выход готовой продукции в штуках
+  instructions String?            @db.Text
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
 
-  product     Product          @relation(fields: [productId], references: [id])
-  ingredients RecipeIngredient[]
+  product      Product          @relation(fields: [productId], references: [id])
+  ingredients  RecipeIngredient[]
 }
 
 model RecipeIngredient {
@@ -345,6 +348,7 @@ model RecipeIngredient {
   rawMaterialId Int
   amount        Decimal     @default(0)
   quantity      Decimal     @default(0) // Quantity of raw material for 1 item (for baker)
+  unit          String?
 
   recipe        Recipe      @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   rawMaterial   RawMaterial @relation(fields: [rawMaterialId], references: [id])

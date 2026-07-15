@@ -45,6 +45,7 @@ export declare class OrdersService {
         };
         items: ({
             product: {
+                description: string | null;
                 id: number;
                 name: string;
                 createdAt: Date;
@@ -100,6 +101,7 @@ export declare class OrdersService {
         };
         items: ({
             product: {
+                description: string | null;
                 id: number;
                 name: string;
                 createdAt: Date;
@@ -204,6 +206,7 @@ export declare class OrdersService {
         } | null;
         items: ({
             product: {
+                description: string | null;
                 id: number;
                 name: string;
                 createdAt: Date;

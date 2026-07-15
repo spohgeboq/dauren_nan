@@ -69,7 +69,18 @@ export class BakerService {
       // Decrement raw materials stock if recipe exists
       if (product.recipe) {
         for (const ing of product.recipe.ingredients) {
-          const totalNeeded = Number(ing.quantity || ing.amount || 0) * quantity;
+          const material = await tx.rawMaterial.findUnique({ where: { id: ing.rawMaterialId } });
+          const matUnit = (material?.unit || '').toLowerCase();
+          const ingUnit = ((ing as any).unit || matUnit).toLowerCase();
+          
+          let amount = Number(ing.quantity || ing.amount || 0);
+
+          if (matUnit === 'кг' && ingUnit === 'г') amount /= 1000;
+          if (matUnit === 'л' && ingUnit === 'мл') amount /= 1000;
+          if (matUnit === 'г' && ingUnit === 'кг') amount *= 1000;
+          if (matUnit === 'мл' && ingUnit === 'л') amount *= 1000;
+
+          const totalNeeded = amount * quantity;
           await tx.rawMaterial.update({
             where: { id: ing.rawMaterialId },
             data: { stock: { decrement: totalNeeded } },
@@ -150,7 +161,18 @@ export class BakerService {
       // 1. Списываем сырье
       if (product.recipe) {
         for (const ing of product.recipe.ingredients) {
-          const totalNeeded = Number(ing.quantity || ing.amount || 0) * quantity;
+          const material = await tx.rawMaterial.findUnique({ where: { id: ing.rawMaterialId } });
+          const matUnit = (material?.unit || '').toLowerCase();
+          const ingUnit = ((ing as any).unit || matUnit).toLowerCase();
+          
+          let amount = Number(ing.quantity || ing.amount || 0);
+
+          if (matUnit === 'кг' && ingUnit === 'г') amount /= 1000;
+          if (matUnit === 'л' && ingUnit === 'мл') amount /= 1000;
+          if (matUnit === 'г' && ingUnit === 'кг') amount *= 1000;
+          if (matUnit === 'мл' && ingUnit === 'л') amount *= 1000;
+
+          const totalNeeded = amount * quantity;
           await tx.rawMaterial.update({
             where: { id: ing.rawMaterialId },
             data: { stock: { decrement: totalNeeded } },

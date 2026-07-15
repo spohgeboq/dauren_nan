@@ -8,7 +8,7 @@ interface Product {
   price: number;
   imageUrl?: string;
   isHit?: boolean;
-  category?: { name: string };
+  description?: string;
 }
 
 const Products: React.FC = () => {
@@ -69,7 +69,7 @@ const Products: React.FC = () => {
                 </div>
                 <div className={styles.content}>
                   <h3 className={styles.title}>{product.name}</h3>
-                  <p className={styles.subtitle}>{product.category?.name || 'Свежая выпечка'}</p>
+                  <p className={styles.subtitle}>{product.description || 'Свежая выпечка'}</p>
                   <div className={styles.price}>{formatPrice(product.price)}</div>
                   <button className={styles.addToCartBtn} onClick={() => handleAddToCart(product)}>
                     В корзину

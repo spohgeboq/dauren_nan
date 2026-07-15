@@ -66,7 +66,19 @@ let BakerService = class BakerService {
             });
             if (product.recipe) {
                 for (const ing of product.recipe.ingredients) {
-                    const totalNeeded = Number(ing.quantity || ing.amount || 0) * quantity;
+                    const material = await tx.rawMaterial.findUnique({ where: { id: ing.rawMaterialId } });
+                    const matUnit = (material?.unit || '').toLowerCase();
+                    const ingUnit = (ing.unit || matUnit).toLowerCase();
+                    let amount = Number(ing.quantity || ing.amount || 0);
+                    if (matUnit === 'кг' && ingUnit === 'г')
+                        amount /= 1000;
+                    if (matUnit === 'л' && ingUnit === 'мл')
+                        amount /= 1000;
+                    if (matUnit === 'г' && ingUnit === 'кг')
+                        amount *= 1000;
+                    if (matUnit === 'мл' && ingUnit === 'л')
+                        amount *= 1000;
+                    const totalNeeded = amount * quantity;
                     await tx.rawMaterial.update({
                         where: { id: ing.rawMaterialId },
                         data: { stock: { decrement: totalNeeded } },
@@ -133,7 +145,19 @@ let BakerService = class BakerService {
         return this.prisma.$transaction(async (tx) => {
             if (product.recipe) {
                 for (const ing of product.recipe.ingredients) {
-                    const totalNeeded = Number(ing.quantity || ing.amount || 0) * quantity;
+                    const material = await tx.rawMaterial.findUnique({ where: { id: ing.rawMaterialId } });
+                    const matUnit = (material?.unit || '').toLowerCase();
+                    const ingUnit = (ing.unit || matUnit).toLowerCase();
+                    let amount = Number(ing.quantity || ing.amount || 0);
+                    if (matUnit === 'кг' && ingUnit === 'г')
+                        amount /= 1000;
+                    if (matUnit === 'л' && ingUnit === 'мл')
+                        amount /= 1000;
+                    if (matUnit === 'г' && ingUnit === 'кг')
+                        amount *= 1000;
+                    if (matUnit === 'мл' && ingUnit === 'л')
+                        amount *= 1000;
+                    const totalNeeded = amount * quantity;
                     await tx.rawMaterial.update({
                         where: { id: ing.rawMaterialId },
                         data: { stock: { decrement: totalNeeded } },

@@ -35,6 +35,7 @@ export declare class ProductionController {
         planned: number;
     }): Promise<{
         product: {
+            description: string | null;
             id: number;
             name: string;
             createdAt: Date;

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Put, Delete, Param, Body, UseGuards, ParseIntPipe } from '@nestjs/common';
 import { RecipesService } from './recipes.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
@@ -21,6 +21,11 @@ export class RecipesController {
 
   @Post()
   create(@Body() dto: any) { return this.service.create(dto); }
+
+  @Put(':id')
+  updateRecipe(@Param('id', ParseIntPipe) id: number, @Body() dto: { yield: number; instructions?: string; ingredients: { rawMaterialId: number; amount: number; unit?: string }[] }) {
+    return this.service.updateRecipe(id, dto);
+  }
 
   @Post('raw-materials')
   createRawMaterial(@Body() dto: { name: string; unit?: string; costPerUnit?: number }) { return this.service.createRawMaterial(dto); }

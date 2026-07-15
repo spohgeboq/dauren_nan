@@ -4,6 +4,7 @@ export declare class CashierService {
     constructor(prisma: PrismaService);
     getProducts(): Promise<{
         products: {
+            description: string | null;
             id: number;
             name: string;
             createdAt: Date;

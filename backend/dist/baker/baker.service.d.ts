@@ -11,6 +11,7 @@ export declare class BakerService {
                     id: number;
                     amount: import("@prisma/client/runtime/library").Decimal;
                     quantity: import("@prisma/client/runtime/library").Decimal;
+                    unit: string | null;
                     rawMaterialId: number;
                     recipeId: number;
                 }[];
@@ -19,8 +20,11 @@ export declare class BakerService {
                 createdAt: Date;
                 updatedAt: Date;
                 productId: number;
+                yield: number;
+                instructions: string | null;
             }) | null;
         } & {
+            description: string | null;
             id: number;
             name: string;
             createdAt: Date;
@@ -47,6 +51,7 @@ export declare class BakerService {
         }[];
         activeBatches: ({
             product: {
+                description: string | null;
                 id: number;
                 name: string;
                 createdAt: Date;
@@ -73,6 +78,7 @@ export declare class BakerService {
         b2bOrders: ({
             items: ({
                 product: {
+                    description: string | null;
                     id: number;
                     name: string;
                     createdAt: Date;

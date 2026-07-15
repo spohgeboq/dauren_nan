@@ -40,6 +40,7 @@ export declare class RoutesController {
     findOne(id: number): Promise<({
         loadItems: ({
             product: {
+                description: string | null;
                 id: number;
                 name: string;
                 createdAt: Date;
@@ -103,6 +104,7 @@ export declare class RoutesController {
     }): Promise<{
         loadItems: ({
             product: {
+                description: string | null;
                 id: number;
                 name: string;
                 createdAt: Date;

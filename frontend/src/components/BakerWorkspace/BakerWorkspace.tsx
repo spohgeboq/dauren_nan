@@ -6,8 +6,9 @@ import ShowcaseLogTab from './ShowcaseLogTab';
 import DefectsTab from './DefectsTab';
 import { socket } from '../../utils/socket';
 import { notify } from '../ClientWorkspace/Toast';
+import RecipesModule from '../RecipesModule';
 
-export type ActiveTab = 'b2b' | 'showcase' | 'defects';
+export type ActiveTab = 'b2b' | 'showcase' | 'defects' | 'recipes';
 
 const BakerWorkspace: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('b2b');
@@ -125,6 +126,10 @@ const BakerWorkspace: React.FC = () => {
 
   const criticalStockProducts = products.filter(p => p.stock < 10);
 
+  if (activeTab === 'recipes') {
+    return <RecipesModule onBack={() => setActiveTab('b2b')} isReadOnly={true} />;
+  }
+
   return (
     <div className={styles.workspace}>
       <header className={styles.header}>
@@ -172,6 +177,12 @@ const BakerWorkspace: React.FC = () => {
               >
                 Списание брака
               </button>
+              <button 
+                className={`${styles.navItem} ${activeTab === 'recipes' ? styles.active : ''}`}
+                onClick={() => setActiveTab('recipes')}
+              >
+                Рецепты (Техкарты)
+              </button>
             </div>
           </aside>
         )}
@@ -214,6 +225,13 @@ const BakerWorkspace: React.FC = () => {
           >
             <AlertTriangle size={24} />
             <span>Брак</span>
+          </button>
+          <button 
+            className={`${styles.bottomNavItem} ${activeTab === 'recipes' ? styles.active : ''}`}
+            onClick={() => setActiveTab('recipes')}
+          >
+            <FileText size={24} />
+            <span>Рецепты</span>
           </button>
         </nav>
       )}

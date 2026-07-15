@@ -92,6 +92,7 @@ export declare class OrdersController {
         } | null;
         items: ({
             product: {
+                description: string | null;
                 id: number;
                 name: string;
                 createdAt: Date;
@@ -162,6 +163,7 @@ export declare class OrdersController {
         };
         items: ({
             product: {
+                description: string | null;
                 id: number;
                 name: string;
                 createdAt: Date;
@@ -217,6 +219,7 @@ export declare class OrdersController {
         };
         items: ({
             product: {
+                description: string | null;
                 id: number;
                 name: string;
                 createdAt: Date;

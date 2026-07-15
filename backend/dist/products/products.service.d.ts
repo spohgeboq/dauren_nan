@@ -12,6 +12,7 @@ export declare class ProductsService {
             id: number;
         } | null;
     } & {
+        description: string | null;
         id: number;
         name: string;
         createdAt: Date;
@@ -37,6 +38,7 @@ export declare class ProductsService {
             isActive: boolean;
         };
     } & {
+        description: string | null;
         id: number;
         name: string;
         createdAt: Date;
@@ -57,6 +59,7 @@ export declare class ProductsService {
             name: string;
         };
     } & {
+        description: string | null;
         id: number;
         name: string;
         createdAt: Date;
@@ -77,6 +80,7 @@ export declare class ProductsService {
             name: string;
         };
     } & {
+        description: string | null;
         id: number;
         name: string;
         createdAt: Date;
@@ -92,6 +96,7 @@ export declare class ProductsService {
         stock: number;
     }>;
     remove(id: number): Promise<{
+        description: string | null;
         id: number;
         name: string;
         createdAt: Date;

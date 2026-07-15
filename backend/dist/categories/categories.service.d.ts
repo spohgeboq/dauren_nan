@@ -18,6 +18,7 @@ export declare class CategoriesService {
     })[]>;
     findOne(id: number): Promise<({
         products: {
+            description: string | null;
             id: number;
             name: string;
             createdAt: Date;

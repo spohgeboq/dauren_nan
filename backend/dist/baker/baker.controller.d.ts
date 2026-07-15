@@ -9,6 +9,7 @@ export declare class BakerController {
                     id: number;
                     amount: import("@prisma/client/runtime/library").Decimal;
                     quantity: import("@prisma/client/runtime/library").Decimal;
+                    unit: string | null;
                     rawMaterialId: number;
                     recipeId: number;
                 }[];
@@ -17,8 +18,11 @@ export declare class BakerController {
                 createdAt: Date;
                 updatedAt: Date;
                 productId: number;
+                yield: number;
+                instructions: string | null;
             }) | null;
         } & {
+            description: string | null;
             id: number;
             name: string;
             createdAt: Date;
@@ -45,6 +49,7 @@ export declare class BakerController {
         }[];
         activeBatches: ({
             product: {
+                description: string | null;
                 id: number;
                 name: string;
                 createdAt: Date;
@@ -71,6 +76,7 @@ export declare class BakerController {
         b2bOrders: ({
             items: ({
                 product: {
+                    description: string | null;
                     id: number;
                     name: string;
                     createdAt: Date;

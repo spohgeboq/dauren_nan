@@ -19,6 +19,7 @@ export declare class ClientWorkspaceController {
     getActiveOrder(req: any): Promise<({
         items: ({
             product: {
+                description: string | null;
                 id: number;
                 name: string;
                 createdAt: Date;
@@ -61,6 +62,7 @@ export declare class ClientWorkspaceController {
     getOrderHistory(req: any): Promise<({
         items: ({
             product: {
+                description: string | null;
                 id: number;
                 name: string;
                 createdAt: Date;

@@ -25,6 +25,9 @@ let RecipesController = class RecipesController {
     findOne(id) { return this.service.findOne(id); }
     findByProduct(productId) { return this.service.findByProductId(productId); }
     create(dto) { return this.service.create(dto); }
+    updateRecipe(id, dto) {
+        return this.service.updateRecipe(id, dto);
+    }
     createRawMaterial(dto) { return this.service.createRawMaterial(dto); }
     addIngredient(id, dto) {
         return this.service.addIngredient(id, dto);
@@ -70,6 +73,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], RecipesController.prototype, "create", null);
+__decorate([
+    (0, common_1.Put)(':id'),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", void 0)
+], RecipesController.prototype, "updateRecipe", null);
 __decorate([
     (0, common_1.Post)('raw-materials'),
     __param(0, (0, common_1.Body)()),

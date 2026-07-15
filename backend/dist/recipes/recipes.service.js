@@ -34,12 +34,40 @@ let RecipesService = class RecipesService {
         });
     }
     async create(data) {
-        return this.prisma.recipe.create({
-            data: {
-                productId: data.productId,
-                ingredients: data.ingredients ? { create: data.ingredients } : undefined,
-            },
-            include: { product: true, ingredients: { include: { rawMaterial: true } } },
+        return this.prisma.$transaction(async (tx) => {
+            const recipe = await tx.recipe.create({
+                data: {
+                    productId: data.productId,
+                    yield: data.yield || 1,
+                    instructions: data.instructions,
+                },
+            });
+            let totalCostOnBatch = 0;
+            if (data.ingredients && data.ingredients.length > 0) {
+                for (const ing of data.ingredients) {
+                    const material = await tx.rawMaterial.findUnique({ where: { id: ing.rawMaterialId } });
+                    if (material)
+                        totalCostOnBatch += Number(material.costPerUnit) * ing.amount;
+                    await tx.recipeIngredient.create({
+                        data: {
+                            recipeId: recipe.id,
+                            rawMaterialId: ing.rawMaterialId,
+                            amount: ing.amount,
+                            unit: ing.unit || null,
+                            quantity: recipe.yield > 0 ? ing.amount / recipe.yield : 0,
+                        },
+                    });
+                }
+            }
+            const costPerUnit = recipe.yield > 0 ? totalCostOnBatch / recipe.yield : 0;
+            await tx.product.update({
+                where: { id: data.productId },
+                data: { cost: costPerUnit },
+            });
+            return tx.recipe.findUnique({
+                where: { id: recipe.id },
+                include: { product: true, ingredients: { include: { rawMaterial: true } } },
+            });
         });
     }
     async addIngredient(recipeId, data) {
@@ -50,6 +78,47 @@ let RecipesService = class RecipesService {
     }
     async removeIngredient(ingredientId) {
         return this.prisma.recipeIngredient.delete({ where: { id: ingredientId } });
+    }
+    async updateRecipe(recipeId, data) {
+        return this.prisma.$transaction(async (tx) => {
+            await tx.recipe.update({
+                where: { id: recipeId },
+                data: { yield: data.yield, instructions: data.instructions },
+            });
+            await tx.recipeIngredient.deleteMany({
+                where: { recipeId },
+            });
+            let totalCostOnBatch = 0;
+            if (data.ingredients && data.ingredients.length > 0) {
+                for (const ing of data.ingredients) {
+                    const material = await tx.rawMaterial.findUnique({ where: { id: ing.rawMaterialId } });
+                    if (material) {
+                        totalCostOnBatch += Number(material.costPerUnit) * ing.amount;
+                    }
+                    await tx.recipeIngredient.create({
+                        data: {
+                            recipeId,
+                            rawMaterialId: ing.rawMaterialId,
+                            amount: ing.amount,
+                            unit: ing.unit || null,
+                            quantity: data.yield > 0 ? ing.amount / data.yield : 0,
+                        },
+                    });
+                }
+            }
+            const costPerUnit = data.yield > 0 ? totalCostOnBatch / data.yield : 0;
+            const recipe = await tx.recipe.findUnique({ where: { id: recipeId } });
+            if (recipe) {
+                await tx.product.update({
+                    where: { id: recipe.productId },
+                    data: { cost: costPerUnit },
+                });
+            }
+            return tx.recipe.findUnique({
+                where: { id: recipeId },
+                include: { product: true, ingredients: { include: { rawMaterial: true } } },
+            });
+        });
     }
     async getRawMaterials() {
         return this.prisma.rawMaterial.findMany({ orderBy: { name: 'asc' } });

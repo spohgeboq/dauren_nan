@@ -4,6 +4,7 @@ export declare class CashierController {
     constructor(service: CashierService);
     getProducts(): Promise<{
         products: {
+            description: string | null;
             id: number;
             name: string;
             createdAt: Date;

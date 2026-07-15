@@ -22,6 +22,7 @@ export declare class RecipesService {
             id: number;
             amount: import("@prisma/client/runtime/library").Decimal;
             quantity: import("@prisma/client/runtime/library").Decimal;
+            unit: string | null;
             rawMaterialId: number;
             recipeId: number;
         })[];
@@ -30,9 +31,12 @@ export declare class RecipesService {
         createdAt: Date;
         updatedAt: Date;
         productId: number;
+        yield: number;
+        instructions: string | null;
     })[]>;
     findOne(id: number): Promise<({
         product: {
+            description: string | null;
             id: number;
             name: string;
             createdAt: Date;
@@ -62,6 +66,7 @@ export declare class RecipesService {
             id: number;
             amount: import("@prisma/client/runtime/library").Decimal;
             quantity: import("@prisma/client/runtime/library").Decimal;
+            unit: string | null;
             rawMaterialId: number;
             recipeId: number;
         })[];
@@ -70,9 +75,12 @@ export declare class RecipesService {
         createdAt: Date;
         updatedAt: Date;
         productId: number;
+        yield: number;
+        instructions: string | null;
     }) | null>;
     findByProductId(productId: number): Promise<({
         product: {
+            description: string | null;
             id: number;
             name: string;
             createdAt: Date;
@@ -102,6 +110,7 @@ export declare class RecipesService {
             id: number;
             amount: import("@prisma/client/runtime/library").Decimal;
             quantity: import("@prisma/client/runtime/library").Decimal;
+            unit: string | null;
             rawMaterialId: number;
             recipeId: number;
         })[];
@@ -110,15 +119,21 @@ export declare class RecipesService {
         createdAt: Date;
         updatedAt: Date;
         productId: number;
+        yield: number;
+        instructions: string | null;
     }) | null>;
     create(data: {
         productId: number;
+        yield?: number;
+        instructions?: string;
         ingredients?: {
             rawMaterialId: number;
             amount: number;
+            unit?: string | null;
         }[];
-    }): Promise<{
+    }): Promise<({
         product: {
+            description: string | null;
             id: number;
             name: string;
             createdAt: Date;
@@ -148,6 +163,7 @@ export declare class RecipesService {
             id: number;
             amount: import("@prisma/client/runtime/library").Decimal;
             quantity: import("@prisma/client/runtime/library").Decimal;
+            unit: string | null;
             rawMaterialId: number;
             recipeId: number;
         })[];
@@ -156,7 +172,9 @@ export declare class RecipesService {
         createdAt: Date;
         updatedAt: Date;
         productId: number;
-    }>;
+        yield: number;
+        instructions: string | null;
+    }) | null>;
     addIngredient(recipeId: number, data: {
         rawMaterialId: number;
         amount: number;
@@ -175,6 +193,7 @@ export declare class RecipesService {
         id: number;
         amount: import("@prisma/client/runtime/library").Decimal;
         quantity: import("@prisma/client/runtime/library").Decimal;
+        unit: string | null;
         rawMaterialId: number;
         recipeId: number;
     }>;
@@ -196,6 +215,7 @@ export declare class RecipesService {
         id: number;
         amount: import("@prisma/client/runtime/library").Decimal;
         quantity: import("@prisma/client/runtime/library").Decimal;
+        unit: string | null;
         rawMaterialId: number;
         recipeId: number;
     }>;
@@ -203,9 +223,62 @@ export declare class RecipesService {
         id: number;
         amount: import("@prisma/client/runtime/library").Decimal;
         quantity: import("@prisma/client/runtime/library").Decimal;
+        unit: string | null;
         rawMaterialId: number;
         recipeId: number;
     }>;
+    updateRecipe(recipeId: number, data: {
+        yield: number;
+        instructions?: string;
+        ingredients: {
+            rawMaterialId: number;
+            amount: number;
+            unit?: string | null;
+        }[];
+    }): Promise<({
+        product: {
+            description: string | null;
+            id: number;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            isActive: boolean;
+            categoryId: number;
+            sku: string;
+            weight: number;
+            cost: number;
+            price: number;
+            imageUrl: string | null;
+            isHit: boolean;
+            stock: number;
+        };
+        ingredients: ({
+            rawMaterial: {
+                id: number;
+                name: string;
+                createdAt: Date;
+                updatedAt: Date;
+                stock: import("@prisma/client/runtime/library").Decimal;
+                unit: string;
+                costPerUnit: import("@prisma/client/runtime/library").Decimal;
+                minLimit: import("@prisma/client/runtime/library").Decimal;
+            };
+        } & {
+            id: number;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            quantity: import("@prisma/client/runtime/library").Decimal;
+            unit: string | null;
+            rawMaterialId: number;
+            recipeId: number;
+        })[];
+    } & {
+        id: number;
+        createdAt: Date;
+        updatedAt: Date;
+        productId: number;
+        yield: number;
+        instructions: string | null;
+    }) | null>;
     getRawMaterials(): Promise<{
         id: number;
         name: string;
