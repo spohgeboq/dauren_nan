@@ -33,8 +33,8 @@ export declare class PosController {
             items: {
                 id: number;
                 price: number;
-                quantity: number;
                 productId: number;
+                quantity: number;
                 saleId: number;
             }[];
         } & {
@@ -78,8 +78,8 @@ export declare class PosController {
         } & {
             id: number;
             price: number;
-            quantity: number;
             productId: number;
+            quantity: number;
             saleId: number;
         })[];
     } & {

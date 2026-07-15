@@ -8,42 +8,47 @@ export declare class ProductsController {
             id: number;
             name: string;
         };
+        recipe: {
+            id: number;
+        } | null;
     } & {
         id: number;
-        sku: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
         categoryId: number;
+        sku: string;
         weight: number;
         cost: number;
         price: number;
-        isActive: boolean;
         imageUrl: string | null;
-        createdAt: Date;
-        updatedAt: Date;
+        isHit: boolean;
         stock: number;
     })[]>;
     findOne(id: number): Promise<({
         category: {
             id: number;
             name: string;
-            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
             iconName: string;
             sortOrder: number;
+            isActive: boolean;
         };
     } & {
         id: number;
-        sku: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
         categoryId: number;
+        sku: string;
         weight: number;
         cost: number;
         price: number;
-        isActive: boolean;
         imageUrl: string | null;
-        createdAt: Date;
-        updatedAt: Date;
+        isHit: boolean;
         stock: number;
     }) | null>;
     create(dto: CreateProductDto): Promise<{
@@ -53,16 +58,17 @@ export declare class ProductsController {
         };
     } & {
         id: number;
-        sku: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
         categoryId: number;
+        sku: string;
         weight: number;
         cost: number;
         price: number;
-        isActive: boolean;
         imageUrl: string | null;
-        createdAt: Date;
-        updatedAt: Date;
+        isHit: boolean;
         stock: number;
     }>;
     update(id: number, dto: UpdateProductDto): Promise<{
@@ -72,30 +78,35 @@ export declare class ProductsController {
         };
     } & {
         id: number;
-        sku: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
         categoryId: number;
+        sku: string;
         weight: number;
         cost: number;
         price: number;
-        isActive: boolean;
         imageUrl: string | null;
-        createdAt: Date;
-        updatedAt: Date;
+        isHit: boolean;
         stock: number;
     }>;
     remove(id: number): Promise<{
         id: number;
-        sku: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
         categoryId: number;
+        sku: string;
         weight: number;
         cost: number;
         price: number;
-        isActive: boolean;
         imageUrl: string | null;
-        createdAt: Date;
-        updatedAt: Date;
+        isHit: boolean;
         stock: number;
     }>;
+    uploadFile(file: Express.Multer.File): {
+        imageUrl: string;
+    };
 }

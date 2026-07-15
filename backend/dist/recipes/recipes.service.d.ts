@@ -44,6 +44,7 @@ export declare class RecipesService {
             cost: number;
             price: number;
             imageUrl: string | null;
+            isHit: boolean;
             stock: number;
         };
         ingredients: ({
@@ -83,6 +84,7 @@ export declare class RecipesService {
             cost: number;
             price: number;
             imageUrl: string | null;
+            isHit: boolean;
             stock: number;
         };
         ingredients: ({
@@ -128,6 +130,7 @@ export declare class RecipesService {
             cost: number;
             price: number;
             imageUrl: string | null;
+            isHit: boolean;
             stock: number;
         };
         ingredients: ({

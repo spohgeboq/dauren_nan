@@ -10,8 +10,8 @@ export declare class RoutesController {
             };
         } & {
             id: number;
-            quantity: number;
             productId: number;
+            quantity: number;
             routeId: number;
         })[];
         driver: {
@@ -51,12 +51,13 @@ export declare class RoutesController {
                 cost: number;
                 price: number;
                 imageUrl: string | null;
+                isHit: boolean;
                 stock: number;
             };
         } & {
             id: number;
-            quantity: number;
             productId: number;
+            quantity: number;
             routeId: number;
         })[];
         driver: {
@@ -113,12 +114,13 @@ export declare class RoutesController {
                 cost: number;
                 price: number;
                 imageUrl: string | null;
+                isHit: boolean;
                 stock: number;
             };
         } & {
             id: number;
-            quantity: number;
             productId: number;
+            quantity: number;
             routeId: number;
         })[];
         driver: {

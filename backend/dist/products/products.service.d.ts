@@ -8,6 +8,9 @@ export declare class ProductsService {
             id: number;
             name: string;
         };
+        recipe: {
+            id: number;
+        } | null;
     } & {
         id: number;
         name: string;
@@ -20,6 +23,7 @@ export declare class ProductsService {
         cost: number;
         price: number;
         imageUrl: string | null;
+        isHit: boolean;
         stock: number;
     })[]>;
     findOne(id: number): Promise<({
@@ -44,6 +48,7 @@ export declare class ProductsService {
         cost: number;
         price: number;
         imageUrl: string | null;
+        isHit: boolean;
         stock: number;
     }) | null>;
     create(dto: CreateProductDto): Promise<{
@@ -63,6 +68,7 @@ export declare class ProductsService {
         cost: number;
         price: number;
         imageUrl: string | null;
+        isHit: boolean;
         stock: number;
     }>;
     update(id: number, dto: UpdateProductDto): Promise<{
@@ -82,6 +88,7 @@ export declare class ProductsService {
         cost: number;
         price: number;
         imageUrl: string | null;
+        isHit: boolean;
         stock: number;
     }>;
     remove(id: number): Promise<{
@@ -96,6 +103,7 @@ export declare class ProductsService {
         cost: number;
         price: number;
         imageUrl: string | null;
+        isHit: boolean;
         stock: number;
     }>;
 }

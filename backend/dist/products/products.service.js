@@ -22,7 +22,7 @@ let ProductsService = class ProductsService {
             where.categoryId = categoryId;
         return this.prisma.product.findMany({
             where,
-            include: { category: { select: { id: true, name: true } } },
+            include: { category: { select: { id: true, name: true } }, recipe: { select: { id: true } } },
             orderBy: { createdAt: 'desc' },
         });
     }

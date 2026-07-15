@@ -15,6 +15,7 @@ export declare class CashierService {
             cost: number;
             price: number;
             imageUrl: string | null;
+            isHit: boolean;
             stock: number;
         }[];
     }>;

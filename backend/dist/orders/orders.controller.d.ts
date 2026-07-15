@@ -15,8 +15,8 @@ export declare class OrdersController {
         } & {
             id: number;
             price: number;
-            quantity: number;
             productId: number;
+            quantity: number;
             orderId: number;
         })[];
     } & {
@@ -47,8 +47,8 @@ export declare class OrdersController {
         } & {
             id: number;
             price: number;
-            quantity: number;
             productId: number;
+            quantity: number;
             orderId: number;
         })[];
         driver: {
@@ -103,13 +103,14 @@ export declare class OrdersController {
                 cost: number;
                 price: number;
                 imageUrl: string | null;
+                isHit: boolean;
                 stock: number;
             };
         } & {
             id: number;
             price: number;
-            quantity: number;
             productId: number;
+            quantity: number;
             orderId: number;
         })[];
     } & {
@@ -172,13 +173,14 @@ export declare class OrdersController {
                 cost: number;
                 price: number;
                 imageUrl: string | null;
+                isHit: boolean;
                 stock: number;
             };
         } & {
             id: number;
             price: number;
-            quantity: number;
             productId: number;
+            quantity: number;
             orderId: number;
         })[];
     } & {
@@ -226,13 +228,14 @@ export declare class OrdersController {
                 cost: number;
                 price: number;
                 imageUrl: string | null;
+                isHit: boolean;
                 stock: number;
             };
         } & {
             id: number;
             price: number;
-            quantity: number;
             productId: number;
+            quantity: number;
             orderId: number;
         })[];
     } & {

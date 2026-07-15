@@ -30,13 +30,14 @@ export declare class ClientWorkspaceController {
                 cost: number;
                 price: number;
                 imageUrl: string | null;
+                isHit: boolean;
                 stock: number;
             };
         } & {
             id: number;
             price: number;
-            quantity: number;
             productId: number;
+            quantity: number;
             orderId: number;
         })[];
         driver: {
@@ -71,13 +72,14 @@ export declare class ClientWorkspaceController {
                 cost: number;
                 price: number;
                 imageUrl: string | null;
+                isHit: boolean;
                 stock: number;
             };
         } & {
             id: number;
             price: number;
-            quantity: number;
             productId: number;
+            quantity: number;
             orderId: number;
         })[];
     } & {
@@ -98,8 +100,8 @@ export declare class ClientWorkspaceController {
         items: {
             id: number;
             price: number;
-            quantity: number;
             productId: number;
+            quantity: number;
             orderId: number;
         }[];
     } & {

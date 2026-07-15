@@ -29,6 +29,7 @@ export declare class CategoriesService {
             cost: number;
             price: number;
             imageUrl: string | null;
+            isHit: boolean;
             stock: number;
         }[];
     } & {

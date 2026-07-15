@@ -29,6 +29,7 @@ export declare class CategoriesController {
             cost: number;
             price: number;
             imageUrl: string | null;
+            isHit: boolean;
             stock: number;
         }[];
     } & {

@@ -54,6 +54,7 @@ export declare class RecipesController {
             cost: number;
             price: number;
             imageUrl: string | null;
+            isHit: boolean;
             stock: number;
         };
         ingredients: ({
@@ -93,6 +94,7 @@ export declare class RecipesController {
             cost: number;
             price: number;
             imageUrl: string | null;
+            isHit: boolean;
             stock: number;
         };
         ingredients: ({
@@ -132,6 +134,7 @@ export declare class RecipesController {
             cost: number;
             price: number;
             imageUrl: string | null;
+            isHit: boolean;
             stock: number;
         };
         ingredients: ({

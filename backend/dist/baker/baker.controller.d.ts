@@ -30,6 +30,7 @@ export declare class BakerController {
             cost: number;
             price: number;
             imageUrl: string | null;
+            isHit: boolean;
             stock: number;
         })[];
         rawMaterials: {
@@ -55,13 +56,14 @@ export declare class BakerController {
                 cost: number;
                 price: number;
                 imageUrl: string | null;
+                isHit: boolean;
                 stock: number;
             };
         } & {
             id: number;
             status: import(".prisma/client").$Enums.BatchStatus;
-            quantity: number;
             productId: number;
+            quantity: number;
             bakerId: number;
             startTime: Date;
             endTime: Date | null;
@@ -80,13 +82,14 @@ export declare class BakerController {
                     cost: number;
                     price: number;
                     imageUrl: string | null;
+                    isHit: boolean;
                     stock: number;
                 };
             } & {
                 id: number;
                 price: number;
-                quantity: number;
                 productId: number;
+                quantity: number;
                 orderId: number;
             })[];
         } & {
@@ -113,8 +116,8 @@ export declare class BakerController {
         batch: {
             id: number;
             status: import(".prisma/client").$Enums.BatchStatus;
-            quantity: number;
             productId: number;
+            quantity: number;
             bakerId: number;
             startTime: Date;
             endTime: Date | null;
@@ -136,8 +139,8 @@ export declare class BakerController {
         defect: {
             id: number;
             createdAt: Date;
-            quantity: number;
             productId: number;
+            quantity: number;
             reason: string | null;
             bakerId: number;
         };

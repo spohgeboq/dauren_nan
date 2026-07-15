@@ -19,13 +19,14 @@ export declare class CourierService {
                     cost: number;
                     price: number;
                     imageUrl: string | null;
+                    isHit: boolean;
                     stock: number;
                 };
             } & {
                 id: number;
                 price: number;
-                quantity: number;
                 productId: number;
+                quantity: number;
                 orderId: number;
             })[];
         } & {

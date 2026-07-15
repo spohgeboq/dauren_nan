@@ -11,8 +11,8 @@ export declare class ProductionController {
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         productId: number;
+        date: Date;
         planned: number;
         completed: number;
     })[]>;
@@ -46,14 +46,15 @@ export declare class ProductionController {
             cost: number;
             price: number;
             imageUrl: string | null;
+            isHit: boolean;
             stock: number;
         };
     } & {
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         productId: number;
+        date: Date;
         planned: number;
         completed: number;
     }>;
@@ -61,8 +62,8 @@ export declare class ProductionController {
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         productId: number;
+        date: Date;
         planned: number;
         completed: number;
     }>;
@@ -70,8 +71,8 @@ export declare class ProductionController {
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        date: Date;
         productId: number;
+        date: Date;
         planned: number;
         completed: number;
     }>;
