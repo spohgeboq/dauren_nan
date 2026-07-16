@@ -18,7 +18,7 @@ import {
   Car 
 } from 'lucide-react';
 import styles from './AdminDashboard.module.css';
-import POSModule from './POSModule';
+import CashierWorkspace from './CashierWorkspace/CashierWorkspace';
 import ClientsModule from './ClientsModule';
 import OrdersModule from './OrdersModule';
 import RoutesModule from './RoutesModule';
@@ -143,7 +143,7 @@ const AdminDashboard: React.FC = () => {
   ];
 
   if (activeModule === 'pos') {
-    return <POSModule onBack={() => setActiveModule('main')} />;
+    return <CashierWorkspace onBack={() => setActiveModule('main')} />;
   }
 
   if (activeModule === 'clients') {

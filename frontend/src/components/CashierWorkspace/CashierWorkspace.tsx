@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, ShoppingBag, X, CreditCard, Banknote, QrCode, Minus, Plus } from 'lucide-react';
+import { LogOut, ShoppingBag, X, CreditCard, Banknote, QrCode, Minus, Plus, ArrowLeft } from 'lucide-react';
 import styles from './CashierWorkspace.module.css';
 
 interface Product {
@@ -13,7 +13,11 @@ interface CartItem extends Product {
   quantity: number;
 }
 
-const CashierWorkspace: React.FC = () => {
+interface CashierWorkspaceProps {
+  onBack?: () => void;
+}
+
+const CashierWorkspace: React.FC<CashierWorkspaceProps> = ({ onBack }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -120,13 +124,21 @@ const CashierWorkspace: React.FC = () => {
       {/* Header */}
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <ShoppingBag size={32} className={styles.logoIcon} />
+          {onBack ? (
+            <button className={styles.backBtn} onClick={onBack} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', marginRight: '1rem' }}>
+              <ArrowLeft size={24} />
+            </button>
+          ) : (
+            <ShoppingBag size={32} className={styles.logoIcon} />
+          )}
           <h1>Касса</h1>
         </div>
-        <button className={styles.logoutBtn} onClick={handleLogout}>
-          <LogOut size={20} />
-          <span>Выйти</span>
-        </button>
+        {!onBack && (
+          <button className={styles.logoutBtn} onClick={handleLogout}>
+            <LogOut size={20} />
+            <span>Выйти</span>
+          </button>
+        )}
       </header>
 
       {/* Main Grid */}
