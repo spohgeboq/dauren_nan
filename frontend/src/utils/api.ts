@@ -21,11 +21,12 @@ async function request(path: string, options: RequestOptions = {}) {
   
   const headers = new Headers(options.headers || {});
 
-  // === ОБХОД ЭКРАНА ПРЕДУПРЕЖДЕНИЯ NGROK ===
+  // === ОБХОД ЭКРАНА ПРЕДУПРЕЖДЕНИЯ NGROK И LOCALTUNNEL ===
   // Бесплатный ngrok перехватывает запросы из браузера и
   // показывает HTML-страницу вместо JSON-ответа API.
   // Этот заголовок сообщает ngrok пропустить запрос напрямую к бэкенду.
   headers.set('ngrok-skip-browser-warning', 'true');
+  headers.set('Bypass-Tunnel-Reminder', 'true');
 
   if (token) {
     headers.set('Authorization', `Bearer ${token}`);

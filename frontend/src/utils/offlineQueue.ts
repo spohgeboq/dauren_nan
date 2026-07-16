@@ -28,13 +28,19 @@ export const syncOfflineActions = async () => {
 
   for (const action of queue) {
     try {
+      const token = localStorage.getItem('token');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const res = await fetch(action.url, {
         method: action.method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'ngrok-skip-browser-warning': 'true', // Обход предупреждения ngrok
-        },
+        headers,
         body: JSON.stringify(action.body),
       });
 

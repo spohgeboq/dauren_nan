@@ -10,6 +10,6 @@ export const socket = io(SOCKET_URL, {
   autoConnect: false, // Будем подключаться при входе
   extraHeaders: {
     'ngrok-skip-browser-warning': 'true', // Обход предупреждения ngrok
+    'Bypass-Tunnel-Reminder': 'true'
   },
 });
-
