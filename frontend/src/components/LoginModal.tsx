@@ -12,14 +12,14 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isError, setIsError] = useState(false); // Демонстрационное состояние ошибки
+  const [errorMessage, setErrorMessage] = useState(''); // Для реального текста ошибки
   const [isSuccess, setIsSuccess] = useState(false);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsError(false);
+    setErrorMessage('');
 
     try {
       const data = await api.post('/login', { email: email.trim(), password });
@@ -34,9 +34,13 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
       setTimeout(() => {
         window.location.reload();
       }, 1000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
-      setIsError(true);
+      if (error.message.includes('Failed to fetch') || error.message.includes('Network error')) {
+        setErrorMessage('Ошибка сети. Проверьте подключение к серверу (Возможно не настроен URL).');
+      } else {
+        setErrorMessage(error.message || 'Неверный email или пароль');
+      }
     }
   };
 
@@ -65,9 +69,9 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         <form className={styles.form} onSubmit={handleSubmit}>
-          {isError && (
+          {errorMessage && (
             <div className={styles.errorBox}>
-              Неверный email или пароль
+              {errorMessage}
             </div>
           )}
 
