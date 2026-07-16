@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, ChefHat, AlertCircle, Menu, X, Truck, Store, AlertTriangle } from 'lucide-react';
+import { LogOut, ChefHat, AlertCircle, Menu, X, Truck, Store, AlertTriangle, FileText } from 'lucide-react';
 import styles from './BakerWorkspace.module.css';
 import B2bOrdersTab from './B2bOrdersTab';
 import ShowcaseLogTab from './ShowcaseLogTab';
@@ -178,7 +178,7 @@ const BakerWorkspace: React.FC = () => {
                 Списание брака
               </button>
               <button 
-                className={`${styles.navItem} ${activeTab === 'recipes' ? styles.active : ''}`}
+                className={`${styles.navItem} ${(activeTab as string) === 'recipes' ? styles.active : ''}`}
                 onClick={() => setActiveTab('recipes')}
               >
                 Рецепты (Техкарты)
@@ -227,7 +227,7 @@ const BakerWorkspace: React.FC = () => {
             <span>Брак</span>
           </button>
           <button 
-            className={`${styles.bottomNavItem} ${activeTab === 'recipes' ? styles.active : ''}`}
+            className={`${styles.bottomNavItem} ${(activeTab as string) === 'recipes' ? styles.active : ''}`}
             onClick={() => setActiveTab('recipes')}
           >
             <FileText size={24} />
