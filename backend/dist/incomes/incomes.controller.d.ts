@@ -12,8 +12,8 @@ export declare class IncomesController {
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        amount: import("@prisma/client/runtime/library").Decimal;
         date: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         source: import(".prisma/client").$Enums.IncomeSource;
         isAuto: boolean;
@@ -29,8 +29,8 @@ export declare class IncomesController {
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        amount: import("@prisma/client/runtime/library").Decimal;
         date: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         source: import(".prisma/client").$Enums.IncomeSource;
         isAuto: boolean;
@@ -41,8 +41,8 @@ export declare class IncomesController {
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        amount: import("@prisma/client/runtime/library").Decimal;
         date: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         source: import(".prisma/client").$Enums.IncomeSource;
         isAuto: boolean;

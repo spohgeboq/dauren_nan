@@ -7,11 +7,11 @@ export declare class BakerController {
             recipe: ({
                 ingredients: {
                     id: number;
+                    recipeId: number;
                     amount: import("@prisma/client/runtime/library").Decimal;
                     quantity: import("@prisma/client/runtime/library").Decimal;
                     unit: string | null;
                     rawMaterialId: number;
-                    recipeId: number;
                 }[];
             } & {
                 id: number;

@@ -41,8 +41,8 @@ export declare class ExpensesController {
             };
         } & {
             id: number;
-            amount: import("@prisma/client/runtime/library").Decimal;
             date: Date;
+            amount: import("@prisma/client/runtime/library").Decimal;
             expenseId: number | null;
             supplierId: number;
         })[];
@@ -52,8 +52,8 @@ export declare class ExpensesController {
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        amount: import("@prisma/client/runtime/library").Decimal;
         date: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         isAuto: boolean;
         userId: number | null;
@@ -76,8 +76,8 @@ export declare class ExpensesController {
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        amount: import("@prisma/client/runtime/library").Decimal;
         date: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         isAuto: boolean;
         userId: number | null;
@@ -92,8 +92,8 @@ export declare class ExpensesController {
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            amount: import("@prisma/client/runtime/library").Decimal;
             date: Date;
+            amount: import("@prisma/client/runtime/library").Decimal;
             paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
             isAuto: boolean;
             userId: number | null;
@@ -106,8 +106,8 @@ export declare class ExpensesController {
         id: number;
         createdAt: Date;
         updatedAt: Date;
-        amount: import("@prisma/client/runtime/library").Decimal;
         date: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
         paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
         isAuto: boolean;
         userId: number | null;

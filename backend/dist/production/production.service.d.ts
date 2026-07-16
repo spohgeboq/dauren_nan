@@ -12,9 +12,9 @@ export declare class ProductionService {
         createdAt: Date;
         updatedAt: Date;
         productId: number;
-        date: Date;
         planned: number;
         completed: number;
+        date: Date;
     })[]>;
     getLogs(taskId?: number): Promise<{
         id: number;
@@ -50,27 +50,27 @@ export declare class ProductionService {
         createdAt: Date;
         updatedAt: Date;
         productId: number;
-        date: Date;
         planned: number;
         completed: number;
+        date: Date;
     }>;
     updateTask(id: number, planned: number): Promise<{
         id: number;
         createdAt: Date;
         updatedAt: Date;
         productId: number;
-        date: Date;
         planned: number;
         completed: number;
+        date: Date;
     }>;
     deleteTask(id: number): Promise<{
         id: number;
         createdAt: Date;
         updatedAt: Date;
         productId: number;
-        date: Date;
         planned: number;
         completed: number;
+        date: Date;
     }>;
     addBatch(data: {
         taskId: number;

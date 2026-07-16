@@ -48,7 +48,25 @@ let ProductsService = class ProductsService {
         });
     }
     async remove(id) {
-        return this.prisma.product.delete({ where: { id } });
+        return this.prisma.$transaction(async (tx) => {
+            await tx.orderItem.deleteMany({ where: { productId: id } });
+            await tx.saleItem.deleteMany({ where: { productId: id } });
+            await tx.loadItem.deleteMany({ where: { productId: id } });
+            await tx.deliveryOrderItem.deleteMany({ where: { productId: id } });
+            await tx.productionBatch.deleteMany({ where: { productId: id } });
+            await tx.defectLog.deleteMany({ where: { productId: id } });
+            const tasks = await tx.productionTask.findMany({ where: { productId: id }, select: { id: true } });
+            if (tasks.length > 0) {
+                await tx.batchLog.deleteMany({ where: { taskId: { in: tasks.map(t => t.id) } } });
+            }
+            await tx.productionTask.deleteMany({ where: { productId: id } });
+            const recipe = await tx.recipe.findUnique({ where: { productId: id } });
+            if (recipe) {
+                await tx.recipeIngredient.deleteMany({ where: { recipeId: recipe.id } });
+                await tx.recipe.delete({ where: { id: recipe.id } });
+            }
+            return tx.product.delete({ where: { id } });
+        });
     }
 };
 exports.ProductsService = ProductsService;
