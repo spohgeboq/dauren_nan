@@ -16,6 +16,7 @@ async function bootstrap() {
       'Content-Type',
       'Authorization',
       'ngrok-skip-browser-warning', // Обход предупреждения ngrok
+      'Bypass-Tunnel-Reminder', // Обход предупреждения localtunnel
       'X-Requested-With',
       'Accept',
     ],
