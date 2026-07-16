@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Copy, Plus, Minus, ShoppingBag } from 'lucide-react';
 import styles from './BulkOrderForm.module.css';
+import { api } from '../../utils/api';
 
 interface Product {
   id: number;
@@ -31,21 +32,15 @@ const BulkOrderForm: React.FC<BulkOrderFormProps> = ({ onOrderSuccess }) => {
 
   const fetchProducts = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/client-workspace/products', {
-        headers: { Authorization: `Bearer ${token}` }
+      const data = await api.get('/client-workspace/products');
+      setProducts(data);
+      
+      // Initialize quantities to 0
+      const initialItems: Record<number, number> = {};
+      data.forEach((p: Product) => {
+        initialItems[p.id] = 0;
       });
-      if (res.ok) {
-        const data = await res.json();
-        setProducts(data);
-        
-        // Initialize quantities to 0
-        const initialItems: Record<number, number> = {};
-        data.forEach((p: Product) => {
-          initialItems[p.id] = 0;
-        });
-        setOrderItems(initialItems);
-      }
+      setOrderItems(initialItems);
     } catch (e) {
       console.error(e);
     } finally {
@@ -55,23 +50,17 @@ const BulkOrderForm: React.FC<BulkOrderFormProps> = ({ onOrderSuccess }) => {
 
   const loadLastOrder = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/client-workspace/orders/last', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const lastOrder = await res.json();
-        if (lastOrder && lastOrder.items) {
-          const newItems = { ...orderItems };
-          lastOrder.items.forEach((item: any) => {
-            if (newItems[item.productId] !== undefined) {
-              newItems[item.productId] = item.quantity;
-            }
-          });
-          setOrderItems(newItems);
-        } else {
-          alert('У вас еще нет предыдущих заказов.');
-        }
+      const lastOrder = await api.get('/client-workspace/orders/last');
+      if (lastOrder && lastOrder.items) {
+        const newItems = { ...orderItems };
+        lastOrder.items.forEach((item: any) => {
+          if (newItems[item.productId] !== undefined) {
+            newItems[item.productId] = item.quantity;
+          }
+        });
+        setOrderItems(newItems);
+      } else {
+        alert('У вас еще нет предыдущих заказов.');
       }
     } catch (e) {
       console.error(e);
@@ -130,24 +119,11 @@ const BulkOrderForm: React.FC<BulkOrderFormProps> = ({ onOrderSuccess }) => {
       .map(([id, qty]) => ({ productId: parseInt(id), quantity: qty }));
 
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/client-workspace/orders', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
-        },
-        body: JSON.stringify({ items: itemsPayload, paymentMethod }),
-      });
-
-      if (res.ok) {
-        onOrderSuccess();
-      } else {
-        alert('Ошибка при создании заказа');
-      }
+      await api.post('/client-workspace/orders', { items: itemsPayload, paymentMethod });
+      onOrderSuccess();
     } catch (e) {
       console.error(e);
-      alert('Сетевая ошибка');
+      alert('Ошибка при создании заказа');
     } finally {
       setSubmitting(false);
     }

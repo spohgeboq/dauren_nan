@@ -3,6 +3,7 @@ import { Package, Truck, CheckCircle2, Phone, MessageSquare } from 'lucide-react
 import styles from './ActiveOrderTracker.module.css';
 import { notify } from './Toast';
 import { socket } from '../../utils/socket';
+import { api } from '../../utils/api';
 
 const ActiveOrderTracker: React.FC = () => {
   const [activeOrder, setActiveOrder] = useState<any>(null);
@@ -40,18 +41,12 @@ const ActiveOrderTracker: React.FC = () => {
 
   const fetchActiveOrder = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/client-workspace/active-order', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        // The API might return empty text if no order
-        if (data && data.id) {
-          setActiveOrder(data);
-        } else {
-          setActiveOrder(null);
-        }
+      const data = await api.get('/client-workspace/active-order');
+      // The API might return empty text if no order
+      if (data && data.id) {
+        setActiveOrder(data);
+      } else {
+        setActiveOrder(null);
       }
     } catch (e) {
       console.error(e);

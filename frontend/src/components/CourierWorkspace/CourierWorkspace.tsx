@@ -6,6 +6,7 @@ import { RouteList } from './RouteList';
 import { FuelExpenseForm } from './FuelExpenseForm';
 import { socket } from '../../utils/socket';
 import { syncOfflineActions, saveOfflineAction } from '../../utils/offlineQueue';
+import { api } from '../../utils/api';
 
 interface OrderItem {
   id: number;
@@ -70,16 +71,13 @@ const CourierWorkspace: React.FC = () => {
         return;
       }
       
-      const res = await fetch(`http://localhost:5000/api/courier/orders?driverId=${driverId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setOrders(data.orders);
-        localStorage.setItem('cached_route', JSON.stringify(data.orders));
-        
-        // If all are delivered or none pending, skip loading
-        const hasPending = data.orders.some((o: Order) => o.status === 'PENDING' || o.status === 'IN_TRANSIT');
-        if (!hasPending && data.orders.length > 0) setView('ROUTE');
-      }
+      const data = await api.get(`/courier/orders?driverId=${driverId}`);
+      setOrders(data.orders);
+      localStorage.setItem('cached_route', JSON.stringify(data.orders));
+      
+      // If all are delivered or none pending, skip loading
+      const hasPending = data.orders.some((o: Order) => o.status === 'PENDING' || o.status === 'IN_TRANSIT');
+      if (!hasPending && data.orders.length > 0) setView('ROUTE');
     } catch (e) {
       console.error(e);
       const cached = localStorage.getItem('cached_route');
@@ -110,18 +108,14 @@ const CourierWorkspace: React.FC = () => {
     const body = { status, paymentMethod };
     
     if (!navigator.onLine) {
-      saveOfflineAction(`http://localhost:5000/api/courier/order/${orderId}/status`, 'POST', body);
+      saveOfflineAction(`/courier/order/${orderId}/status`, 'POST', body);
       return;
     }
 
     try {
-      await fetch(`http://localhost:5000/api/courier/order/${orderId}/status`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
+      await api.post(`/courier/order/${orderId}/status`, body);
     } catch (e) {
-      saveOfflineAction(`http://localhost:5000/api/courier/order/${orderId}/status`, 'POST', body);
+      saveOfflineAction(`/courier/order/${orderId}/status`, 'POST', body);
     }
   };
 

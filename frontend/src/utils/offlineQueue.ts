@@ -32,7 +32,8 @@ export const syncOfflineActions = async () => {
         method: action.method,
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'ngrok-skip-browser-warning': 'true', // Обход предупреждения ngrok
         },
         body: JSON.stringify(action.body),
       });

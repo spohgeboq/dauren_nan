@@ -9,6 +9,17 @@ async function bootstrap() {
     app.enableCors({
         origin: true,
         credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        allowedHeaders: [
+            'Content-Type',
+            'Authorization',
+            'ngrok-skip-browser-warning',
+            'X-Requested-With',
+            'Accept',
+        ],
+        preflightContinue: false,
+        optionsSuccessStatus: 204,
+        maxAge: 86400,
     });
     app.useGlobalPipes(new common_1.ValidationPipe({
         whitelist: true,

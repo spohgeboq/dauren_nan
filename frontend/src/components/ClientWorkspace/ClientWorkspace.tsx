@@ -6,6 +6,7 @@ import ActiveOrderTracker from './ActiveOrderTracker';
 import OrderHistory from './OrderHistory';
 import ProfileFinances from './ProfileFinances';
 import Toast from './Toast';
+import { api } from '../../utils/api';
 
 export interface Profile {
   name: string;
@@ -23,14 +24,8 @@ const ClientWorkspace: React.FC = () => {
 
   const fetchProfile = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/client-workspace/profile', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setProfile(data);
-      }
+      const data = await api.get('/client-workspace/profile');
+      setProfile(data);
     } catch (e) {
       console.error(e);
     } finally {

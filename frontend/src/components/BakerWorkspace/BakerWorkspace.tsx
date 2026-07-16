@@ -7,6 +7,7 @@ import DefectsTab from './DefectsTab';
 import { socket } from '../../utils/socket';
 import { notify } from '../ClientWorkspace/Toast';
 import RecipesModule from '../RecipesModule';
+import { api } from '../../utils/api';
 
 export type ActiveTab = 'b2b' | 'showcase' | 'defects' | 'recipes';
 
@@ -20,15 +21,9 @@ const BakerWorkspace: React.FC = () => {
 
   const fetchDashboard = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/baker/dashboard', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setProducts(data.products);
-        setB2bOrders(data.b2bOrders || []);
-      }
+      const data = await api.get('/baker/dashboard');
+      setProducts(data.products);
+      setB2bOrders(data.b2bOrders || []);
     } catch (error) {
       console.error('Failed to fetch dashboard', error);
     }
@@ -68,15 +63,7 @@ const BakerWorkspace: React.FC = () => {
 
   const handleMarkB2bReady = async (orderId: number) => {
     try {
-      const token = localStorage.getItem('token');
-      await fetch('http://localhost:5000/api/baker/order/ready', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ orderId })
-      });
+      await api.post('/baker/order/ready', { orderId });
       notify('Заказ отмечен как готовый!', 'success');
       fetchDashboard();
     } catch (e) {
@@ -88,15 +75,7 @@ const BakerWorkspace: React.FC = () => {
   const handleLogShowcase = async (productId: number, quantity: number) => {
     if (!user) return;
     try {
-      const token = localStorage.getItem('token');
-      await fetch('http://localhost:5000/api/baker/showcase/log', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ productId, quantity, bakerId: user.id })
-      });
+      await api.post('/baker/showcase/log', { productId, quantity, bakerId: user.id });
       notify('Выпечка успешно добавлена на витрину!', 'success');
       fetchDashboard();
     } catch (e) {
@@ -108,15 +87,7 @@ const BakerWorkspace: React.FC = () => {
   const handleLogDefect = async (productId: number, quantity: number, reason: string) => {
     if (!user) return;
     try {
-      const token = localStorage.getItem('token');
-      await fetch('http://localhost:5000/api/baker/defect', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ productId, quantity, reason, bakerId: user.id })
-      });
+      await api.post('/baker/defect', { productId, quantity, reason, bakerId: user.id });
       notify('Брак успешно списан', 'success');
     } catch (e) {
       console.error(e);

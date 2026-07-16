@@ -7,10 +7,21 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // Enable CORS for frontend
+  // Enable CORS for frontend (настроено для работы через ngrok)
   app.enableCors({
-    origin: true,
+    origin: true, // Разрешаем все источники (для ngrok)
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'ngrok-skip-browser-warning', // Обход предупреждения ngrok
+      'X-Requested-With',
+      'Accept',
+    ],
+    preflightContinue: false,
+    optionsSuccessStatus: 204, // Для корректного Preflight
+    maxAge: 86400, // Кешировать preflight на 24 часа
   });
 
   // Global validation pipe

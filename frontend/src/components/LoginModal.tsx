@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Check } from 'lucide-react';
 import styles from './LoginModal.module.css';
+import { api } from '../utils/api';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -21,32 +22,20 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
     setIsError(false);
 
     try {
-      const response = await fetch('http://localhost:5000/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: email.trim(), password }),
-      });
+      const data = await api.post('/login', { email: email.trim(), password });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        setIsError(true);
-      } else {
-        // Сохраняем токен и данные
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        // Показываем зеленую галочку
-        setIsSuccess(true);
-        
-        // Ждем 1 секунду, чтобы пользователь увидел галочку, и перезагружаем страницу
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
-      }
+      // Сохраняем токен и данные
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      // Показываем зеленую галочку
+      setIsSuccess(true);
+      
+      // Ждем 1 секунду, чтобы пользователь увидел галочку, и перезагружаем страницу
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error) {
-      console.error('Network error:', error);
+      console.error('Login error:', error);
       setIsError(true);
     }
   };

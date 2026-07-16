@@ -1,4 +1,16 @@
-const BASE_URL = 'http://localhost:5000/api';
+// ============================================================
+// API-клиент с поддержкой ngrok
+// ============================================================
+// Базовый URL API читается из переменной окружения VITE_API_URL.
+// По умолчанию — локальный сервер.
+// При работе через ngrok укажите в .env:
+//   VITE_API_URL=https://xxxx-xx-xx-xx-xx.ngrok-free.app/api
+// ============================================================
+
+const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:5000/api';
+
+// URL сервера без /api — для формирования ссылок на изображения/загрузки
+export const BASE_SERVER_URL = BASE_URL.replace(/\/api$/, '');
 
 interface RequestOptions extends RequestInit {
   body?: any;
@@ -8,11 +20,18 @@ async function request(path: string, options: RequestOptions = {}) {
   const token = localStorage.getItem('token');
   
   const headers = new Headers(options.headers || {});
+
+  // === ОБХОД ЭКРАНА ПРЕДУПРЕЖДЕНИЯ NGROK ===
+  // Бесплатный ngrok перехватывает запросы из браузера и
+  // показывает HTML-страницу вместо JSON-ответа API.
+  // Этот заголовок сообщает ngrok пропустить запрос напрямую к бэкенду.
+  headers.set('ngrok-skip-browser-warning', 'true');
+
   if (token) {
     headers.set('Authorization', `Bearer ${token}`);
   }
   
-  // Set Content-Type if body is an object and not FormData
+  // Установка Content-Type если body — объект (не FormData)
   if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
     options.body = JSON.stringify(options.body);
@@ -24,7 +43,7 @@ async function request(path: string, options: RequestOptions = {}) {
   });
 
   if (response.status === 401) {
-    // Session expired or invalid
+    // Сессия истекла или невалидна
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     window.location.reload();
@@ -37,12 +56,12 @@ async function request(path: string, options: RequestOptions = {}) {
       const errorData = await response.json();
       errorMessage = errorData.message || errorMessage;
     } catch (_) {
-      // Ignore fallback if JSON parsing fails
+      // Игнорируем ошибку парсинга JSON
     }
     throw new Error(errorMessage);
   }
 
-  // Check if response is empty or has content
+  // Проверяем тип ответа
   const contentType = response.headers.get('content-type');
   if (contentType && contentType.includes('application/json')) {
     return response.json();
@@ -66,3 +85,4 @@ export const api = {
   delete: (path: string, options?: Omit<RequestOptions, 'body'>) => 
     request(path, { ...options, method: 'DELETE' }),
 };
+

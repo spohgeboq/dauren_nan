@@ -3,6 +3,7 @@ import { Wallet, TrendingUp, CalendarSync, FileSpreadsheet, Download, X } from '
 import styles from './ProfileFinances.module.css';
 import type { Profile } from './ClientWorkspace';
 import { notify } from './Toast';
+import { api } from '../../utils/api';
 
 interface ProfileFinancesProps {
   profile: Profile;
@@ -24,42 +25,36 @@ const ProfileFinances: React.FC<ProfileFinancesProps> = ({ profile }) => {
 
   const fetchHistory = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/client-workspace/orders', {
-        headers: { Authorization: `Bearer ${token}` }
+      const data = await api.get('/client-workspace/orders');
+      
+      // Calculate this month's sum
+      const now = new Date();
+      const thisMonthOrders = data.filter((o: any) => {
+        const d = new Date(o.createdAt);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
       });
-      if (res.ok) {
-        const data = await res.json();
-        
-        // Calculate this month's sum
-        const now = new Date();
-        const thisMonthOrders = data.filter((o: any) => {
-          const d = new Date(o.createdAt);
-          return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      
+      const sum = thisMonthOrders.reduce((acc: number, o: any) => acc + o.totalAmount, 0);
+      setOrdersThisMonth(sum);
+      
+      // Find most popular product
+      const productCounts: Record<string, number> = {};
+      data.forEach((o: any) => {
+        o.items.forEach((i: any) => {
+          const name = i.product?.name || 'Товар';
+          productCounts[name] = (productCounts[name] || 0) + i.quantity;
         });
-        
-        const sum = thisMonthOrders.reduce((acc: number, o: any) => acc + o.totalAmount, 0);
-        setOrdersThisMonth(sum);
-        
-        // Find most popular product
-        const productCounts: Record<string, number> = {};
-        data.forEach((o: any) => {
-          o.items.forEach((i: any) => {
-            const name = i.product?.name || 'Товар';
-            productCounts[name] = (productCounts[name] || 0) + i.quantity;
-          });
-        });
-        
-        let maxCount = 0;
-        let popProd = 'Нет данных';
-        for (const [name, count] of Object.entries(productCounts)) {
-          if (count > maxCount) {
-            maxCount = count;
-            popProd = name;
-          }
+      });
+      
+      let maxCount = 0;
+      let popProd = 'Нет данных';
+      for (const [name, count] of Object.entries(productCounts)) {
+        if (count > maxCount) {
+          maxCount = count;
+          popProd = name;
         }
-        setPopularProduct(popProd);
       }
+      setPopularProduct(popProd);
     } catch (e) {
       console.error(e);
       notify('Ошибка при загрузке аналитики', 'error');

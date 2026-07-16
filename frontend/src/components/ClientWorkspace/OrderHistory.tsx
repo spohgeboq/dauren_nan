@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FileText, RotateCw, Download } from 'lucide-react';
 import styles from './OrderHistory.module.css';
 import { notify } from './Toast';
+import { api } from '../../utils/api';
 
 interface OrderItem {
   id: number;
@@ -32,14 +33,8 @@ const OrderHistory: React.FC = () => {
 
   const fetchHistory = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/client-workspace/orders', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setOrders(data);
-      }
+      const data = await api.get('/client-workspace/orders');
+      setOrders(data);
     } catch (e) {
       console.error(e);
       notify('Ошибка при загрузке истории заказов', 'error');

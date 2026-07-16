@@ -3,6 +3,7 @@ import { ShoppingBag, Plus, Minus, X, CheckCircle } from 'lucide-react';
 import styles from './CatalogWithCart.module.css';
 import type { Profile } from './ClientWorkspace';
 import { notify } from './Toast';
+import { api } from '../../utils/api';
 
 interface Product {
   id: number;
@@ -55,19 +56,13 @@ const CatalogWithCart: React.FC<CatalogWithCartProps> = ({ profile, onOrderSucce
 
   const fetchProducts = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/client-workspace/products', {
-        headers: { Authorization: `Bearer ${token}` }
+      const data = await api.get('/client-workspace/products');
+      setProducts(data);
+      const initialItems: Record<number, number> = {};
+      data.forEach((p: Product) => {
+        initialItems[p.id] = 0;
       });
-      if (res.ok) {
-        const data = await res.json();
-        setProducts(data);
-        const initialItems: Record<number, number> = {};
-        data.forEach((p: Product) => {
-          initialItems[p.id] = 0;
-        });
-        setOrderItems(initialItems);
-      }
+      setOrderItems(initialItems);
     } catch (e) {
       console.error(e);
       notify('Ошибка при загрузке каталога', 'error');
@@ -134,34 +129,22 @@ const CatalogWithCart: React.FC<CatalogWithCartProps> = ({ profile, onOrderSucce
       .map(([id, qty]) => ({ productId: parseInt(id), quantity: qty }));
 
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/client-workspace/orders', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
-        },
-        body: JSON.stringify({ 
-          items: itemsPayload, 
-          paymentMethod: 'CASH', // Always cash to courier
-          address: finalAddress 
-        }),
+      await api.post('/client-workspace/orders', {
+        items: itemsPayload, 
+        paymentMethod: 'CASH', // Always cash to courier
+        address: finalAddress 
       });
 
-      if (res.ok) {
-        setOrderSuccess(true);
-        notify('Заказ успешно оформлен!', 'success');
-        setTimeout(() => {
-          setIsCartOpen(false);
-          setOrderSuccess(false);
-          onOrderSuccess();
-        }, 2000);
-      } else {
-        notify('Ошибка при создании заказа', 'error');
-      }
+      setOrderSuccess(true);
+      notify('Заказ успешно оформлен!', 'success');
+      setTimeout(() => {
+        setIsCartOpen(false);
+        setOrderSuccess(false);
+        onOrderSuccess();
+      }, 2000);
     } catch (e) {
       console.error(e);
-      notify('Сетевая ошибка', 'error');
+      notify('Ошибка при создании заказа', 'error');
     } finally {
       setSubmitting(false);
     }

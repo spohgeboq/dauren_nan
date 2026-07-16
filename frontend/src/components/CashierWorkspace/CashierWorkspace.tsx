@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LogOut, ShoppingBag, X, CreditCard, Banknote, QrCode, Minus, Plus, ArrowLeft } from 'lucide-react';
 import styles from './CashierWorkspace.module.css';
+import { api } from '../../utils/api';
 
 interface Product {
   id: number;
@@ -32,14 +33,8 @@ const CashierWorkspace: React.FC<CashierWorkspaceProps> = ({ onBack }) => {
 
   const fetchProducts = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/cashier/products', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setProducts(data.products);
-      }
+      const data = await api.get('/cashier/products');
+      setProducts(data.products);
     } catch (e) {
       console.error('Failed to fetch products', e);
     }
@@ -95,25 +90,15 @@ const CashierWorkspace: React.FC<CashierWorkspaceProps> = ({ onBack }) => {
     if (cart.length === 0 || !user) return;
     
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/cashier/sell', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          cart: cart.map(c => ({ productId: c.id, quantity: c.quantity, price: c.price })),
-          paymentMethod: method,
-          cashierId: user.id
-        })
+      await api.post('/cashier/sell', {
+        cart: cart.map(c => ({ productId: c.id, quantity: c.quantity, price: c.price })),
+        paymentMethod: method,
+        cashierId: user.id
       });
-      if (res.ok) {
-        setCart([]);
-        setIsPaymentModalOpen(false);
-        setIsCartOpen(false);
-        fetchProducts(); // Обновляем остатки
-      }
+      setCart([]);
+      setIsPaymentModalOpen(false);
+      setIsCartOpen(false);
+      fetchProducts(); // Обновляем остатки
     } catch (e) {
       console.error(e);
     }

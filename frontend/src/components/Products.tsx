@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Wheat, ShoppingCart } from 'lucide-react';
 import styles from './Products.module.css';
+import { api } from '../utils/api';
 
 interface Product {
   id: number | string;
@@ -16,8 +17,7 @@ const Products: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/products')
-      .then(res => res.json())
+    api.get('/products')
       .then(data => {
         // Оставляем только активные товары
         const activeProducts = data.filter((p: any) => p.isActive !== false);

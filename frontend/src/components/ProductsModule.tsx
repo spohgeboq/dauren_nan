@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { ArrowLeft, Search, Filter, Plus, Image as ImageIcon, UploadCloud, X, Edit2, Trash2 } from 'lucide-react';
 import styles from './ProductsModule.module.css';
-import { api } from '../utils/api';
+import { api, BASE_SERVER_URL } from '../utils/api';
 
 interface Category {
   id: number;
@@ -181,18 +181,10 @@ const ProductsModule: React.FC<ProductsModuleProps> = ({ onBack }) => {
     
     setIsUploading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/products/upload', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData,
-      });
-      const data = await response.json();
+      const data = await api.post('/products/upload', formData);
       if (data.imageUrl) {
         // Backend returns e.g. /uploads/file-123.jpg
-        setNewImageUrl(`http://localhost:5000${data.imageUrl}`);
+        setNewImageUrl(`${BASE_SERVER_URL}${data.imageUrl}`);
       }
     } catch (err) {
       console.error('Error uploading image', err);

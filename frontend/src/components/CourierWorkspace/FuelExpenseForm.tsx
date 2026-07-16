@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styles from './CourierWorkspace.module.css';
 import { Fuel, XCircle, CheckCircle } from 'lucide-react';
 import { saveOfflineAction } from '../../utils/offlineQueue';
+import { api } from '../../utils/api';
 
 interface FuelExpenseFormProps {
   onClose: () => void;
@@ -27,24 +28,15 @@ export const FuelExpenseForm: React.FC<FuelExpenseFormProps> = ({ onClose, onSuc
 
     try {
       if (!navigator.onLine) {
-        saveOfflineAction('http://localhost:5000/api/expenses', 'POST', body);
+        saveOfflineAction('/expenses', 'POST', body);
         onSuccess();
         return;
       }
 
-      const res = await fetch('http://localhost:5000/api/expenses', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-      if (res.ok) {
-        onSuccess();
-      } else {
-        saveOfflineAction('http://localhost:5000/api/expenses', 'POST', body);
-        onSuccess();
-      }
+      await api.post('/expenses', body);
+      onSuccess();
     } catch (e) {
-      saveOfflineAction('http://localhost:5000/api/expenses', 'POST', body);
+      saveOfflineAction('/expenses', 'POST', body);
       onSuccess();
     } finally {
       setIsSubmitting(false);
